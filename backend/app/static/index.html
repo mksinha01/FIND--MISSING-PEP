@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FIND-MISSING-PEP — AI CCTV & Missing Person Command Center</title>
+  <meta name="description" content="AI-Powered Missing Person Detection, CCTV Biometric Matching & Edge Agent Control Dashboard">
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+
+  <!-- Top Application Header -->
+  <header class="app-header">
+    <div class="brand-section">
+      <div class="brand-icon">🛡️</div>
+      <div>
+        <h1 class="brand-title">FIND-MISSING-PEP</h1>
+        <div class="brand-subtitle">AI Biometric CCTV & Missing Person Command Center</div>
+      </div>
+    </div>
+
+    <!-- Central Navigation Tabs -->
+    <nav class="nav-tabs" aria-label="Main Navigation">
+      <button class="nav-tab active" data-tab="tab-dashboard" id="nav-tab-dashboard">
+        📊 Dashboard & Sightings
+      </button>
+      <button class="nav-tab" data-tab="tab-cases" id="nav-tab-cases">
+        👥 Cases Directory
+      </button>
+      <button class="nav-tab" data-tab="tab-register" id="nav-tab-register">
+        ➕ Register Missing Person
+      </button>
+      <button class="nav-tab" data-tab="tab-agents" id="nav-tab-agents">
+        📹 CCTV & Edge Agents
+      </button>
+    </nav>
+
+    <!-- System Status & Swagger Link -->
+    <div class="header-status">
+      <span class="status-pill" title="Connected to FastAPI Backend on port 8000">
+        <span class="status-dot"></span> Backend Online
+      </span>
+      <a href="/docs" target="_blank" class="btn btn-secondary btn-sm" title="Open Interactive API Docs">
+        📖 API Docs
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="main-container">
+
+    <!-- Overview Stats Counter Cards -->
+    <section class="stats-grid" aria-label="System Metrics">
+      <div class="stat-card">
+        <div class="stat-icon blue">🔍</div>
+        <div class="stat-content">
+          <h3>Active Searches</h3>
+          <div class="stat-value" id="stat-active-cases">0</div>
+          <div class="stat-sub">Monitored on CCTV feeds</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon green">⚡</div>
+        <div class="stat-content">
+          <h3>CCTV Matches</h3>
+          <div class="stat-value" id="stat-matches">0</div>
+          <div class="stat-sub">Biometric detections logged</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon amber">👥</div>
+        <div class="stat-content">
+          <h3>Total Cases</h3>
+          <div class="stat-value" id="stat-total-cases">0</div>
+          <div class="stat-sub">Registered in central DB</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon purple">🎉</div>
+        <div class="stat-content">
+          <h3>Persons Found</h3>
+          <div class="stat-value" id="stat-found">0</div>
+          <div class="stat-sub">Successfully resolved cases</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 1: Dashboard & Live CCTV Sighting Feed -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <section id="tab-dashboard" class="tab-content active">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">📡 Real-Time CCTV Sighting Alerts</h2>
+          <p style="color: var(--text-secondary); font-size: 0.85rem;">
+            Live biometric face matches detected by CCTV Edge Agents (ArcFace 512-D + ByteTrack).
+          </p>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="loadDashboard()">
+          🔄 Refresh Feed
+        </button>
+      </div>
+
+      <div id="sightings-feed-container" class="sightings-list">
+        <!-- Sightings dynamically populated by JavaScript -->
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 2: Missing Persons Cases Directory -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <section id="tab-cases" class="tab-content">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">👥 Missing Persons Directory</h2>
+          <p style="color: var(--text-secondary); font-size: 0.85rem;">
+            Browse registered missing persons, track timeline trails, and update case statuses.
+          </p>
+        </div>
+
+        <div class="filters-bar">
+          <input type="text" id="search-cases" class="search-input" placeholder="🔍 Search name, location..." />
+          <div class="filter-pills">
+            <button class="filter-btn active" data-status="ALL">All</button>
+            <button class="filter-btn" data-status="ACTIVE">Active</button>
+            <button class="filter-btn" data-status="FOUND">Found</button>
+            <button class="filter-btn" data-status="CLOSED">Closed</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="cases-grid-container" class="cases-grid">
+        <!-- Cards dynamically populated by JavaScript -->
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 3: Register New Missing Person Case -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <section id="tab-register" class="tab-content">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">➕ Register Missing Person</h2>
+          <p style="color: var(--text-secondary); font-size: 0.85rem;">
+            Submit person details and face photos. The AI pipeline will extract 512-D ArcFace vectors and sync them to all Edge CCTV stations.
+          </p>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <form id="register-case-form">
+          <div class="form-grid">
+            
+            <!-- Drag & Drop Photo Upload -->
+            <div class="form-group full-width">
+              <label class="form-label">Upload Clear Face Photos (1–5 photos) *</label>
+              <div class="dropzone" id="photo-dropzone">
+                <div class="dropzone-icon">📸</div>
+                <div style="font-weight: 600; color: var(--text-primary);">Click or Drag & Drop Photos Here</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
+                  Supports JPG, PNG, WEBP. Frontal, well-lit photos give highest recognition accuracy.
+                </div>
+                <input type="file" id="photo-input" multiple accept="image/*" style="display: none;" />
+              </div>
+              <div id="photo-preview-container" class="preview-container"></div>
+            </div>
+
+            <!-- Full Name -->
+            <div class="form-group">
+              <label class="form-label" for="reg-name">Full Name *</label>
+              <input type="text" id="reg-name" class="form-control" placeholder="e.g. Aarav Sharma" required />
+            </div>
+
+            <!-- Age -->
+            <div class="form-group">
+              <label class="form-label" for="reg-age">Age *</label>
+              <input type="number" id="reg-age" class="form-control" placeholder="e.g. 24" min="1" max="120" required />
+            </div>
+
+            <!-- Gender -->
+            <div class="form-group">
+              <label class="form-label" for="reg-gender">Gender *</label>
+              <select id="reg-gender" class="form-control" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <!-- Height -->
+            <div class="form-group">
+              <label class="form-label" for="reg-height">Height (cm)</label>
+              <input type="number" id="reg-height" class="form-control" placeholder="e.g. 175" min="30" max="250" value="175" />
+            </div>
+
+            <!-- Last Seen Location -->
+            <div class="form-group full-width">
+              <label class="form-label" for="reg-location">Last Seen Location *</label>
+              <input type="text" id="reg-location" class="form-control" placeholder="e.g. Sector 18 Metro Station, Gate 2" required />
+            </div>
+
+            <!-- Last Seen Date & Time -->
+            <div class="form-group">
+              <label class="form-label" for="reg-date">Last Seen Date & Time</label>
+              <input type="datetime-local" id="reg-date" class="form-control" />
+            </div>
+
+            <!-- Emergency Contact -->
+            <div class="form-group">
+              <label class="form-label" for="reg-contact">Emergency Contact Phone *</label>
+              <input type="text" id="reg-contact" class="form-control" placeholder="e.g. +91 9876543210" required />
+            </div>
+
+            <!-- Identifying Features & Description -->
+            <div class="form-group full-width">
+              <label class="form-label" for="reg-desc">Identifying Features & Clothing Description</label>
+              <textarea id="reg-desc" class="form-control" rows="3" placeholder="e.g. Wearing navy blue hoodie, black glasses, small scar near right eyebrow."></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="form-group full-width" style="margin-top: 1rem;">
+              <button type="submit" id="submit-case-btn" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.85rem; font-size: 1rem;">
+                ⚡ Submit Case & Generate AI Embeddings
+              </button>
+            </div>
+
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 4: CCTV Stations & Edge Agent Sync -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <section id="tab-agents" class="tab-content">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">📹 CCTV Stations & Edge Agent Sync</h2>
+          <p style="color: var(--text-secondary); font-size: 0.85rem;">
+            Manage enrolled Edge Agent hardware, check heartbeat statuses, and trigger synchronization.
+          </p>
+        </div>
+
+        <button id="btn-manual-sync" class="btn btn-primary btn-sm" onclick="triggerManualSync()">
+          🔄 Trigger Embedding Sync Now
+        </button>
+      </div>
+
+      <div id="agents-list-container">
+        <!-- Dynamically populated by JS -->
+      </div>
+
+      <!-- Quick Deployment Guide Card -->
+      <div style="margin-top: 2rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem;">
+        <h3 style="font-size: 1rem; margin-bottom: 0.5rem; color: #38bdf8;">💡 How to Operate the Edge CCTV Monitoring Station</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+          1. Run <code>py -m edge_agent.main</code> in your terminal to launch the Edge Agent desktop GUI.<br>
+          2. The Edge Agent connects to this central server, downloads registered 512-D ArcFace facial embeddings, and loads them into a thread-safe FAISS vector index.<br>
+          3. Video streams (webcams, test MP4 files, or RTSP cameras) run through real-time SCRFD detection and ByteTrack tracking at 15 FPS.<br>
+          4. When a missing person is detected (3 consecutive matches $\ge$ 60%), an instant sighting alert is uploaded and appears live on this dashboard!
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Interactive Timeline Modal -->
+  <div id="timeline-modal" class="modal-overlay">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-person-name">Sighting Timeline</h3>
+        <button class="modal-close" onclick="closeTimelineModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-timeline-content">
+        <!-- Timeline populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Message Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

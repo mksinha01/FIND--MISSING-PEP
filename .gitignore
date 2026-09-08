@@ -1,0 +1,46 @@
+# Environment
+.env
+*.env
+firebase-sa.json
+google-services.json
+GoogleService-Info.plist
+
+# Uploads & evidence
+uploads/
+evidence/
+logs/
+
+# AI Models (large files)
+*.onnx
+models/
+ai_models/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Datasets
+datasets/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Flutter
+flutter_app/.dart_tool/
+flutter_app/build/
+flutter_app/.packages
+
+# Node
+node_modules/
