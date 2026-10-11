@@ -88,15 +88,10 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # 1. CORS Middleware — explicit origins with all methods and headers
+    # 1. CORS Middleware — supports all origins while retaining credentials
     application.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            "http://localhost:5173",
-            "http://127.0.0.1:5173",
-            "http://localhost:8000",
-            "http://127.0.0.1:8000",
-        ],
+        allow_origin_regex=r"https?://.*",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -143,8 +138,9 @@ def create_app() -> FastAPI:
             "docs": "/docs",
         }
 
-    # 5. Health Check endpoint (No Auth)
+    # 5. Health Check endpoints (No Auth)
     @application.get("/health", tags=["health"])
+    @application.get("/api/health", tags=["health"])
     async def health_check():
         return {
             "status": "ok",

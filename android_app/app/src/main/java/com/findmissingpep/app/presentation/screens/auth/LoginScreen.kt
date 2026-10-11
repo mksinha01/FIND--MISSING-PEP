@@ -1,6 +1,7 @@
 package com.findmissingpep.app.presentation.screens.auth
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -237,7 +238,54 @@ fun LoginScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ── Quick Demo Login Options ──
+            OutlinedButton(
+                onClick = { viewModel.loginAsDemoUser("officer.admin@police.gov.in", "Inspector Sharma") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = CyanPrimary.copy(alpha = 0.12f),
+                    contentColor = CyanPrimary
+                ),
+                border = BorderStroke(1.dp, CyanPrimary.copy(alpha = 0.5f))
+            ) {
+                Icon(
+                    Icons.Default.Security,
+                    contentDescription = null,
+                    tint = CyanPrimary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("1-Click Demo Login (Officer / Control Room)", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            OutlinedButton(
+                onClick = { viewModel.loginAsDemoUser("citizen.user@example.com", "Aarav Patel") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Slate800.copy(alpha = 0.5f),
+                    contentColor = TextPrimary
+                ),
+                border = BorderStroke(1.dp, Slate700)
+            ) {
+                Icon(
+                    Icons.Default.Person,
+                    contentDescription = null,
+                    tint = TextSecondary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("1-Click Demo Login (Citizen Reporter)", fontWeight = FontWeight.Medium, fontSize = 13.sp)
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             // ── Divider ──
             Row(
@@ -252,11 +300,11 @@ fun LoginScreen(
                 )
                 HorizontalDivider(modifier = Modifier.weight(1f), color = Slate700)
             }
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // ── Google Sign-In Button ──
             OutlinedButton(
-                onClick = { /* TODO: Launch Google Sign-In Intent */ },
+                onClick = { viewModel.loginAsDemoUser("google.user@gmail.com", "Google Verified User") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
@@ -272,7 +320,7 @@ fun LoginScreen(
                     tint = TextPrimary
                 )
                 Spacer(modifier = Modifier.width(12.dp))
-                Text("Continue with Google", fontWeight = FontWeight.Medium)
+                Text("Continue with Google (Demo)", fontWeight = FontWeight.Medium)
             }
 
             Spacer(modifier = Modifier.height(48.dp))
