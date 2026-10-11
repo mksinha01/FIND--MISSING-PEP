@@ -62,9 +62,7 @@ class AuthViewModel @Inject constructor(
                         phone = null,
                         avatarUrl = null,
                         language = "en",
-                        fcmToken = null,
-                        createdAt = "2026-10-11T00:00:00Z",
-                        updatedAt = "2026-10-11T00:00:00Z"
+                        createdAt = "2026-10-11T00:00:00Z"
                     )
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -106,9 +104,7 @@ class AuthViewModel @Inject constructor(
                             phone = null,
                             avatarUrl = null,
                             language = "en",
-                            fcmToken = null,
-                            createdAt = "2026-10-11T00:00:00Z",
-                            updatedAt = "2026-10-11T00:00:00Z"
+                            createdAt = "2026-10-11T00:00:00Z"
                         )
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
@@ -151,9 +147,7 @@ class AuthViewModel @Inject constructor(
                             phone = null,
                             avatarUrl = null,
                             language = "en",
-                            fcmToken = null,
-                            createdAt = "2026-10-11T00:00:00Z",
-                            updatedAt = "2026-10-11T00:00:00Z"
+                            createdAt = "2026-10-11T00:00:00Z"
                         )
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
