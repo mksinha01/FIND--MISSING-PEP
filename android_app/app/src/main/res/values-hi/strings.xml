@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Details -->
+    <string name="app_name">गुमशुदा तलाश (FIND-MISSING-PEP)</string>
+    <string name="app_tagline">एआई आधारित गुमशुदा व्यक्ति खोज एवं रियल-टाइम सीसीटीवी निगरानी</string>
+
+    <!-- Navigation & Screen Titles -->
+    <string name="dashboard_title">लाइव निगरानी केंद्र</string>
+    <string name="report_missing_person">गुमशुदा व्यक्ति की रिपोर्ट करें</string>
+    <string name="my_cases">दर्ज मामले</string>
+    <string name="live_sightings">लाइव सीसीटीवी खोज</string>
+    <string name="forensic_inspector">फोरेंसिक निरीक्षक</string>
+    <string name="movement_trajectory">गति प्रक्षेपवक्र (ट्रैजेक्टरी)</string>
+    <string name="notification_center">सूचना केंद्र</string>
+    <string name="user_profile">अधिकारी / उपयोगकर्ता प्रोफ़ाइल</string>
+    <string name="fir_queue">प्राथमिकी (FIR) सत्यापन कतार</string>
+
+    <!-- Demographics Form -->
+    <string name="full_name">पूरा नाम</string>
+    <string name="age">आयु</string>
+    <string name="gender">लिंग</string>
+    <string name="height">अनुमानित ऊंचाई</string>
+    <string name="physical_description">शारीरिक विवरण एवं वस्त्र</string>
+    <string name="last_seen_location">अंतिम बार देखा गया स्थान</string>
+    <string name="last_seen_time">अंतिम बार देखे जाने का समय व तिथि</string>
+    <string name="contact_phone">आपातकालीन संपर्क नंबर</string>
+
+    <!-- FIR & Legal -->
+    <string name="fir_number">पुलिस प्राथमिकी (FIR) संख्या</string>
+    <string name="police_station">थाने का नाम</string>
+    <string name="fir_date">प्राथमिकी दर्ज कराने की तिथि</string>
+    <string name="attach_fir_doc">हस्ताक्षरित प्राथमिकी दस्तावेज़ संलग्न करें</string>
+    <string name="fir_valid">मान्य प्राथमिकी प्रारूप</string>
+    <string name="fir_invalid">अमान्य प्राथमिकी प्रारूप (उदा. FIR/2026/1234)</string>
+
+    <!-- Photo Intake -->
+    <string name="upload_photos">स्पष्ट तस्वीरें अपलोड करें (1-5)</string>
+    <string name="photo_guidelines">सामने से ली गई तस्वीरें आर्कफेस (ArcFace) सटीकता को अधिकतम करती हैं।</string>
+
+    <!-- Case Statuses -->
+    <string name="status_processing">प्रसंस्करण जारी</string>
+    <string name="status_pending_fir">प्राथमिकी समीक्षा लंबित</string>
+    <string name="status_active">सक्रिय सीसीटीवी खोज जारी</string>
+    <string name="status_found">व्यक्ति मिल गया</string>
+    <string name="status_closed">मामला बंद</string>
+    <string name="status_fir_rejected">प्राथमिकी अस्वीकृत</string>
+
+    <!-- Sightings & Forensic Evidence -->
+    <string name="possible_match">संभावित मिलान पाया गया</string>
+    <string name="similarity_score">समानता स्कोर</string>
+    <string name="confirm_sighting">सत्यापित मिलान की पुष्टि करें</string>
+    <string name="reject_sighting">गलत पहचान अस्वीकार करें</string>
+    <string name="last_seen_camera">अंतिम बार देखा गया</string>
+    <string name="video_clip_buffer">5-सेकंड सीसीटीवी वीडियो क्लिप बफर</string>
+    <string name="surveillance_scene">1080p निगरानी दृश्य संदर्भ</string>
+
+    <!-- Actions & Common Buttons -->
+    <string name="submit_report">रिपोर्ट जमा करें</string>
+    <string name="next_step">अगला कदम</string>
+    <string name="previous_step">पिछला</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="save">सहेजें</string>
+    <string name="refresh">ताज़ा करें</string>
+    <string name="sign_out">लॉग आउट</string>
+    <!-- Notification Channels -->
+    <string name="channel_sighting_alerts">सीसीटीवी खोज अलर्ट</string>
+    <string name="channel_case_updates">मामला स्थिति अपडेट</string>
+    <string name="channel_general">सिस्टम सूचनाएं</string>
+</resources>

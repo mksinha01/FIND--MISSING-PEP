@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Details -->
+    <string name="app_name">FIND-MISSING-PEP</string>
+    <string name="app_tagline">AI-Based Missing Person Detection &amp; Real-Time CCTV Monitoring</string>
+
+    <!-- Navigation & Screen Titles -->
+    <string name="dashboard_title">Live Monitoring Hub</string>
+    <string name="report_missing_person">Report Missing Person</string>
+    <string name="my_cases">Reported Cases</string>
+    <string name="live_sightings">Live CCTV Sightings</string>
+    <string name="forensic_inspector">Forensic Inspector</string>
+    <string name="movement_trajectory">Movement Trajectory</string>
+    <string name="notification_center">Notification Center</string>
+    <string name="user_profile">Officer / User Profile</string>
+    <string name="fir_queue">FIR Verification Queue</string>
+
+    <!-- Demographics Form -->
+    <string name="full_name">Full Name</string>
+    <string name="age">Age</string>
+    <string name="gender">Gender</string>
+    <string name="height">Approximate Height</string>
+    <string name="physical_description">Physical Description &amp; Clothing</string>
+    <string name="last_seen_location">Last Seen Location</string>
+    <string name="last_seen_time">Last Seen Date &amp; Time</string>
+    <string name="contact_phone">Emergency Contact Phone</string>
+
+    <!-- FIR & Legal -->
+    <string name="fir_number">Police FIR Number</string>
+    <string name="police_station">Police Station Name</string>
+    <string name="fir_date">Date of Filing FIR</string>
+    <string name="attach_fir_doc">Attach Stamped FIR File</string>
+    <string name="fir_valid">Valid FIR Format</string>
+    <string name="fir_invalid">Invalid FIR Format (e.g. FIR/2026/1234)</string>
+
+    <!-- Photo Intake -->
+    <string name="upload_photos">Upload Clear Photos (1-5)</string>
+    <string name="photo_guidelines">Front-facing portraits with good lighting maximize ArcFace 512-D accuracy.</string>
+
+    <!-- Case Statuses -->
+    <string name="status_processing">Processing</string>
+    <string name="status_pending_fir">Pending FIR Review</string>
+    <string name="status_active">Active CCTV Search</string>
+    <string name="status_found">Person Found</string>
+    <string name="status_closed">Case Closed</string>
+    <string name="status_fir_rejected">FIR Rejected</string>
+
+    <!-- Sightings & Forensic Evidence -->
+    <string name="possible_match">Possible Match Detected</string>
+    <string name="similarity_score">Similarity Score</string>
+    <string name="confirm_sighting">Confirm Verified Match</string>
+    <string name="reject_sighting">Reject False Alarm</string>
+    <string name="last_seen_camera">Last Seen At</string>
+    <string name="video_clip_buffer">5-Second CCTV Video Clip Buffer</string>
+    <string name="surveillance_scene">1080p Surveillance Scene Context</string>
+
+    <!-- Actions & Common Buttons -->
+    <string name="submit_report">Submit Report</string>
+    <string name="next_step">Next Step</string>
+    <string name="previous_step">Previous</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="refresh">Refresh</string>
+    <string name="sign_out">Sign Out</string>
+    <!-- Notification Channels -->
+    <string name="channel_sighting_alerts">CCTV Sighting Alerts</string>
+    <string name="channel_case_updates">Case Updates</string>
+    <string name="channel_general">System Notifications</string>
+</resources>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Camera/Face search motif -->
+    <path
+        android:fillColor="#06B6D4"
+        android:pathData="M34,34 L44,34 L44,38 L38,38 L38,44 L34,44 Z" />
+    <path
+        android:fillColor="#06B6D4"
+        android:pathData="M74,34 L64,34 L64,38 L70,38 L70,44 L74,44 Z" />
+    <path
+        android:fillColor="#06B6D4"
+        android:pathData="M34,74 L44,74 L44,70 L38,70 L38,64 L34,64 Z" />
+    <path
+        android:fillColor="#06B6D4"
+        android:pathData="M74,74 L64,74 L64,70 L70,70 L70,64 L74,64 Z" />
+    <!-- Center Person Icon -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M54,40 C57.31,40 60,42.69 60,46 C60,49.31 57.31,52 54,52 C50.69,52 48,49.31 48,46 C48,42.69 50.69,40 54,40 Z" />
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M54,56 C47.33,56 42,60.03 42,65 L42,68 L66,68 L66,65 C66,60.03 60.67,56 54,56 Z" />
+</vector>
