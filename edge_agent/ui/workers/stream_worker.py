@@ -113,6 +113,7 @@ class StreamWorker(QThread):
             "metadata": meta,
             "age": meta.get("age"),
             "gender": meta.get("gender"),
+            "height_cm": meta.get("height_cm"),
             "description": meta.get("description"),
             "last_seen_location": meta.get("last_seen_location"),
             "last_seen_time": meta.get("last_seen_time"),
@@ -120,6 +121,10 @@ class StreamWorker(QThread):
             "reporter_name": meta.get("reporter_name"),
             "reporter_email": meta.get("reporter_email"),
             "reporter_phone": meta.get("reporter_phone"),
+            "fir_number": meta.get("fir_number"),
+            "fir_police_station": meta.get("fir_police_station"),
+            "fir_date": meta.get("fir_date"),
+            "fir_status": meta.get("fir_status"),
         }
         logger.warning(
             f"[StreamWorker {self.camera_id}] SIGHTING CONFIRMED: "
@@ -174,8 +179,9 @@ class StreamWorker(QThread):
                 if self.pipeline is not None:
                     try:
                         matches = self.pipeline.process_frame(frame, timestamp)
-                        if hasattr(self.pipeline, "tracker") and hasattr(self.pipeline.tracker, "tracks"):
-                            tracks_or_detections = self.pipeline.tracker.tracks
+                        tracks_or_detections = getattr(self.pipeline, "last_tracks", [])
+                        if not tracks_or_detections and hasattr(self.pipeline, "tracker"):
+                            tracks_or_detections = getattr(self.pipeline.tracker, "tracks", [])
                     except Exception as pe:
                         logger.error(f"[StreamWorker {self.camera_id}] Pipeline error: {pe}", exc_info=True)
 

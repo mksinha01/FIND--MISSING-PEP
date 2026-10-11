@@ -32,6 +32,7 @@ services:
     restart: always
     environment:
       - APP_ENV=production
+      - DEBUG=false
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_USER=${POSTGRES_USER:-fmp_user}

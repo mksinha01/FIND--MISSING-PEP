@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #root { position: absolute; inset: 0; background: #09090b; overflow: hidden; }
+      </style>
+
+      <div id="root" data-composition-id="scene-5" data-width="1920" data-height="1080">
+        <div class="tray mono" id="tray">
+          <span class="dot dot-live"></span>
+          <span>FIND-MISSING-PEP &mdash; Edge Agent Running</span>
+          <span class="sub">&middot; 4 CAMERAS &middot; 15 FPS &middot; CPU</span>
+        </div>
+
+        <div class="logo-row">
+          <div class="mark" id="mark">
+            <span class="tick h"></span><span class="tick v"></span>
+            <span class="ring"></span><span class="dotc"></span>
+          </div>
+          <div class="wordmark" id="wordmark">FIND-MISSING-PEP</div>
+        </div>
+
+        <div class="tagline" id="tagline">Your cameras. Their faces. Found.</div>
+        <div class="cpu-note mono" id="cpunote">RUNS ON CPU &middot; NO GPU REQUIRED</div>
+      </div>
+
+      <script>
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+
+        /* calm settle: power3.out, no overshoot */
+        tl.fromTo("#mark", { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" }, 0);
+        tl.fromTo("#tray", { opacity: 0, y: -14, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.44, ease: "power3.out" }, 0.06);
+        tl.fromTo("#wordmark", { opacity: 0, x: -28 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 0.28);
+        tl.fromTo("#tagline", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.58);
+        tl.fromTo("#cpunote", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 1.08);
+
+        window.__timelines["scene-5"] = tl;
+        tl.seek(0);
+      </script>
+    </template>
+  </body>
+</html>

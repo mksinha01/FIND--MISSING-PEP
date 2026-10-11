@@ -127,12 +127,13 @@ async def get_current_user(
     email: Optional[str] = None
     name: str = "User"
 
-    # Support testing / mock tokens — ONLY in explicit test mode
+    # Support testing / mock tokens — in explicit test mode or development DEBUG mode
     if token.startswith("test-") or token.startswith("mock-"):
         is_explicit_test = (
             ("pytest" in sys.modules)
             or (os.environ.get("PYTEST_CURRENT_TEST") is not None)
             or (os.environ.get("TESTING", "").lower() in ("true", "1"))
+            or (settings.DEBUG and not settings.is_production)
         )
         if not is_explicit_test:
             raise HTTPException(

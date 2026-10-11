@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #root { position: absolute; inset: 0; background: #09090b; overflow: hidden; }
+      </style>
+
+      <div id="root" data-composition-id="scene-3" data-width="1920" data-height="1080">
+        <div id="alertcard">
+          <div class="ac-head">
+            <span class="ac-bar"></span>
+            <span class="ac-title">MATCH CANDIDATE &mdash; REVIEW REQUIRED</span>
+            <span class="ac-meta mono">CAM-01 &middot; 14:22:07 &middot; TRACK 8842</span>
+          </div>
+          <div class="ac-body">
+            <div class="cmp">
+              <div class="face" id="faceA">
+                <div class="face-img" data-layout-allow-overflow><i class="fig-head"></i><i class="fig-body"></i></div>
+                <div class="face-cap">
+                  <div class="n">ANA S. RUIZ</div>
+                  <div class="m mono">REGISTERED &middot; 2024-08-11</div>
+                </div>
+              </div>
+              <div class="cmp-mid">
+                <div class="vs-rule"></div>
+                <div class="vs-chip mono" id="vs">VS</div>
+                <div class="vs-rule"></div>
+              </div>
+              <div class="face" id="faceB">
+                <div class="face-img live" data-layout-allow-overflow>
+                  <i class="fig-head"></i><i class="fig-body"></i>
+                  <span class="face-xhair"><i></i><i></i><i></i><i></i></span>
+                </div>
+                <div class="face-cap">
+                  <div class="n">TRACK 8842</div>
+                  <div class="m mono">LIVE &middot; CAM-01 &middot; 14:22:07</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="gauge">
+              <div class="gauge-top">
+                <span class="gauge-lbl mono">COSINE SIMILARITY</span>
+                <span class="gauge-num mono" id="gaugeNum">0.00</span>
+              </div>
+              <div class="gauge-track" data-layout-allow-overflow>
+                <div class="gauge-fill" id="gaugeFill"></div>
+                <div class="gauge-thr" style="left:60%"></div>
+                <div class="gauge-thr-lbl mono" style="left:60%">THRESHOLD 0.60</div>
+              </div>
+            </div>
+
+            <div class="meta-grid">
+              <div class="meta-row" id="m1"><span class="k mono">PERSON</span><span class="v">ANA S. RUIZ</span></div>
+              <div class="meta-row" id="m2"><span class="k mono">OBSERVATIONS</span><span class="v ok">3 / 3 VERIFIED</span></div>
+              <div class="meta-row" id="m3"><span class="k mono">WINDOW</span><span class="v">5.0s</span></div>
+              <div class="meta-row" id="m4"><span class="k mono">THRESHOLD</span><span class="v">&ge; 0.60 COSINE</span></div>
+            </div>
+          </div>
+          <div class="ac-foot">
+            <div class="btn ghost" id="btnReject">REJECT</div>
+            <div class="ac-note mono" id="acNote">AUTO-CONFIRMED BY TEMPORAL VERIFIER</div>
+            <div class="btn confirm" id="btnConfirm">CONFIRM MATCH</div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+
+        tl.fromTo("#alertcard", { opacity: 0, scale: 0.972, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0);
+        tl.fromTo("#faceA", { opacity: 0, x: -26 }, { opacity: 1, x: 0, duration: 0.46, ease: "power3.out" }, 0.24);
+        tl.fromTo("#vs", { opacity: 0, x: -34, scale: 0.9 }, { opacity: 1, x: 0, scale: 1, duration: 0.4, ease: "power3.out" }, 0.42);
+        tl.fromTo("#faceB", { opacity: 0, x: 26 }, { opacity: 1, x: 0, duration: 0.46, ease: "power3.out" }, 0.62);
+
+        tl.fromTo(".gauge-top", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 1.28);
+        tl.fromTo(".gauge-track", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 1.28);
+
+        /* number and fill land together on the same beat (same start, same ease) */
+        var gaugeObj = { v: 0.0 };
+        tl.to(gaugeObj, {
+          v: 0.87, duration: 1.0, ease: "power2.out",
+          onUpdate: function () { document.getElementById("gaugeNum").textContent = gaugeObj.v.toFixed(2); }
+        }, 2.0);
+        tl.fromTo("#gaugeFill", { scaleX: 0 }, { scaleX: 0.87, duration: 1.0, ease: "power2.out" }, 2.0);
+
+        /* metadata rows snap to the beat grid */
+        tl.fromTo("#m1", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.34, ease: "power3.out" }, 3.5);
+        tl.fromTo("#m2", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.34, ease: "power3.out" }, 3.58);
+        tl.fromTo("#m3", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.34, ease: "power3.out" }, 3.66);
+        tl.fromTo("#m4", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.34, ease: "power3.out" }, 3.74);
+
+        /* operator confirms */
+        tl.fromTo("#btnReject", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.34, ease: "power3.out" }, 3.88);
+        tl.fromTo("#btnConfirm", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.34, ease: "power3.out" }, 3.94);
+        tl.fromTo("#acNote", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 4.04);
+        tl.to("#btnConfirm", { scale: 0.965, duration: 0.09, ease: "power2.out" }, 4.28);
+        tl.to("#btnConfirm", { scale: 1, duration: 0.3, ease: "power2.out" }, 4.37);
+
+        window.__timelines["scene-3"] = tl;
+        tl.seek(0);
+      </script>
+    </template>
+  </body>
+</html>

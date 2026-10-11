@@ -3,8 +3,9 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api import api_router
@@ -87,7 +88,7 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # 1. CORS Middleware — explicit origins, methods, and headers for security
+    # 1. CORS Middleware — explicit origins with all methods and headers
     application.add_middleware(
         CORSMiddleware,
         allow_origins=[
@@ -97,16 +98,18 @@ def create_app() -> FastAPI:
             "http://127.0.0.1:8000",
         ],
         allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=[
-            "Authorization",
-            "Content-Type",
-            "Accept",
-            "X-Firebase-Token",
-            "X-API-Key",
-            "X-Enrollment-Key",
-        ],
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
+
+    # Global Exception Handler — preserves CORS headers on unexpected 500 errors
+    @application.exception_handler(Exception)
+    async def global_exception_handler(request: Request, exc: Exception):
+        logger.error(f"Unhandled exception on {request.method} {request.url.path}: {exc}", exc_info=True)
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": f"Internal Server Error: {str(exc)}"},
+        )
 
     # 2. Static File Mount for uploaded media
     application.mount(

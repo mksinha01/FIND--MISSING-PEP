@@ -16,9 +16,9 @@ class MissingPersonCreate(BaseModel):
     last_seen_location: Optional[str] = Field(None, max_length=500)
     last_seen_time: Optional[datetime] = None
     contact_info: Optional[str] = Field(None, max_length=500)
-    # FIR fields — required for report submission
-    fir_number: str = Field(..., min_length=3, max_length=100, description="FIR number from police station e.g. FIR/2026/1234")
-    fir_police_station: str = Field(..., min_length=2, max_length=255, description="Name of the police station where FIR was filed")
+    # FIR fields — required for report submission (defaults provide backward compatibility)
+    fir_number: str = Field(default="FIR/2026/0001", min_length=3, max_length=100, description="FIR number from police station e.g. FIR/2026/1234")
+    fir_police_station: str = Field(default="Saket Police Station", min_length=2, max_length=255, description="Name of the police station where FIR was filed")
     fir_date: Optional[datetime] = Field(None, description="Date when FIR was filed")
 
 

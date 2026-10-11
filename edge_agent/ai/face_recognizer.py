@@ -92,8 +92,8 @@ class ArcFaceRecognizer:
 
         opts = ort.SessionOptions()
         opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-        opts.inter_op_num_threads = 2
-        opts.intra_op_num_threads = 2
+        opts.inter_op_num_threads = 1
+        opts.intra_op_num_threads = 4
 
         self.session = ort.InferenceSession(
             self.model_path,

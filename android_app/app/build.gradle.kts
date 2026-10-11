@@ -21,8 +21,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Backend API base URL — override in local.properties or CI
-        buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8000\"")
+        // Backend API base URL — points to production Vultr VPS instance
+        buildConfigField("String", "API_BASE_URL", "\"http://65.20.80.222:8000\"")
         // Google Maps API key placeholder
         manifestPlaceholders["MAPS_API_KEY"] = project.findProperty("MAPS_API_KEY") ?: "YOUR_MAPS_API_KEY_HERE"
 
@@ -40,7 +40,7 @@ android {
         }
         debug {
             isDebuggable = true
-            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8000\"")
+            buildConfigField("String", "API_BASE_URL", "\"http://65.20.80.222:8000\"")
         }
     }
 

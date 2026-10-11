@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { AlertCircle, ArrowLeft, Send, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
@@ -94,12 +95,17 @@ export const NewReportPage: React.FC = () => {
       navigate(`/reports/${created.id}`);
     } catch (submitError: unknown) {
       let msg = 'Failed to submit report. Please check your connection.';
-      if (submitError instanceof Error) {
-        if (submitError.message.toLowerCase().includes('timeout') || submitError.message.includes('30000ms')) {
+      if (axios.isAxiosError(submitError)) {
+        if (submitError.response?.data?.detail) {
+          const detail = submitError.response.data.detail;
+          msg = typeof detail === 'string' ? detail : JSON.stringify(detail);
+        } else if (submitError.code === 'ECONNABORTED' || submitError.message.toLowerCase().includes('timeout')) {
           msg = 'AI face processing took longer than expected. Please check your network and try again.';
         } else {
           msg = submitError.message;
         }
+      } else if (submitError instanceof Error) {
+        msg = submitError.message;
       }
       setError(msg);
     } finally {

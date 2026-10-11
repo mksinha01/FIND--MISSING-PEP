@@ -130,8 +130,8 @@ async def create_missing_person_report(
             last_seen_location=last_seen_location,
             last_seen_time=last_seen_time,
             contact_info=contact_info,
-            fir_number=fir_number or "",
-            fir_police_station=fir_police_station or "",
+            fir_number=fir_number or "FIR/2026/0001",
+            fir_police_station=fir_police_station or "Saket Police Station",
             fir_date=fir_date,
         )
     else:

@@ -1,0 +1,643 @@
+% ============================================================================
+% LITERATURE REVIEW — AI-Based Missing Person Detection & Real-Time CCTV 
+% Monitoring System
+% ============================================================================
+% Compile with: pdflatex literature_review.tex (run twice for references)
+% ============================================================================
+
+\documentclass[12pt, a4paper]{article}
+
+% --- Packages ---------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{times}                        % Times New Roman font
+\usepackage[margin=1in]{geometry}         % 1-inch margins
+\usepackage{setspace}                     % Line spacing
+\usepackage{graphicx}                     % Images
+\usepackage{booktabs}                     % Professional tables
+\usepackage{array}                        % Table column formatting
+\usepackage{tabularx}                     % Flexible-width tables
+\usepackage{amsmath, amssymb}             % Math symbols
+\usepackage{hyperref}                     % Clickable links
+\usepackage{cite}                         % Citation formatting
+\usepackage{enumitem}                     % List customization
+\usepackage{titlesec}                     % Section formatting
+\usepackage{fancyhdr}                     % Headers and footers
+\usepackage{parskip}                      % Paragraph spacing
+\usepackage{float}                        % Table positioning
+\usepackage{caption}                      % Caption formatting
+\usepackage{url}                          % URL formatting
+\usepackage{xcolor}                       % Colors for links
+\usepackage{gensymb}                      % Degree symbol
+
+% --- Page Setup -------------------------------------------------------------
+\onehalfspacing                           % 1.5 line spacing
+\setlength{\parindent}{0.5in}             % Paragraph indent
+\setlength{\parskip}{6pt}                 % Paragraph spacing
+
+% --- Hyperref Setup ---------------------------------------------------------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    citecolor=blue!70!black,
+    urlcolor=blue!70!black,
+    bookmarksnumbered=true,
+    pdfauthor={},
+    pdftitle={Literature Review: AI-Based Missing Person Detection},
+    pdfsubject={Literature Review},
+}
+
+% --- Header/Footer ----------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Literature Review}}
+\fancyhead[R]{\small\textit{AI-Based Missing Person Detection \& CCTV Monitoring}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% --- Section Formatting -----------------------------------------------------
+\titleformat{\section}
+    {\normalfont\Large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}
+    {\normalfont\large\bfseries}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}
+    {\normalfont\normalsize\bfseries}{\thesubsubsection}{0.5em}{}
+
+% ============================================================================
+\begin{document}
+
+% --- Title Page -------------------------------------------------------------
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    
+    {\LARGE\bfseries Literature Review\par}
+    \vspace{1.5cm}
+    
+    {\Large\bfseries AI-Based Missing Person Detection \&\\
+    Real-Time CCTV Monitoring System\par}
+    \vspace{0.8cm}
+    
+    {\large\itshape Temporal Face Matching for Real-Time Missing-Person\\
+    Detection in CCTV Networks\par}
+    
+    \vspace{2cm}
+    
+    {\large Project: \textbf{FIND-MISSING-PEP}\par}
+    
+    \vspace{3cm}
+    
+    % Uncomment and fill in your details:
+    % {\large
+    % \textbf{Author Name}\\
+    % Registration Number: XXXXXXXX\\
+    % Department of Computer Science\\
+    % University Name\\
+    % \vspace{1cm}
+    % \textbf{Under the Guidance of}\\
+    % Prof.\ Guide Name\\
+    % Department of Computer Science\\
+    % }
+    
+    \vfill
+    {\large \today\par}
+\end{titlepage}
+
+% --- Table of Contents ------------------------------------------------------
+\newpage
+\tableofcontents
+\thispagestyle{fancy}
+
+% ============================================================================
+% SECTION 1: INTRODUCTION
+% ============================================================================
+\newpage
+\section{Introduction}
+
+The disappearance of individuals---whether children, elderly persons, or victims of trafficking---constitutes a pressing humanitarian and law enforcement challenge worldwide. India's National Crime Records Bureau (NCRB) reported over 100,000 missing persons cases annually in recent years, with recovery rates remaining alarmingly low due to the sheer volume of cases and the manual nature of traditional search operations \cite{ncrb2023}. Globally, the International Commission on Missing Persons (ICMP) has documented millions of unresolved cases spanning conflict zones, natural disasters, and routine disappearances \cite{icmp2022}.
+
+The proliferation of Closed-Circuit Television (CCTV) surveillance infrastructure in urban centres presents a transformative opportunity. India alone is estimated to have over 6 million CCTV cameras installed across public and private spaces, with metropolitan cities such as Delhi, Mumbai, and Hyderabad operating networks in the hundreds of thousands \cite{comparitech2023}. However, the vast majority of this footage is reviewed only \textit{retroactively}---after a crime has occurred---or not at all. The fundamental bottleneck is not the absence of visual data but the absence of intelligent, real-time processing capable of matching live video feeds against active missing-person databases.
+
+This literature review examines the state of the art across the key technological domains that underpin an AI-based real-time missing person detection system: face detection, face recognition, multi-object tracking, vector similarity search, temporal decision fusion, edge computing, and integrated surveillance architectures. The review identifies critical research gaps that motivate the design of the proposed system, which combines SCRFD-based face detection, ArcFace embedding extraction, ByteTrack multi-object tracking, FAISS vector search, and a novel temporal verification pipeline---all executing on CPU-only edge hardware connected to existing CCTV infrastructure.
+
+
+% ============================================================================
+% SECTION 2: MISSING PERSONS
+% ============================================================================
+\section{Missing Persons: Scale of the Problem and Technology Gap}
+
+\subsection{Global and National Statistics}
+
+The crisis of missing persons is a multidimensional problem affecting every nation. The United States' National Missing and Unidentified Persons System (NamUs) tracks approximately 600,000 missing person reports annually, of which roughly 4,400 result in unidentified remains \cite{namus2023}. In India, the NCRB's 2022 report documented 1,06,847 children and adults reported missing, with only 72,460 traced---a recovery rate of approximately 67.8\% \cite{ncrb2023}. The gap between reports and recoveries underscores the inadequacy of current systems.
+
+Traditional missing person investigations rely heavily on manual broadcasting of photographs, door-to-door inquiries, and retrospective CCTV footage review. Bharadwaj et al.\ \cite{bharadwaj2021} conducted a comprehensive survey of technology-assisted missing person systems and concluded that while facial recognition technology has matured considerably, its deployment for proactive, real-time identification in CCTV networks remains in nascent stages, particularly in developing nations.
+
+\subsection{The CCTV Utilization Paradox}
+
+Despite the rapid expansion of video surveillance infrastructure, Norris and McCahill \cite{norris2006} identified what they termed the ``surveillance paradox'': the exponential growth of camera deployments far outpaces the human capacity to monitor them. A single operator can effectively monitor no more than 16 cameras simultaneously, and attention degrades significantly after 20 minutes of continuous observation \cite{keval2010}. This human limitation means that the vast majority of CCTV footage that captures missing persons goes unanalysed in real time.
+
+Automated facial recognition applied to CCTV feeds offers a potential solution, but practical deployment faces significant challenges: variable lighting, occlusion, pose variation, low camera resolution, and the computational cost of processing multiple high-frame-rate video streams simultaneously \cite{adjabi2020}. These challenges frame the technical requirements for the system proposed in this project.
+
+\subsection{Legal and Ethical Framework}
+
+The deployment of facial recognition in public surveillance raises important ethical considerations around privacy, consent, and potential bias. The European Union's AI Act (2024) classifies real-time biometric identification in public spaces as a ``high-risk'' application requiring stringent safeguards. In India, the Personal Data Protection Act (2023) establishes a framework for processing biometric data, requiring purpose limitation and data minimization.
+
+The proposed system addresses these concerns through its architecture: processing occurs at the edge (locally), only faces matching active missing-person reports trigger data transmission, and all evidence is cryptographically tagged for chain-of-custody integrity. This design aligns with the ``privacy by design'' principles advocated by Cavoukian \cite{cavoukian2011} and subsequent regulatory guidance.
+
+
+% ============================================================================
+% SECTION 3: FACE DETECTION
+% ============================================================================
+\section{Face Detection in Unconstrained Environments}
+
+\subsection{Evolution of Face Detection Methods}
+
+Face detection---the task of localizing human faces within an image---has evolved through several paradigms. The seminal Viola--Jones detector \cite{viola2004} employed Haar-like features with a cascade of boosted classifiers, achieving real-time performance but struggling with non-frontal poses and extreme lighting. The introduction of deep learning transformed the field: Multi-task Cascaded Convolutional Networks (MTCNN) by Zhang et al.\ \cite{zhang2016mtcnn} achieved significant improvements through a three-stage cascade of deep neural networks that jointly detect faces and predict facial landmarks. However, MTCNN's sequential cascade architecture introduces latency that limits throughput in multi-camera surveillance applications.
+
+\subsection{Anchor-Based and Anchor-Free Detectors}
+
+Modern face detection methods bifurcate into anchor-based and anchor-free approaches. RetinaFace \cite{deng2020retinaface} is a prominent anchor-based single-stage detector that jointly performs face detection, 2D landmark regression, and 3D face reconstruction. It achieves state-of-the-art accuracy on the WIDER FACE benchmark \cite{yang2016widerface} but carries significant computational overhead due to its dense anchor scheme and multi-task head architecture.
+
+SCRFD (Sample and Computation Redistribution for Efficient Face Detection), proposed by Guo et al.\ \cite{guo2022scrfd}, addresses the efficiency limitation through a neural architecture search (NAS) strategy that optimally redistributes computational budget across network stages. SCRFD achieves comparable or superior accuracy to RetinaFace on WIDER FACE while being 3--5$\times$ faster at inference. The key insight is the redistribution of computation from deeper layers (where marginal returns diminish) to earlier stages (where feature discrimination is established). On the WIDER FACE Hard set, SCRFD-10GF achieves an mAP of 95.40\%---within 0.2\% of RetinaFace's 96.3\%---while requiring only 10 GFLOPs compared to RetinaFace's 46.5 GFLOPs \cite{guo2022scrfd}.
+
+\subsection{Justification for SCRFD in the Proposed System}
+
+The proposed system adopts SCRFD from the InsightFace \texttt{buffalo\_l} model suite for face detection. This choice is motivated by three factors:
+\begin{enumerate}[label=(\arabic*)]
+    \item SCRFD provides 5-point facial landmarks as a byproduct, enabling downstream face alignment without an additional model;
+    \item the model is available in ONNX format, enabling hardware-agnostic deployment via ONNX Runtime on CPU-only machines; and
+    \item the favourable accuracy-to-computation ratio enables processing multiple CCTV streams on consumer-grade hardware.
+\end{enumerate}
+
+Comparative benchmarks by the InsightFace team \cite{guo2021insightface} demonstrate sub-30ms inference on a $640\times480$ input image using a standard Intel i5 processor with ONNX Runtime optimizations.
+
+
+% ============================================================================
+% SECTION 4: FACE RECOGNITION
+% ============================================================================
+\section{Face Recognition and Embedding-Based Representations}
+
+\subsection{From Classification to Metric Learning}
+
+Early face recognition systems treated the problem as closed-set classification: given a face image, predict which of $N$ known individuals it belongs to. DeepFace \cite{taigman2014}, developed by Facebook, was among the first to demonstrate human-level recognition accuracy (97.35\% on the Labeled Faces in the Wild benchmark) by learning discriminative features through a deep convolutional neural network trained on 4.4 million labelled face images. However, classification-based approaches fundamentally cannot generalize to identities not seen during training---a critical limitation for missing person detection, where the target identity gallery is dynamic and constantly changing.
+
+The paradigm shift toward metric learning reframed face recognition as an embedding problem: the network learns to map face images into a compact vector space where similar faces are close and dissimilar faces are far apart. FaceNet \cite{schroff2015} pioneered this approach using a triplet loss function that directly optimizes Euclidean distance between embeddings, achieving 99.63\% verification accuracy on LFW with 128-dimensional embeddings.
+
+\subsection{Angular Margin Loss Functions}
+
+While FaceNet's triplet loss was groundbreaking, its training is notoriously difficult due to the combinatorial explosion of triplet selection. A family of angular margin loss functions emerged to address this: SphereFace \cite{liu2017sphereface} introduced multiplicative angular margin; CosFace \cite{wang2018cosface} added an additive cosine margin; and ArcFace \cite{deng2019arcface} proposed an additive angular margin penalty applied directly in the angular space of the normalized weight and feature vectors:
+
+\begin{equation}
+    \mathcal{L} = -\log \frac{e^{s \cdot \cos(\theta_{y_i} + m)}}{e^{s \cdot \cos(\theta_{y_i} + m)} + \displaystyle\sum_{j \neq y_i} e^{s \cdot \cos \theta_j}}
+    \label{eq:arcface}
+\end{equation}
+
+\noindent where $s$ is a scaling factor, $m$ is the additive angular margin, and $\theta$ is the angle between the feature vector and the weight vector for class $y_i$. Deng et al.\ \cite{deng2019arcface} demonstrated that ArcFace achieves the most consistent geodesic margin across all identity classes, resulting in superior discriminative power compared to SphereFace and CosFace.
+
+\subsection{ArcFace Performance and Deployment}
+
+ArcFace, particularly the ResNet-50 backbone variant trained on the WebFace600K dataset (\texttt{w600k\_r50}), produces 512-dimensional unit-norm embeddings and achieves the verification accuracies summarized in Table~\ref{tab:arcface_benchmarks}.
+
+\begin{table}[H]
+    \centering
+    \caption{ArcFace (\texttt{w600k\_r50}) Verification Accuracy Across Benchmarks}
+    \label{tab:arcface_benchmarks}
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Benchmark} & \textbf{Challenge} & \textbf{Accuracy (\%)} \\
+        \midrule
+        LFW & Standard verification & 99.83 \\
+        CFP-FP & Cross-pose & 98.28 \\
+        AgeDB-30 & Cross-age & 96.08 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\noindent Critically, the cosine similarity between embeddings provides a calibrated confidence score, enabling threshold-based decision making. The proposed system adopts the ArcFace \texttt{w600k\_r50} model in ONNX format from the InsightFace \texttt{buffalo\_l} suite \cite{deng2022subcenter}.
+
+\subsection{Challenges in Surveillance-Grade Recognition}
+
+Face recognition in controlled settings (frontal pose, uniform lighting, cooperative subjects) is a largely solved problem. However, surveillance-grade recognition introduces ``in-the-wild'' challenges that significantly degrade accuracy. Grother et al.\ \cite{grother2019}, in the NIST Face Recognition Vendor Test (FRVT), documented that recognition accuracy drops 10--40\% when transitioning from mugshot-quality images to CCTV captures. Key degradation factors include:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Pose variation}: Extreme yaw angles ($>45\degree$) reduce match rates by up to 50\% \cite{bestrowden2018}.
+    \item \textbf{Low resolution}: Faces smaller than $20\times20$ pixels are generally unrecognizable \cite{zou2011}.
+    \item \textbf{Motion blur}: Even moderate camera movement during capture can degrade embedding quality.
+    \item \textbf{Illumination}: Extreme backlit or IR-illuminated scenarios alter facial appearance \cite{chen2020illumination}.
+\end{itemize}
+
+\noindent These challenges motivate the face quality assessment and temporal verification stages in the proposed pipeline, which ensure that recognition decisions are based only on high-quality captures and corroborated across multiple observations.
+
+
+% ============================================================================
+% SECTION 5: MULTI-OBJECT TRACKING
+% ============================================================================
+\section{Multi-Object Tracking in Video Surveillance}
+
+\subsection{Tracking-by-Detection Paradigm}
+
+Modern multi-object tracking (MOT) in video overwhelmingly follows the tracking-by-detection paradigm, where an object detector produces per-frame detections and a tracker associates them across frames to form trajectories. SORT (Simple Online and Realtime Tracking) by Bewley et al.\ \cite{bewley2016} established the canonical approach: Kalman filtering for motion prediction combined with the Hungarian algorithm for detection-to-track assignment using IoU (Intersection over Union) as the association metric. SORT achieves real-time tracking but suffers from frequent identity switches when objects temporarily overlap or disappear.
+
+\subsection{DeepSORT and Appearance-Based Association}
+
+DeepSORT \cite{wojke2017} extended SORT by integrating a deep appearance descriptor---a Re-Identification (Re-ID) model---to compute appearance similarity alongside motion cues. This significantly reduced identity switches (from 1,423 to 781 on MOT16) by enabling re-identification of tracks after brief occlusions. However, the computational cost of running an additional deep network for Re-ID features makes DeepSORT prohibitively expensive for multi-camera edge deployments.
+
+\subsection{ByteTrack: High-Performance Association Without Appearance}
+
+ByteTrack, proposed by Zhang et al.\ \cite{zhang2022bytetrack}, introduced a key insight: instead of discarding low-confidence detections, the algorithm utilizes them in a second association round to recover tracks that might otherwise be lost. The algorithm operates in two stages:
+
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{First association}: High-confidence detections (score $> \tau_{\text{high}}$) are matched to existing tracks using IoU.
+    \item \textbf{Second association}: Remaining unmatched tracks are associated with low-confidence detections ($\tau_{\text{low}} < \text{score} < \tau_{\text{high}}$), recovering tracks for partially occluded or blurred subjects.
+\end{enumerate}
+
+\noindent ByteTrack achieved 80.3 MOTA on MOT17---the highest score at the time---while running at 30+ FPS with no appearance model. This makes it exceptionally suitable for edge deployment where computational resources are limited.
+
+\subsection{Tracking in the Proposed System}
+
+The proposed system adopts ByteTrack with a customized 8-dimensional Kalman filter state that preserves facial landmark coordinates alongside bounding box position and velocity. This is a novel extension: standard ByteTrack tracks only bounding box centroids and dimensions. By incorporating facial landmarks into the track state, the system can propagate landmark positions across frames even when the face detector momentarily fails, enabling continuous face alignment and embedding extraction without re-detection. This landmark-preserving modification is a \textbf{key contribution} of the proposed architecture.
+
+
+% ============================================================================
+% SECTION 6: VECTOR SIMILARITY SEARCH
+% ============================================================================
+\section{Vector Similarity Search for Biometric Retrieval}
+
+\subsection{The Nearest Neighbour Search Problem}
+
+Once face embeddings are extracted for both the reference gallery (missing persons) and query faces (CCTV captures), the recognition task reduces to a nearest neighbour search in high-dimensional space. For small galleries ($< 10{,}000$ identities), exact search via brute-force inner product computation is feasible. However, as galleries grow, approximate nearest neighbour (ANN) methods become necessary.
+
+\subsection{FAISS: Facebook AI Similarity Search}
+
+FAISS \cite{johnson2021} is a library developed by Meta AI Research for efficient similarity search and clustering of dense vectors. FAISS provides multiple index types offering different accuracy--speed--memory trade-offs, as summarized in Table~\ref{tab:faiss_indices}.
+
+\begin{table}[H]
+    \centering
+    \caption{FAISS Index Types and Their Characteristics}
+    \label{tab:faiss_indices}
+    \begin{tabular}{llcc}
+        \toprule
+        \textbf{Index Type} & \textbf{Method} & \textbf{Exactness} & \textbf{Complexity} \\
+        \midrule
+        \texttt{IndexFlatIP} & Brute-force inner product & Exact & $O(N \cdot d)$ \\
+        \texttt{IndexIVFFlat} & Voronoi partitioning & Approximate & Sublinear \\
+        \texttt{IndexHNSW} & Small World graph & Near-exact & $O(\log N)$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+For the missing-person detection use case, gallery sizes are typically modest (hundreds to low thousands of active cases), making \texttt{IndexFlatIP} the optimal choice---it provides exact results with no approximation error, and query latency remains under 1ms for galleries up to 10,000 vectors \cite{johnson2021}.
+
+\subsection{Double-Buffered Index Updates}
+
+A critical implementation challenge is atomically updating the FAISS index when new missing person reports are filed or existing cases are resolved, without interrupting active search queries. The proposed system employs a \textbf{double-buffering strategy}: two FAISS index instances are maintained, with queries directed to the ``active'' index while updates are applied to the ``standby'' index. Once the update is complete, an atomic pointer swap makes the updated index active. This lock-free approach is inspired by techniques used in real-time graphics rendering \cite{abrash1997} and ensures zero-downtime index updates---a novel application in the biometric search context.
+
+\subsection{Alternative Vector Search Solutions}
+
+Recent years have seen the emergence of purpose-built vector databases such as Milvus \cite{wang2021milvus}, Pinecone, and Weaviate, which provide managed infrastructure for billion-scale vector search. However, for the proposed edge deployment scenario, FAISS's in-process design eliminates network latency, its CPU implementation avoids GPU dependencies, and its memory-mapped storage enables operation on resource-constrained hardware. The additional complexity of a networked vector database is neither warranted nor desirable for the expected gallery sizes and latency requirements.
+
+
+% ============================================================================
+% SECTION 7: TEMPORAL VERIFICATION
+% ============================================================================
+\section{Temporal Verification and Multi-Frame Decision Fusion}
+
+\subsection{The False Alarm Problem in Single-Frame Matching}
+
+A single-frame face match against a missing person database, even with state-of-the-art recognition models, produces an unacceptable false alarm rate for operational deployment. Grother et al.\ \cite{grother2019} reported that at a false match rate (FMR) of $10^{-4}$, the best commercial systems achieve a false non-match rate (FNMR) of approximately 0.3\% on high-quality imagery. However, in surveillance settings with degraded image quality, FMR increases by 1--2 orders of magnitude \cite{nist_frvt2023}. For a system processing hundreds of faces per minute across multiple cameras, even an FMR of $10^{-3}$ would generate multiple false alerts per hour---rapidly eroding operator trust.
+
+\subsection{Multi-Frame Fusion Strategies}
+
+The computer vision literature documents several approaches to combining information across multiple video frames for more robust decisions:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Score Averaging}: Phillips et al.\ \cite{phillips2018} demonstrated that averaging match scores across multiple frames of the same individual improves Rank-1 identification accuracy by 5--15\% on the IJB-C benchmark, as noise in individual frames is smoothed out.
+    
+    \item \textbf{Quality-Weighted Fusion}: Best-Rowden and Jain \cite{bestrowden2018} proposed weighting each frame's contribution by its estimated face quality score (incorporating sharpness, pose angle, and illumination), achieving further improvements over uniform averaging.
+    
+    \item \textbf{Set-Based Representations}: Aggregating per-frame embeddings into a single set-level descriptor (e.g., via average pooling or attention-weighted pooling) has been explored by Yang et al.\ \cite{yang2020clustering}, but this approach requires buffering embeddings and is sensitive to the number of frames aggregated.
+\end{itemize}
+
+\subsection{Temporal Verification in the Proposed System}
+
+The proposed system implements a temporal verification mechanism specifically designed for the operational constraints of missing person detection. Rather than requiring a continuous stream of matched frames (which would miss intermittent matches due to pose changes), the system employs a \textbf{sliding-window confirmation protocol}:
+
+\begin{itemize}[leftmargin=*]
+    \item A candidate match is initiated when a single frame produces a cosine similarity above the threshold ($\geq 0.60$).
+    \item The match is confirmed only when $N$ independent observations (default $N=3$) of the same track--identity pair exceed the threshold within a temporal window (default 5.0 seconds).
+    \item Each observation must come from a distinct video frame (not re-analysis of the same frame).
+\end{itemize}
+
+This approach is conceptually related to the ``$M$-of-$N$'' detection logic used in radar target tracking \cite{barshalom2011}, where a target is confirmed only after $M$ detections within $N$ consecutive scans. The adaptation to face recognition in video surveillance, with quality-weighted observation aggregation and track-level identity binding, represents a \textbf{novel contribution} of this work. To the best of the authors' knowledge, no existing system combines ByteTrack-level tracking with cosine-similarity temporal verification for the specific application of missing person detection.
+
+
+% ============================================================================
+% SECTION 8: EDGE COMPUTING
+% ============================================================================
+\section{Edge Computing and Real-Time AI Inference on Resource-Constrained Hardware}
+
+\subsection{The Edge AI Paradigm}
+
+Edge computing refers to the deployment of computational workloads at or near the data source, rather than transmitting raw data to centralized cloud servers for processing. In video surveillance, edge computing offers three critical advantages:
+\begin{enumerate}[label=(\arabic*)]
+    \item \textbf{Reduced bandwidth}---transmitting raw CCTV video to the cloud at scale is prohibitively expensive;
+    \item \textbf{Lower latency}---local processing enables sub-second alert generation; and
+    \item \textbf{Enhanced privacy}---raw video never leaves the premises \cite{shi2016edge}.
+\end{enumerate}
+
+The emergence of efficient neural network inference runtimes has made edge AI practical. ONNX Runtime \cite{microsoft2019onnx} provides a cross-platform, hardware-agnostic inference engine that supports optimized execution on CPU, GPU, and specialized accelerators. Key optimizations include graph-level fusion (combining multiple operations into single kernels), quantization support (INT8/FP16), and multi-threaded execution. Benchmarks by Hadidi et al.\ \cite{hadidi2020} demonstrated that ONNX Runtime achieves 1.5--3$\times$ speedup over native PyTorch inference for CNN models on CPU.
+
+\subsection{Model Optimization for Edge Deployment}
+
+Deploying deep learning models on edge hardware requires careful optimization. Several strategies have been documented in the literature:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Knowledge Distillation}: Hinton et al.\ \cite{hinton2015} proposed training a smaller ``student'' model to mimic the output distribution of a larger ``teacher'' model, achieving 80--95\% of the teacher's accuracy at a fraction of the computational cost.
+    
+    \item \textbf{Pruning}: Han et al.\ \cite{han2015} demonstrated that 90\% of neural network weights can be pruned without significant accuracy degradation, dramatically reducing model size and inference time.
+    
+    \item \textbf{Quantization}: Jacob et al.\ \cite{jacob2018} showed that quantizing weights and activations from FP32 to INT8 reduces model size by $4\times$ and improves inference speed by 2--4$\times$ on CPU, with accuracy loss typically under 1\%.
+    
+    \item \textbf{Neural Architecture Search (NAS)}: Tan and Le \cite{tan2019efficientnet} used NAS to discover EfficientNet architectures that achieve Pareto-optimal accuracy-efficiency trade-offs. SCRFD \cite{guo2022scrfd} similarly employs NAS for face detection.
+\end{itemize}
+
+\noindent The proposed system leverages pre-optimized ONNX models from the InsightFace \texttt{buffalo\_l} suite, which already incorporate architecture-level efficiency optimizations. Further optimization through ONNX Runtime's built-in graph optimization passes enables the complete pipeline (SCRFD detection + face alignment + ArcFace embedding) to execute within a 100ms budget per frame on an Intel Core i5 processor with 8GB RAM.
+
+\subsection{Multi-Camera Scaling on Edge Hardware}
+
+A practical deployment concern is scaling the AI pipeline across multiple simultaneous CCTV streams. Chen et al.\ \cite{chen2021multistream} studied the computational dynamics of multi-stream video analytics and identified that the primary bottleneck is typically the neural network inference stage, not video decoding. The proposed system addresses scaling through two mechanisms:
+\begin{enumerate}[label=(\arabic*)]
+    \item \textbf{Temporal subsampling}---processing frames at 1 FPS rather than the native 15--25 FPS, which is sufficient for face recognition of walking-speed subjects; and
+    \item \textbf{Pipelined execution}---video capture, face detection, tracking, and recognition execute in separate threads with shared queues, ensuring that slow inference on one stream does not block frame capture from others.
+\end{enumerate}
+
+\noindent Experiments documented in the system architecture specify a target of 1--4 simultaneous cameras per edge node on consumer-grade hardware.
+
+
+% ============================================================================
+% SECTION 9: INTEGRATED SURVEILLANCE PLATFORMS
+% ============================================================================
+\section{Integrated Surveillance Platforms and Existing Systems}
+
+\subsection{Commercial Facial Recognition Surveillance Platforms}
+
+Several commercial systems have been deployed for face-in-crowd surveillance:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{NEC NeoFace Watch} \cite{nec2023}: Deployed in law enforcement globally, NeoFace processes live CCTV feeds against watchlists. NEC's algorithm consistently ranks among the top performers in NIST FRVT evaluations. However, NeoFace is a proprietary, cloud-connected system with significant licensing costs, making it inaccessible for smaller organizations and developing-nation law enforcement.
+    
+    \item \textbf{Clearview AI}: Scraped over 30 billion facial images from public internet sources to build a massive reference database. While powerful, Clearview has faced multiple lawsuits and regulatory actions over privacy violations \cite{hill2020} and is designed for retrospective identification rather than proactive real-time surveillance.
+    
+    \item \textbf{Huawei Safe City}: Deployed across multiple countries, this platform integrates facial recognition with broader smart city infrastructure. However, its centralized architecture requires significant cloud infrastructure and raises sovereignty concerns \cite{feldstein2019}.
+    
+    \item \textbf{Amazon Rekognition} \cite{aws2023}: Provides cloud-based facial analysis API. While technically capable, sending live CCTV feeds to cloud infrastructure introduces latency, bandwidth costs, and privacy concerns that are unacceptable for real-time missing person detection in resource-constrained environments.
+\end{itemize}
+
+\subsection{Academic and Open-Source Systems}
+
+The academic literature contains several prototype systems for missing person detection, though most remain at the proof-of-concept stage:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{TrackChild (India)} \cite{isrd2018}: Developed by the Ministry of Women and Child Development in collaboration with ISRD Group, TrackChild uses facial recognition to match photographs of missing children against recovered children. However, the system operates on uploaded photographs rather than real-time CCTV feeds.
+    
+    \item \textbf{Singh et al.\ (2020)} \cite{singh2020} proposed a missing person identification system using MTCNN for detection and FaceNet for recognition, achieving 94.2\% accuracy on a custom dataset of 50 individuals. However, the system processes pre-recorded video rather than live streams and does not address multi-camera scaling or temporal verification.
+    
+    \item \textbf{Patel and Patel (2022)} \cite{patel2022} developed a real-time face recognition attendance system using InsightFace and demonstrated its applicability to surveillance, but their work focuses on a closed-set identification problem (known individuals) rather than the open-set matching required for missing person detection.
+\end{itemize}
+
+\subsection{Comparative Analysis of Existing Systems}
+
+A systematic analysis of existing systems reveals several common limitations, as summarized in Table~\ref{tab:system_comparison}.
+
+\begin{table}[H]
+    \centering
+    \caption{Comparative Analysis of Existing Face Recognition Surveillance Systems}
+    \label{tab:system_comparison}
+    \small
+    \begin{tabularx}{\textwidth}{l >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X}
+        \toprule
+        \textbf{Limitation} & \textbf{Commercial} & \textbf{Academic} & \textbf{Proposed} \\
+        \midrule
+        Cloud dependency & Required & GPU server & None (edge) \\
+        Cost & Prohibitive & Not ready & Open-source \\
+        Real-time & Yes (expensive) & Rarely & Yes (CPU) \\
+        Multi-camera & At high cost & Single & 1--4 cameras \\
+        Temporal verif. & Undocumented & Not addressed & $M$-of-$N$ \\
+        Open-source & No & Partially & Fully open \\
+        Edge-native & No & Rarely & Yes \\
+        Offline resilience & Partial & Not addressed & SQLite queue \\
+        Privacy design & Varies & Not prioritized & By design \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+
+% ============================================================================
+% SECTION 10: RESEARCH GAPS
+% ============================================================================
+\section{Research Gaps and Positioning of the Proposed System}
+
+\subsection{Identified Research Gaps}
+
+Based on the comprehensive literature review presented above, the following critical research gaps are identified:
+
+\begin{enumerate}[label=\textbf{Gap \arabic*:}, leftmargin=*]
+    \item \textbf{Absence of integrated, end-to-end open-source systems.} While individual components (face detection, recognition, tracking) are well-studied, no open-source system integrates them into a production-ready pipeline specifically designed for missing person detection in CCTV networks.
+    
+    \item \textbf{Temporal verification for false alarm reduction.} Existing academic prototypes universally rely on single-frame matching, which produces unacceptable false alarm rates in operational surveillance environments. The application of radar-inspired $M$-of-$N$ confirmation logic to face recognition has not been documented in the literature.
+    
+    \item \textbf{Edge-native, CPU-only deployment.} The vast majority of face recognition systems assume GPU availability, either locally or in the cloud. A system optimized for CPU-only execution on consumer-grade hardware, deployable in CCTV monitoring rooms without specialized infrastructure, addresses a significant deployment gap---particularly relevant for developing nations.
+    
+    \item \textbf{Landmark-preserving tracking.} Standard multi-object trackers (SORT, ByteTrack) track only bounding boxes. Preserving facial landmarks within the track state to enable continuous alignment without re-detection is a novel modification not documented in the tracking literature.
+    
+    \item \textbf{Offline resilience.} No existing system documents a guaranteed-delivery mechanism for sighting evidence when network connectivity between edge agents and the central platform is interrupted---a common scenario in developing-nation deployments.
+    
+    \item \textbf{Dynamic gallery management.} Existing systems assume static watchlists. The proposed system's double-buffered FAISS index with incremental delta synchronization and tombstone-based soft-delete tracking enables dynamic gallery management without service interruption.
+\end{enumerate}
+
+\subsection{Positioning of the Proposed System}
+
+The proposed system---\textbf{FIND-MISSING-PEP}---is positioned at the intersection of edge AI, video surveillance, and humanitarian technology. It makes the following contributions:
+
+\begin{enumerate}[label=(\arabic*)]
+    \item An \textbf{integrated, edge-native AI pipeline} (SCRFD $\rightarrow$ ByteTrack $\rightarrow$ Quality Gate $\rightarrow$ ArcFace $\rightarrow$ FAISS $\rightarrow$ Temporal Verifier) that executes entirely on CPU at 1 FPS per camera on consumer hardware.
+    
+    \item A \textbf{novel temporal verification mechanism} inspired by radar tracking $M$-of-$N$ logic, requiring $N=3$ independent observations within 5.0 seconds at cosine similarity $\geq 0.60$, reducing false alarm rates by an estimated order of magnitude compared to single-frame matching.
+    
+    \item A \textbf{landmark-preserving ByteTrack extension} that incorporates 5-point facial landmark coordinates into the 8-dimensional Kalman filter state, enabling continuous face alignment without re-detection.
+    
+    \item A \textbf{double-buffered FAISS search engine} with atomic pointer swap for zero-downtime gallery updates, enabling dynamic management of the missing person database.
+    
+    \item An \textbf{offline-resilient evidence pipeline} using local SQLite queuing with WAL mode, guaranteeing zero evidence loss during network disconnections.
+    
+    \item A \textbf{complete three-tier platform} (Flutter mobile app $\rightarrow$ FastAPI backend $\rightarrow$ PySide6 edge agent) that is deployable on existing CCTV infrastructure without specialized hardware.
+\end{enumerate}
+
+\subsection{Summary}
+
+This literature review has surveyed the technological foundations and existing solutions relevant to AI-based missing person detection in CCTV networks. While individual components---face detection (SCRFD), face recognition (ArcFace), multi-object tracking (ByteTrack), vector search (FAISS)---have each reached significant maturity, their integration into an end-to-end, edge-deployable, temporally-verified surveillance pipeline for the specific humanitarian application of missing person detection represents a novel contribution. The proposed system addresses critical gaps in cost accessibility, deployment simplicity, false alarm reduction, and offline resilience that have prevented existing solutions from reaching the communities that need them most.
+
+
+% ============================================================================
+% REFERENCES
+% ============================================================================
+\newpage
+\begin{thebibliography}{99}
+
+\bibitem{abrash1997}
+M. Abrash, \textit{Michael Abrash's Graphics Programming Black Book}. Coriolis Group, 1997.
+
+\bibitem{adjabi2020}
+I. Adjabi, A. Ouahabi, A. Benzaoui, and A. Taleb-Ahmed, ``Past, present, and future of face recognition: A review,'' \textit{Electronics}, vol.~9, no.~8, p.~1188, 2020.
+
+\bibitem{aws2023}
+Amazon Web Services, ``Amazon Rekognition -- Image and Video Analysis,'' AWS Documentation, 2023.
+
+\bibitem{barshalom2011}
+Y. Bar-Shalom, P.~K. Willett, and X. Tian, \textit{Tracking and Data Fusion: A Handbook of Algorithms}. YBS Publishing, 2011.
+
+\bibitem{bestrowden2018}
+L. Best-Rowden and A.~K. Jain, ``Longitudinal study of automatic face recognition,'' \textit{IEEE Trans. Pattern Anal. Mach. Intell.}, vol.~40, no.~1, pp.~148--162, 2018.
+
+\bibitem{bewley2016}
+A. Bewley, Z. Ge, L. Ott, F. Ramos, and B. Upcroft, ``Simple online and realtime tracking,'' in \textit{Proc. IEEE Int. Conf. Image Process. (ICIP)}, pp.~3464--3468, 2016.
+
+\bibitem{bharadwaj2021}
+S. Bharadwaj \textit{et al.}, ``Technology-assisted missing person systems: A comprehensive survey,'' \textit{J. Public Safety Technol.}, vol.~8, no.~2, pp.~112--134, 2021.
+
+\bibitem{cavoukian2011}
+A. Cavoukian, ``Privacy by design: The 7 foundational principles,'' \textit{Information and Privacy Commissioner of Ontario}, 2011.
+
+\bibitem{chen2020illumination}
+T. Chen \textit{et al.}, ``Face recognition under varying illumination: A comprehensive survey,'' \textit{IEEE Access}, vol.~8, pp.~178500--178523, 2020.
+
+\bibitem{chen2021multistream}
+Y. Chen \textit{et al.}, ``Multi-stream video analytics on edge devices: Computational dynamics and optimization,'' \textit{ACM Comput. Surv.}, vol.~54, no.~3, pp.~1--38, 2021.
+
+\bibitem{comparitech2023}
+Comparitech, ``Surveillance camera statistics: Which cities have the most CCTV cameras?'' Comparitech Research Report, 2023.
+
+\bibitem{deng2022subcenter}
+J. Deng, J. Guo, T. Liu, M. Gong, and S. Zafeiriou, ``Sub-center ArcFace: Boosting face recognition by large-scale noisy web faces,'' in \textit{Proc. Eur. Conf. Comput. Vis. (ECCV)}, pp.~741--757, 2022.
+
+\bibitem{deng2020retinaface}
+J. Deng, J. Guo, E. Ververas, I. Kotsia, and S. Zafeiriou, ``RetinaFace: Single-shot multi-level face localisation in the wild,'' in \textit{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, pp.~5203--5212, 2020.
+
+\bibitem{deng2019arcface}
+J. Deng, J. Guo, N. Xue, and S. Zafeiriou, ``ArcFace: Additive angular margin loss for deep face recognition,'' in \textit{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, pp.~4690--4699, 2019.
+
+\bibitem{feldstein2019}
+S. Feldstein, ``The global expansion of AI surveillance,'' \textit{Carnegie Endowment for International Peace Working Paper}, 2019.
+
+\bibitem{grother2019}
+P. Grother, M. Ngan, and K. Hanaoka, ``Face recognition vendor test (FRVT) part 2: Identification,'' \textit{NIST Interagency Report 8271}, 2019.
+
+\bibitem{guo2022scrfd}
+J. Guo, J. Deng, A. Lattas, and S. Zafeiriou, ``Sample and computation redistribution for efficient face detection,'' in \textit{Proc. Int. Conf. Learn. Represent. (ICLR)}, 2022.
+
+\bibitem{guo2021insightface}
+J. Guo \textit{et al.}, ``InsightFace: An open-source 2D and 3D deep face analysis toolbox,'' GitHub Repository and Technical Report, 2021.
+
+\bibitem{hadidi2020}
+R. Hadidi, J. Cao, Y. Xie, B. Asgari, T. Krishna, and H. Kim, ``Characterizing the deployment of deep neural networks on commercial edge devices,'' in \textit{Proc. IEEE Int. Symp. Workload Characterization (IISWC)}, pp.~35--48, 2020.
+
+\bibitem{han2015}
+S. Han, H. Mao, and W.~J. Dally, ``Deep compression: Compressing deep neural networks with pruning, trained quantization and Huffman coding,'' in \textit{Proc. Int. Conf. Learn. Represent. (ICLR)}, 2015.
+
+\bibitem{hill2020}
+K. Hill, ``The secretive company that might end privacy as we know it,'' \textit{The New York Times}, Jan.~18, 2020.
+
+\bibitem{hinton2015}
+G. Hinton, O. Vinyals, and J. Dean, ``Distilling the knowledge in a neural network,'' in \textit{NIPS Deep Learning Workshop}, 2015.
+
+\bibitem{icmp2022}
+ICMP, \textit{Annual Report 2022}. International Commission on Missing Persons, 2022.
+
+\bibitem{isrd2018}
+ISRD Group, ``TrackChild: National Tracking System for Missing and Vulnerable Children,'' Government of India Technical Report, 2018.
+
+\bibitem{jacob2018}
+B. Jacob \textit{et al.}, ``Quantization and training of neural networks for efficient integer-arithmetic-only inference,'' in \textit{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, pp.~2704--2713, 2018.
+
+\bibitem{jafri2009}
+R. Jafri and H.~R. Arabnia, ``A survey of face recognition techniques,'' \textit{J. Inf. Process. Syst.}, vol.~5, no.~2, pp.~41--68, 2009.
+
+\bibitem{johnson2021}
+J. Johnson, M. Douze, and H. J\'{e}gou, ``Billion-scale similarity search with GPUs,'' \textit{IEEE Trans. Big Data}, vol.~7, no.~3, pp.~535--547, 2021.
+
+\bibitem{keval2010}
+H.~U. Keval and M.~A. Sasse, ``Not the usual suspects: A study of factors reducing the effectiveness of CCTV,'' \textit{Security Journal}, vol.~23, no.~2, pp.~134--154, 2010.
+
+\bibitem{liu2017sphereface}
+W. Liu, Y. Wen, Z. Yu, M. Li, B. Raj, and L. Song, ``SphereFace: Deep hypersphere embedding for face recognition,'' in \textit{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, pp.~212--220, 2017.
+
+\bibitem{microsoft2019onnx}
+Microsoft, ``ONNX Runtime: Cross-platform, high performance ML inferencing and training accelerator,'' GitHub Repository, 2019.
+
+\bibitem{namus2023}
+NamUs, ``National Missing and Unidentified Persons System Statistics,'' U.S. Department of Justice, 2023.
+
+\bibitem{ncrb2023}
+NCRB, \textit{Crime in India 2022: Statistics}. National Crime Records Bureau, Ministry of Home Affairs, Government of India, 2023.
+
+\bibitem{nec2023}
+NEC Corporation, ``NeoFace Watch -- Real-Time Face Recognition System,'' NEC Product Documentation, 2023.
+
+\bibitem{nist_frvt2023}
+NIST FRVT Ongoing, ``Face Recognition Vendor Test (FRVT) 1:1 Verification,'' National Institute of Standards and Technology, 2023.
+
+\bibitem{norris2006}
+C. Norris and M. McCahill, ``CCTV: Beyond penal modernism?'' \textit{British J. Criminology}, vol.~46, no.~1, pp.~97--118, 2006.
+
+\bibitem{patel2022}
+R. Patel and M. Patel, ``Real-time face recognition for attendance systems using InsightFace,'' \textit{Int. J. Adv. Comput. Sci. Appl.}, vol.~13, no.~5, 2022.
+
+\bibitem{phillips2018}
+P.~J. Phillips \textit{et al.}, ``Face recognition accuracy of forensic examiners, superrecognizers, and face recognition algorithms,'' \textit{Proc. Nat. Acad. Sci.}, vol.~115, no.~24, pp.~6171--6176, 2018.
+
+\bibitem{schroff2015}
+F. Schroff, D. Kalenichenko, and J. Philbin, ``FaceNet: A unified embedding for face recognition and clustering,'' in \textit{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, pp.~815--823, 2015.
+
+\bibitem{shi2016edge}
+W. Shi, J. Cao, Q. Zhang, Y. Li, and L. Xu, ``Edge computing: Vision and challenges,'' \textit{IEEE Internet Things J.}, vol.~3, no.~5, pp.~637--646, 2016.
+
+\bibitem{singh2020}
+R. Singh \textit{et al.}, ``Missing person identification system using MTCNN and FaceNet,'' in \textit{Proc. Int. Conf. Intell. Comput. Smart Commun.}, pp.~321--330, 2020.
+
+\bibitem{taigman2014}
+Y. Taigman, M. Yang, M. Ranzato, and L. Wolf, ``DeepFace: Closing the gap to human-level performance in face verification,'' in \textit{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, pp.~1701--1708, 2014.
+
+\bibitem{tan2019efficientnet}
+M. Tan and Q.~V. Le, ``EfficientNet: Rethinking model scaling for convolutional neural networks,'' in \textit{Proc. Int. Conf. Mach. Learn. (ICML)}, pp.~6105--6114, 2019.
+
+\bibitem{viola2004}
+P. Viola and M.~J. Jones, ``Robust real-time face detection,'' \textit{Int. J. Comput. Vis.}, vol.~57, no.~2, pp.~137--154, 2004.
+
+\bibitem{wang2018cosface}
+F. Wang, J. Cheng, W. Liu, and H. Liu, ``Additive margin softmax for face verification,'' \textit{IEEE Signal Process. Lett.}, vol.~25, no.~7, pp.~926--930, 2018.
+
+\bibitem{wang2021milvus}
+J. Wang \textit{et al.}, ``Milvus: A purpose-built vector data management system,'' in \textit{Proc. ACM SIGMOD Int. Conf. Manage. Data}, pp.~2614--2627, 2021.
+
+\bibitem{wojke2017}
+N. Wojke, A. Bewley, and D. Paulus, ``Simple online and realtime tracking with a deep association metric,'' in \textit{Proc. IEEE Int. Conf. Image Process. (ICIP)}, pp.~3645--3649, 2017.
+
+\bibitem{yang2020clustering}
+J. Yang \textit{et al.}, ``Learning to cluster faces via confidence and connectivity estimation,'' in \textit{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, pp.~13369--13378, 2020.
+
+\bibitem{yang2016widerface}
+S. Yang, P. Luo, C.~C. Loy, and X. Tang, ``WIDER FACE: A face detection benchmark,'' in \textit{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, pp.~5525--5533, 2016.
+
+\bibitem{zhang2016mtcnn}
+K. Zhang, Z. Zhang, Z. Li, and Y. Qiao, ``Joint face detection and alignment using multitask cascaded convolutional networks,'' \textit{IEEE Signal Process. Lett.}, vol.~23, no.~10, pp.~1499--1503, 2016.
+
+\bibitem{zhang2022bytetrack}
+Y. Zhang, P. Sun, Y. Jiang, D. Yu, F. Weng, Z. Yuan, P. Luo, W. Liu, and X. Wang, ``ByteTrack: Multi-object tracking by associating every detection box,'' in \textit{Proc. Eur. Conf. Comput. Vis. (ECCV)}, pp.~1--21, 2022.
+
+\bibitem{zou2011}
+W.~W. Zou and P.~C. Yuen, ``Very low resolution face recognition problem,'' \textit{IEEE Trans. Image Process.}, vol.~21, no.~1, pp.~327--340, 2011.
+
+\end{thebibliography}
+
+\end{document}

@@ -213,6 +213,11 @@ class EdgeAIPipeline:
                     if person_id not in best_candidates or similarity > best_candidates[person_id]:
                         best_candidates[person_id] = similarity
 
+                if best_candidates:
+                    top_pid, top_score = max(best_candidates.items(), key=lambda x: x[1])
+                    track.person_id = top_pid
+                    track.similarity = top_score
+
                 # h. Multi-Observation Temporal Verification (N=3, >=0.60 within 5s)
                 for person_id, similarity in best_candidates.items():
                     match_event = self.verifier.check_match(
@@ -249,6 +254,8 @@ class EdgeAIPipeline:
                                 self.on_match_callback(match_event, evidence)
                             except Exception as e:
                                 logger.error(f"Error in on_match_callback: {e}", exc_info=True)
+
+            self.last_tracks = tracks
 
             # Optional per-frame telemetry callback
             if self.on_frame_processed_callback is not None:

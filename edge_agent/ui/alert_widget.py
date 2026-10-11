@@ -187,12 +187,16 @@ class AlertWidget(QDialog):
 
         age = self.sighting_data.get("age")
         gender = self.sighting_data.get("gender")
+        height_cm = self.sighting_data.get("height_cm")
         reporter_name = self.sighting_data.get("reporter_name")
         reporter_email = self.sighting_data.get("reporter_email")
         reporter_phone = self.sighting_data.get("reporter_phone")
         contact_info = self.sighting_data.get("contact_info")
         last_seen = self.sighting_data.get("last_seen_location")
         description = self.sighting_data.get("description")
+        fir_number = self.sighting_data.get("fir_number")
+        fir_police_station = self.sighting_data.get("fir_police_station")
+        fir_status = self.sighting_data.get("fir_status")
 
         # Row 1: Person Identity & Case
         id_layout = QHBoxLayout()
@@ -203,6 +207,11 @@ class AlertWidget(QDialog):
             demo_parts.append(f"Age: {age}")
         if gender:
             demo_parts.append(str(gender))
+        if height_cm:
+            try:
+                demo_parts.append(f"Height: {int(float(height_cm))} cm")
+            except Exception:
+                demo_parts.append(f"Height: {height_cm} cm")
         demo_str = " | ".join(demo_parts)
         demo_lbl = QLabel(f"({demo_str})" if demo_str else "")
         demo_lbl.setStyleSheet("font-size: 12px; color: #a1a1aa;")
@@ -232,6 +241,23 @@ class AlertWidget(QDialog):
             rep_layout.addWidget(contact_lbl)
         rep_layout.addStretch()
         meta_layout.addLayout(rep_layout)
+
+        # Row 2b: FIR Verification Status
+        if fir_number:
+            fir_layout = QHBoxLayout()
+            fir_badge_text = f"🛡️ FIR #{fir_number}"
+            if fir_police_station:
+                fir_badge_text += f" ({fir_police_station.title()})"
+            fir_lbl = QLabel(f"<b>FIR:</b> <span style='color: #60a5fa; font-weight: 600;'>{fir_badge_text}</span>")
+            fir_lbl.setStyleSheet("font-size: 12px; color: #f4f4f5;")
+            fir_layout.addWidget(fir_lbl)
+            if fir_status:
+                status_color = "#10b981" if str(fir_status).upper() == "VERIFIED" else "#f59e0b"
+                status_lbl = QLabel(f"<span style='background-color: {status_color}22; color: {status_color}; border: 1px solid {status_color}; border-radius: 4px; padding: 2px 6px; font-size: 11px; font-weight: 700;'>✓ {str(fir_status).upper()}</span>")
+                fir_layout.addSpacing(10)
+                fir_layout.addWidget(status_lbl)
+            fir_layout.addStretch()
+            meta_layout.addLayout(fir_layout)
 
         # Row 3: Last Seen Location & Attire
         if last_seen or description:

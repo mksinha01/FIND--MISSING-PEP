@@ -16,7 +16,7 @@ logs/
 
 # AI Models (large files)
 *.onnx
-models/
+/models/
 ai_models/
 
 # Python

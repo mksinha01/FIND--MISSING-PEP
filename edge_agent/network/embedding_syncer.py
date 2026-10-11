@@ -113,6 +113,10 @@ class EmbeddingSyncer:
                 "reporter_name": p.get("reporter_name"),
                 "reporter_email": p.get("reporter_email"),
                 "reporter_phone": p.get("reporter_phone"),
+                "fir_number": p.get("fir_number"),
+                "fir_police_station": p.get("fir_police_station"),
+                "fir_date": p.get("fir_date"),
+                "fir_status": p.get("fir_status"),
                 "created_at": p.get("created_at"),
             }
 

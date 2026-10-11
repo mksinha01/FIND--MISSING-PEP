@@ -26,7 +26,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from edge_agent.ai.face_detector import SCRFDFaceDetector
+from edge_agent.ai.face_quality import FaceQualityGate
 from edge_agent.ai.pipeline import EdgeAIPipeline
+from edge_agent.ai.temporal_verifier import TemporalVerifier
 from edge_agent.ai.vector_search import VectorSearchEngine
 from edge_agent.config import EdgeSettings
 from edge_agent.network.api_client import ApiClient
@@ -322,9 +325,28 @@ class MainWindow(QMainWindow):
                 feed_widget.update()
 
                 # Build per-camera Edge AI Pipeline backed by shared FAISS vector index
+                quality_checker = FaceQualityGate(
+                    min_face_size=self.settings.ai.quality_min_face_size,
+                    min_blur_var=self.settings.ai.quality_max_blur,
+                    min_aspect=self.settings.ai.quality_min_aspect,
+                    max_aspect=self.settings.ai.quality_max_aspect,
+                )
+                verifier = TemporalVerifier(
+                    window_size=self.settings.tracking.temporal_window_size,
+                    threshold=self.settings.tracking.temporal_threshold,
+                    max_time_span=5.0,
+                    cooldown=self.settings.tracking.match_cooldown_seconds,
+                )
+                detector = SCRFDFaceDetector(
+                    conf_threshold=self.settings.ai.face_detect_threshold,
+                )
                 pipeline = EdgeAIPipeline(
                     camera_id=cid,
+                    detector=detector,
+                    quality_checker=quality_checker,
+                    verifier=verifier,
                     vector_search=self.vector_search,
+                    recognition_interval=self.settings.tracking.min_recognition_interval,
                     candidate_cutoff=self.settings.ai.face_similarity_threshold,
                 )
 

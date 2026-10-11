@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #root { position: absolute; inset: 0; background: #09090b; overflow: hidden; }
+      </style>
+
+      <div id="root" data-composition-id="scene-4" data-width="1920" data-height="1080">
+        <div class="s4-frame">
+          <div class="s4-panel" id="tblpanel" style="width:1020px;">
+            <div class="p-head"><span class="t">SIGHTING HISTORY</span><span class="c mono">REVERSE-CHRONOLOGICAL &middot; 4 EVENTS</span></div>
+            <div class="tbl-head mono"><span>TIME</span><span>PERSON</span><span>CAMERA</span><span>SCORE</span><span>STATUS</span></div>
+            <div class="tbl-row sel mono" id="r1">
+              <span class="c-time">14:22:07</span><span class="c-name">ANA S. RUIZ</span><span class="c-cam">CAM-01</span>
+              <span class="c-score ok">0.87</span>
+              <span><span class="pill ok"><span class="dot dot-ok"></span>CONFIRMED</span></span>
+            </div>
+            <div class="tbl-row mono" id="r2">
+              <span class="c-time">14:21:58</span><span class="c-name">ANA S. RUIZ</span><span class="c-cam">CAM-04</span>
+              <span class="c-score ok">0.78</span>
+              <span><span class="pill ok"><span class="dot dot-ok"></span>VERIFIED</span></span>
+            </div>
+            <div class="tbl-row mono" id="r3">
+              <span class="c-time">14:20:31</span><span class="c-name mute">UNKNOWN</span><span class="c-cam">CAM-02</span>
+              <span class="c-score warn">0.66</span>
+              <span><span class="pill warn"><span class="dot dot-warn"></span>CANDIDATE</span></span>
+            </div>
+            <div class="tbl-row mono" id="r4">
+              <span class="c-time">14:19:04</span><span class="c-name mute">&mdash;</span><span class="c-cam">CAM-01</span>
+              <span class="c-score none">&mdash;</span>
+              <span><span class="pill off"><span class="dot dot-idle"></span>CLEARED</span></span>
+            </div>
+            <div class="tbl-foot mono"><span>DOUBLE-CLICK A ROW TO OPEN EVIDENCE</span><span class="r">FAISS INDEX &middot; 1,204 FACES</span></div>
+          </div>
+
+          <div class="s4-panel" id="mappanel" style="flex:1;">
+            <div class="p-head"><span class="t">LAST SEEN</span><span class="c mono">BREADCRUMB TRAIL</span></div>
+            <div class="mapwrap">
+              <div class="mapbg">
+                <div class="blk" style="left:0; top:0; width:44%; height:34%"></div>
+                <div class="blk" style="left:48%; top:0; width:52%; height:22%"></div>
+                <div class="blk" style="left:0; top:38%; width:30%; height:34%"></div>
+                <div class="blk" style="left:34%; top:26%; width:34%; height:24%"></div>
+                <div class="blk" style="left:72%; top:26%; width:28%; height:46%"></div>
+                <div class="blk" style="left:34%; top:54%; width:34%; height:46%"></div>
+              </div>
+              <svg class="mapsvg" viewBox="0 0 600 800" preserveAspectRatio="none" aria-hidden="true">
+                <polyline points="70,690 70,560 250,560 250,300 470,300 470,150" fill="none" stroke="#128aa9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="14 10" />
+              </svg>
+              <div class="marker" data-layout-allow-overflow style="left:11.7%; top:86.2%"><span class="mk past"></span><span class="mk-lbl mono" data-layout-allow-occlusion>14:19:04</span></div>
+              <div class="marker" data-layout-allow-overflow style="left:41.7%; top:70%"><span class="mk past"></span><span class="mk-lbl mono" data-layout-allow-occlusion>14:20:31</span></div>
+              <div class="marker" data-layout-allow-overflow style="left:78.3%; top:37.5%"><span class="mk live" id="mk3dot"></span><span class="mk-lbl mono" id="mk3lbl" data-layout-allow-occlusion>14:22:07 &middot; CAM-01</span></div>
+
+              <div class="evcard" id="evcard" data-layout-allow-overflow data-layout-allow-overlap>
+                <div class="ev-head mono"><span class="dot dot-ok"></span>EVIDENCE BUNDLE</div>
+                <div class="ev-body">
+                  <div class="ev-thumb">
+                    <i class="fig-head"></i><i class="fig-body"></i>
+                    <div class="ev-bbox"><span class="mono">CONFIRMED 0.87</span></div>
+                  </div>
+                  <div class="ev-line mono"><span>CAMERA</span><b>CAM-01 &middot; GATE NORTH</b></div>
+                  <div class="ev-line mono"><span>CLIP</span><b>14:22:03 &rarr; 14:22:11</b></div>
+                  <div class="ev-line mono"><span>OBSERVATIONS</span><b class="ok">3 &middot; AVG 0.87</b></div>
+                </div>
+                <div class="ev-foot"><div class="btn export mono">EXPORT BUNDLE</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="s4-foot mono">
+          <span class="dot dot-cam"></span>
+          <span>EVIDENCE CHAIN &mdash; EVERY MATCH IS TIME-ANCHORED, REVIEWABLE, EXPORTABLE</span>
+          <span class="r">4 SIGHTINGS &middot; 1 CONFIRMED</span>
+        </div>
+      </div>
+
+      <script>
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+
+        tl.fromTo("#tblpanel", { opacity: 0, x: -26 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 0);
+        tl.fromTo("#mappanel", { opacity: 0, x: 26 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 0.06);
+        tl.fromTo("#r1", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.36, ease: "power3.out" }, 0.28);
+        tl.fromTo("#r2", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.36, ease: "power3.out" }, 0.58);
+        tl.fromTo("#r3", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.36, ease: "power3.out" }, 0.88);
+        tl.fromTo("#r4", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.36, ease: "power3.out" }, 1.18);
+
+        /* newest sighting marker lands, then breathes on the beat */
+        tl.set("#mk3dot", { scale: 0.4 }, 0);
+        tl.to("#mk3dot", { scale: 1, duration: 0.4, ease: "power3.out" }, 1.53);
+        tl.fromTo("#mk3lbl", { opacity: 0, y: -6 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, 1.63);
+        tl.to("#mk3dot", { scale: 1.32, duration: 0.6, ease: "power2.inOut" }, 1.98);
+        tl.to("#mk3dot", { scale: 1, duration: 0.6, ease: "power2.inOut" }, 2.58);
+        tl.to("#mk3dot", { scale: 1.28, duration: 0.45, ease: "power2.inOut" }, 3.18);
+
+        /* evidence bundle docks on the 16.02 strong cue (local 3.03).
+           Rests fully off-canvas to the right, so it never bleeds into the map at rest. */
+        tl.fromTo("#evcard", { xPercent: 130 }, { xPercent: 0, duration: 0.47, ease: "power3.out" }, 3.03);
+
+        window.__timelines["scene-4"] = tl;
+        tl.seek(0);
+      </script>
+    </template>
+  </body>
+</html>

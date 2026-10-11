@@ -124,6 +124,9 @@ def main():
 
     env = os.environ.copy()
     env["PYTHONPATH"] = f"{ROOT_DIR}{os.pathsep}{BACKEND_DIR}{os.pathsep}{env.get('PYTHONPATH', '')}"
+    env.setdefault("TESTING", "true")
+    env.setdefault("APP_ENV", "development")
+    env.setdefault("DEBUG", "true")
 
     # 1. Seed database if requested
     if args.seed:
@@ -224,13 +227,18 @@ def main():
 
     # Keep orchestrator alive while monitoring child processes
     try:
+        failed = False
         while True:
-            # If backend or gui dies, check status
             for p in processes:
                 exit_code = p.poll()
                 if exit_code is not None and exit_code != 0:
-                    print(f"{Colors.WARNING}[MONITOR]{Colors.ENDC} A child process (PID {p.pid}) exited with code {exit_code}.")
+                    print(f"{Colors.WARNING}[MONITOR]{Colors.ENDC} A child process (PID {p.pid}) exited unexpectedly with code {exit_code}.")
+                    failed = True
+                    break
+            if failed:
+                break
             time.sleep(1.0)
+        shutdown()
     except KeyboardInterrupt:
         shutdown()
 

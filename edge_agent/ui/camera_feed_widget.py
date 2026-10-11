@@ -183,8 +183,10 @@ class CameraFeedWidget(QWidget):
 
             # Draw label pill
             label_text = f"ID #{track_id}" if track_id is not None else "Face"
+            person_name = getattr(track, "person_name", None)
             if is_match and similarity is not None:
-                label_text = f"{person_id or 'MATCH'} ({similarity*100:.0f}%)"
+                label_name = person_name or (person_id[:8] if person_id else "MATCH")
+                label_text = f"{label_name} ({similarity*100:.0f}%)"
 
             font = QFont("Segoe UI", 9, QFont.Bold)
             painter.setFont(font)

@@ -506,6 +506,11 @@ class ByteTracker:
         self.frame_id = 0
         self.kalman_filter = KalmanFilter()
 
+    @property
+    def tracks(self) -> List[ExtendedTrack]:
+        """Returns currently active and tracked tracks for overlay rendering."""
+        return [t for t in self.tracked_stracks if t.is_activated]
+
     def reset(self) -> None:
         """Resets tracker state."""
         self.tracked_stracks.clear()

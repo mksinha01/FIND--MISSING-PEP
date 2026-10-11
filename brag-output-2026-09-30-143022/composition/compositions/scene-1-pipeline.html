@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #root { position: absolute; inset: 0; background: #09090b; overflow: hidden; }
+      </style>
+
+      <div id="root" data-composition-id="scene-1" data-width="1920" data-height="1080">
+        <div class="s1-head" id="s1head">
+          <span class="dot dot-live"></span>
+          <span class="brand">FIND-MISSING-PEP</span>
+          <span class="sep">/</span>
+          <span class="tag">EDGE AGENT</span>
+          <span class="rt mono"><span class="dot dot-cam"></span>4 CAMERAS LIVE</span>
+        </div>
+
+        <div id="term">
+          <div class="term-bar">
+            <span class="tb-dots"><i></i><i></i><i></i></span>
+            <span class="tb-title mono">edge-agent &mdash; inference pipeline</span>
+            <span class="tb-meta mono">15 FPS &middot; CPU &middot; NO GPU</span>
+          </div>
+          <div class="term-body mono">
+            <div class="tline"><span class="twipe" id="w1">RTSP feed &rarr; SCRFD detect &rarr; ByteTrack track &rarr; ArcFace embed<i class="caret" id="caret1"></i></span></div>
+            <div class="tline"><span class="twipe" id="w2">&rarr; FAISS search &rarr; Temporal verify (N=3, 5s, &ge;0.60) &rarr; <span class="tk-alert" id="tkAlert">ALERT</span><i class="caret" id="caret2"></i></span></div>
+            <div class="tstatus mono" id="tstatus">
+              <span class="warnmark">!</span>
+              <span>ALERT &middot; MATCH CONFIRMED &middot; EVIDENCE CAPTURED &middot; CAM-01 14:22:07</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="s1-foot mono" id="s1foot">TEMPORAL VERIFY &middot; N=3 CONSECUTIVE &middot; 5.0s WINDOW &middot; &ge;0.60 COSINE</div>
+      </div>
+
+      <script>
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+
+        tl.fromTo("#s1head", { opacity: 0, y: -12 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0);
+        tl.fromTo("#term", { opacity: 0, scale: 0.985, y: 14 }, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.04);
+        tl.fromTo("#s1foot", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, 0.3);
+
+        /* the pipeline types itself in: a left-to-right wipe carries a terminal caret on its edge */
+        tl.fromTo("#w1", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 1.05, ease: "power2.inOut" }, 0.18);
+        tl.fromTo("#w2", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 1.05, ease: "power2.inOut" }, 1.28);
+        tl.to("#caret1,#caret2", { opacity: 0, duration: 0.07, yoyo: true, repeat: 3, repeatDelay: 0.11 }, 2.34);
+
+        /* ALERT lands: colour flip, red rim, one restrained bump */
+        tl.fromTo("#tstatus", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out" }, 2.42);
+        tl.to("#term", { borderColor: "rgba(239,68,68,.75)", duration: 0.18, ease: "power2.out" }, 2.4);
+        tl.to("#tkAlert", { color: "#ef4444", textShadow: "0 0 26px rgba(239,68,68,.6)", duration: 0.2, ease: "power2.out" }, 2.4);
+        tl.to("#caret1,#caret2", { backgroundColor: "#ef4444", duration: 0.18 }, 2.4);
+        tl.to("#term", { scale: 1.008, duration: 0.14, ease: "power2.out" }, 2.52);
+        tl.to("#term", { scale: 1, duration: 0.34, ease: "power2.inOut" }, 2.66);
+        tl.to("#term", { borderColor: "rgba(244,244,245,.13)", duration: 0.5, ease: "power2.inOut" }, 2.78);
+        tl.to(["#tkAlert", "#tstatus"], { opacity: 0, duration: 0.2, ease: "power2.in" }, 2.82);
+
+        window.__timelines["scene-1"] = tl;
+        tl.seek(0);
+      </script>
+    </template>
+  </body>
+</html>

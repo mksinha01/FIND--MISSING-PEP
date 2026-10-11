@@ -284,10 +284,10 @@ class RTSPReader:
                         except Exception as cb_err:
                             logger.error(f"Error in on_frame_callback: {cb_err}", exc_info=True)
 
-                    # Frame pacing: if reading from a local video file, pace at ~15 FPS
+                    # Frame pacing: if reading from a local video file, pace at ~8 FPS so AI workers process every transit
                     if is_video_file:
                         elapsed_read = time.time() - t_start
-                        sleep_needed = (1.0 / 15.0) - elapsed_read
+                        sleep_needed = (1.0 / 8.0) - elapsed_read
                         if sleep_needed > 0:
                             time.sleep(sleep_needed)
 

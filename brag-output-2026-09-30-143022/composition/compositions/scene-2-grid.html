@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #root { position: absolute; inset: 0; background: #09090b; overflow: hidden; }
+        #box1 { box-shadow: 0 0 0px rgba(239,68,68,0); }
+      </style>
+
+      <div id="root" data-composition-id="scene-2" data-width="1920" data-height="1080">
+        <div class="appwin" id="win2" style="left:140px; top:70px; width:1640px; height:922px;">
+          <div class="win-bar">
+            <span class="tb-dots"><i></i><i></i><i></i></span>
+            <span class="title">FIND-MISSING-PEP &mdash; Edge Agent</span>
+            <span class="rt mono"><span class="dot dot-live"></span>RUNNING</span>
+          </div>
+          <div class="camstrip">
+            <span class="chip on mono"><span class="dot dot-cam"></span>CAM-01</span>
+            <span class="chip mono"><span class="dot dot-cam"></span>CAM-02</span>
+            <span class="chip mono"><span class="dot dot-cam"></span>CAM-03</span>
+            <span class="chip mono"><span class="dot dot-off"></span>CAM-04</span>
+            <span class="strip-meta mono">EDGE INFERENCE &middot; 4 CHANNELS &middot; NO GPU</span>
+          </div>
+          <div class="grid">
+            <div class="cam" id="cam1">
+              <div class="cam-view">
+                <div class="bld b1"></div><div class="bld b2"></div><div class="bld b3"></div>
+                <div class="road"></div><div class="lanemark"></div>
+              </div>
+              <div class="letterbox t"></div><div class="letterbox b"></div><div class="camscan"></div>
+              <div class="figure" id="fig1" style="left:286px; top:124px;">
+                <i class="fig-head"></i><i class="fig-body"></i>
+              </div>
+              <div class="trackbox" id="box1" style="left:250px; top:78px; width:190px; height:236px;">
+                <i class="tb-corner tl"></i><i class="tb-corner tr"></i><i class="tb-corner bl"></i><i class="tb-corner br"></i>
+                <span class="tb-label mono" id="box1label" data-layout-allow-overflow>
+                  <i id="lbl-a" style="opacity:1">PERSON 0.94</i>
+                  <i id="lbl-b">CANDIDATE 0.71</i>
+                  <i id="lbl-c">CONFIRMED 0.87</i>
+                </span>
+              </div>
+              <div class="hud tl mono" id="cam1hud"><span class="dot dot-cam"></span>CAM-01 &middot; 1920&times;1080</div>
+              <div class="hud br mono">14.8 FPS</div>
+              <div class="hud bl mono" id="cam1ok" style="color:#10b981">3/3 VERIFIED</div>
+            </div>
+
+            <div class="cam" id="cam2">
+              <div class="cam-view street2">
+                <div class="bld b1"></div><div class="bld b3"></div>
+                <div class="road"></div>
+              </div>
+              <div class="letterbox t"></div><div class="letterbox b"></div><div class="camscan"></div>
+              <div class="figure" style="left:427px; top:138px;"><i class="fig-head"></i><i class="fig-body"></i></div>
+              <div class="trackbox" id="box2" style="left:400px; top:110px; width:172px; height:200px;">
+                <i class="tb-corner tl"></i><i class="tb-corner tr"></i><i class="tb-corner bl"></i><i class="tb-corner br"></i>
+                <span class="tb-label mono" data-layout-allow-overflow><i style="opacity:1">PERSON 0.62</i></span>
+              </div>
+              <div class="hud tl mono"><span class="dot dot-cam"></span>CAM-02 &middot; 1280&times;720</div>
+              <div class="hud br mono">15.1 FPS</div>
+            </div>
+
+            <div class="cam" id="cam3">
+              <div class="cam-view hall">
+                <div class="bld b2" style="height:46%"></div>
+                <div class="road" style="height:46%"></div>
+              </div>
+              <div class="letterbox t"></div><div class="letterbox b"></div><div class="camscan"></div>
+              <div class="hud tl mono"><span class="dot dot-cam"></span>CAM-03 &middot; 1920&times;1080</div>
+              <div class="hud br mono">15.0 FPS</div>
+              <div class="hud bl mono">2 FACES</div>
+            </div>
+
+            <div class="cam" id="cam4">
+              <div class="cam-view dead"></div>
+              <div class="letterbox t"></div><div class="letterbox b"></div><div class="camscan" style="opacity:.03"></div>
+              <div class="nosignal mono"><span class="dot dot-off"></span>NO SIGNAL</div>
+              <div class="hud tl mono"><span class="dot dot-off"></span>CAM-04 &middot; OFFLINE</div>
+              <div class="hud br mono" style="color:#a1a1aa">0.0 FPS</div>
+            </div>
+          </div>
+          <div class="stat-bar mono">
+            <span>FPS <b>15.0</b></span><span>FACES <b>4</b></span><span>TRACKS <b>3</b></span>
+            <span>BACKEND <b style="color:#10b981">ONLINE</b></span><span>LAST SYNC <b>14:22:07</b></span>
+            <span class="right">CPU INFERENCE &middot; NO GPU REQUIRED</span>
+          </div>
+        </div>
+
+        <div class="grid-caption mono" id="gridcap">
+          <span class="dot dot-ok"></span>
+          <span>TEMPORAL VERIFY PASSED &mdash; <b>3/3</b> CONSECUTIVE OBSERVATIONS &middot; 5.0s WINDOW &middot; AVG <b>0.87</b></span>
+        </div>
+      </div>
+
+      <script>
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+        var AMBER = "#f59e0b", RED = "#ef4444";
+
+        tl.fromTo("#win2", { opacity: 0, y: 18, scale: 0.988 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "power3.out" }, 0);
+        tl.fromTo("#cam1", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 0.12);
+        tl.fromTo("#cam2", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 0.18);
+        tl.fromTo("#cam3", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 0.24);
+        tl.fromTo("#cam4", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 0.3);
+        tl.fromTo("#cam1hud", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0.38);
+
+        /* track acquisition */
+        tl.fromTo("#fig1", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.48);
+        tl.fromTo("#box1", { opacity: 0, scale: 0.86 }, { opacity: 1, scale: 1, duration: 0.4, ease: "power3.out" }, 0.53);
+        tl.fromTo("#box2", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.4, ease: "power3.out" }, 0.76);
+
+        /* amber candidate */
+        tl.to("#box1", { borderColor: AMBER, duration: 0.24, ease: "power2.out" }, 1.88);
+        tl.to("#box1 .tb-corner", { backgroundColor: AMBER, duration: 0.24 }, 1.88);
+        tl.set("#lbl-a", { opacity: 0 }, 1.94);
+        tl.set("#lbl-b", { opacity: 1 }, 1.94);
+
+        /* red CONFIRMED — the money beat */
+        tl.to("#cam1", { boxShadow: "0 0 46px rgba(239,68,68,.55)", duration: 0.16, ease: "power2.out" }, 2.48);
+        tl.to("#box1", { scale: 1.07, duration: 0.13, ease: "power3.out" }, 2.48);
+        tl.to("#box1", { borderColor: RED, duration: 0.2, ease: "power2.out" }, 2.5);
+        tl.to("#box1 .tb-corner", { backgroundColor: RED, duration: 0.2 }, 2.5);
+        tl.set("#lbl-b", { opacity: 0 }, 2.56);
+        tl.set("#lbl-c", { opacity: 1 }, 2.56);
+        tl.to("#box1", { scale: 1, duration: 0.42, ease: "power2.out" }, 2.61);
+        tl.to("#cam1", { boxShadow: "0 0 0px rgba(239,68,68,0)", duration: 0.7, ease: "power2.out" }, 2.64);
+        tl.fromTo("#cam1ok", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out" }, 2.76);
+        tl.fromTo("#gridcap", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.42, ease: "power3.out" }, 2.9);
+
+        window.__timelines["scene-2"] = tl;
+        tl.seek(0);
+      </script>
+    </template>
+  </body>
+</html>

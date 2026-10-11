@@ -170,7 +170,7 @@ class SCRFDFaceDetector:
             raise RuntimeError("onnxruntime is not installed in the environment.")
 
         opts = onnxruntime.SessionOptions()
-        opts.intra_op_num_threads = 2
+        opts.intra_op_num_threads = 4
         opts.inter_op_num_threads = 1
         opts.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
 

@@ -57,6 +57,10 @@ async def get_active_embeddings(db: AsyncSession) -> List[dict]:
             MissingPerson.last_seen_location,
             MissingPerson.last_seen_time,
             MissingPerson.contact_info,
+            MissingPerson.fir_number,
+            MissingPerson.fir_police_station,
+            MissingPerson.fir_date,
+            MissingPerson.fir_status,
             Photo.face_crop_path,
             Photo.original_path,
             User.name.label("reporter_name"),
@@ -89,6 +93,10 @@ async def get_active_embeddings(db: AsyncSession) -> List[dict]:
             "reporter_name": row.reporter_name,
             "reporter_email": row.reporter_email,
             "reporter_phone": row.reporter_phone,
+            "fir_number": row.fir_number,
+            "fir_police_station": row.fir_police_station,
+            "fir_date": row.fir_date.isoformat() if row.fir_date else None,
+            "fir_status": row.fir_status,
         }
         for row in rows
     ]
@@ -116,6 +124,10 @@ async def get_embeddings_since(
             MissingPerson.last_seen_location,
             MissingPerson.last_seen_time,
             MissingPerson.contact_info,
+            MissingPerson.fir_number,
+            MissingPerson.fir_police_station,
+            MissingPerson.fir_date,
+            MissingPerson.fir_status,
             Photo.face_crop_path,
             Photo.original_path,
             User.name.label("reporter_name"),
@@ -155,6 +167,10 @@ async def get_embeddings_since(
             "reporter_name": row.reporter_name,
             "reporter_email": row.reporter_email,
             "reporter_phone": row.reporter_phone,
+            "fir_number": row.fir_number,
+            "fir_police_station": row.fir_police_station,
+            "fir_date": row.fir_date.isoformat() if row.fir_date else None,
+            "fir_status": row.fir_status,
         }
         for row in rows
     ]

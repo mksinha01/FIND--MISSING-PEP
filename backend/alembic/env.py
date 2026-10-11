@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # add your model's MetaData object here
 # for 'autogenerate' support
 from app.database import Base
-from app import models  # noqa: F401
+import app.models  # noqa: F401
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,

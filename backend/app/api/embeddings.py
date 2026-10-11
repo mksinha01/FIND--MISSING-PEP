@@ -73,6 +73,10 @@ async def sync_embeddings(
                 reporter_name=item.get("reporter_name"),
                 reporter_email=item.get("reporter_email"),
                 reporter_phone=item.get("reporter_phone"),
+                fir_number=item.get("fir_number"),
+                fir_police_station=item.get("fir_police_station"),
+                fir_date=item.get("fir_date"),
+                fir_status=item.get("fir_status"),
             )
         )
 

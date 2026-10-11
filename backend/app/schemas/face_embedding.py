@@ -49,6 +49,10 @@ class EmbeddingPersonItem(BaseModel):
     reporter_name: Optional[str] = None
     reporter_email: Optional[str] = None
     reporter_phone: Optional[str] = None
+    fir_number: Optional[str] = None
+    fir_police_station: Optional[str] = None
+    fir_date: Optional[str] = None
+    fir_status: Optional[str] = None
 
 
 class EmbeddingSyncResponse(BaseModel):
