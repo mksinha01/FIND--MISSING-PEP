@@ -45,6 +45,8 @@ services:
       - AI_MODEL_DIR=/app/ai_models
     volumes:
       - uploads_data:/app/uploads
+    ports:
+      - "8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
