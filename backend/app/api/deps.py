@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -179,11 +179,16 @@ async def get_current_user(
             detail="Could not resolve user identity from token",
         )
 
-    # Lookup user in DB
-    result = await db.execute(
-        select(User).where(User.firebase_uid == firebase_uid)
-    )
-    user = result.scalar_one_or_none()
+    # Lookup user in DB by firebase_uid or email
+    if email:
+        result = await db.execute(
+            select(User).where(or_(User.firebase_uid == firebase_uid, User.email == email))
+        )
+    else:
+        result = await db.execute(
+            select(User).where(User.firebase_uid == firebase_uid)
+        )
+    user = result.scalars().first()
 
     if not user:
         # Auto-provision user on first authenticated request
