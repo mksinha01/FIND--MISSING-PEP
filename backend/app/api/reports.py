@@ -411,7 +411,9 @@ async def upload_additional_photo(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Missing person report not found",
         )
-    if report.user_id != current_user.id:
+    user_role = str(getattr(current_user, "role", "CITIZEN")).upper()
+    is_authorized = (report.user_id == current_user.id) or ("OFFICER" in user_role) or ("ADMIN" in user_role)
+    if not is_authorized:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have permission to add photos to this report",

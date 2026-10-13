@@ -2,7 +2,10 @@ package com.findmissingpep.app.presentation.screens.cases
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import com.findmissingpep.app.data.util.ImageCompressor
+import kotlinx.coroutines.launch
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -54,21 +57,44 @@ fun CaseDetailScreen(
         viewModel.loadCaseDetail(caseId)
     }
 
-    val photoPickerLauncher = rememberLauncherForActivityResult(
+    val coroutineScope = rememberCoroutineScope()
+
+    val processUploadPhoto: (Uri) -> Unit = { uri ->
+        coroutineScope.launch {
+            try {
+                val compressedFile = ImageCompressor.compress(context, uri)
+                viewModel.uploadAdditionalPhoto(caseId, compressedFile)
+            } catch (e: Exception) {
+                try {
+                    val tempFile = File.createTempFile("add_photo_", ".jpg", context.cacheDir)
+                    context.contentResolver.openInputStream(uri)?.use { input ->
+                        FileOutputStream(tempFile).use { output -> input.copyTo(output) }
+                    }
+                    viewModel.uploadAdditionalPhoto(caseId, tempFile)
+                } catch (_: Exception) {}
+            }
+        }
+    }
+
+    val visualPhotoLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        uri?.let { processUploadPhoto(it) }
+    }
+
+    val legacyPhotoLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let {
-            try {
-                val inputStream = context.contentResolver.openInputStream(it)
-                val tempFile = File.createTempFile("add_photo_", ".jpg", context.cacheDir)
-                val outputStream = FileOutputStream(tempFile)
-                inputStream?.copyTo(outputStream)
-                inputStream?.close()
-                outputStream.close()
-                viewModel.uploadAdditionalPhoto(caseId, tempFile)
-            } catch (e: Exception) {
-                // Ignore
-            }
+        uri?.let { processUploadPhoto(it) }
+    }
+
+    val onPickAdditionalPhoto: () -> Unit = {
+        try {
+            visualPhotoLauncher.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+        } catch (_: Exception) {
+            legacyPhotoLauncher.launch("image/*")
         }
     }
 
@@ -157,6 +183,23 @@ fun CaseDetailScreen(
                     }
                 }
 
+                // Error Message Banner
+                uiState.error?.let {
+                    Surface(
+                        color = RedDangerBg,
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = it,
+                            color = RedDanger,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(10.dp)
+                        )
+                    }
+                }
+
                 // ── Case Hero Card ──
                 PaperCard(modifier = Modifier.fillMaxWidth()) {
                     Row(
@@ -218,7 +261,7 @@ fun CaseDetailScreen(
                 PhotosSection(
                     case = caseItem,
                     isUploading = uiState.isUploadingPhoto,
-                    onAddPhoto = { photoPickerLauncher.launch("image/*") }
+                    onAddPhoto = onPickAdditionalPhoto
                 )
 
                 // ── Demographics & Last Seen Details ──

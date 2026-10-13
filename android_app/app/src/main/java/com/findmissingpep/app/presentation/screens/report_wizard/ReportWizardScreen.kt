@@ -2,6 +2,7 @@ package com.findmissingpep.app.presentation.screens.report_wizard
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
@@ -54,23 +55,60 @@ fun ReportWizardScreen(
         }
     }
 
-    // Photo picker launcher with 1280px / 85% compression
-    val photoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetMultipleContents()
-    ) { uris: List<Uri> ->
+    var isProcessingPhotos by remember { mutableStateOf(false) }
+
+    val processUris: (List<Uri>) -> Unit = { uris ->
         if (uris.isNotEmpty()) {
             coroutineScope.launch {
-                val files = uris.mapNotNull { uri ->
-                    try {
+                isProcessingPhotos = true
+                try {
+                    val files = uris.map { uri ->
                         ImageCompressor.compress(context, uri)
-                    } catch (e: Exception) {
-                        null
                     }
-                }
-                if (files.isNotEmpty()) {
-                    viewModel.addPhotos(files, uris.take(files.size))
+                    if (files.isNotEmpty()) {
+                        viewModel.addPhotos(files, uris.take(files.size))
+                    }
+                } catch (e: Exception) {
+                    val fallbackFiles = uris.mapNotNull { uri ->
+                        try {
+                            val temp = File.createTempFile("photo_raw_", ".jpg", context.cacheDir)
+                            context.contentResolver.openInputStream(uri)?.use { input ->
+                                FileOutputStream(temp).use { output -> input.copyTo(output) }
+                            }
+                            temp
+                        } catch (_: Exception) { null }
+                    }
+                    if (fallbackFiles.isNotEmpty()) {
+                        viewModel.addPhotos(fallbackFiles, uris.take(fallbackFiles.size))
+                    }
+                } finally {
+                    isProcessingPhotos = false
                 }
             }
+        }
+    }
+
+    // Modern Visual Photo Picker (standard gallery grid)
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 5)
+    ) { uris: List<Uri> ->
+        processUris(uris)
+    }
+
+    // Fallback file/gallery picker
+    val legacyPhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> ->
+        processUris(uris)
+    }
+
+    val onPickPhotos: () -> Unit = {
+        try {
+            photoPickerLauncher.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+        } catch (_: Exception) {
+            legacyPhotoPickerLauncher.launch("image/*")
         }
     }
 
@@ -180,7 +218,8 @@ fun ReportWizardScreen(
                     2 -> Step3Photos(
                         state = uiState,
                         viewModel = viewModel,
-                        onAddPhotos = { photoPickerLauncher.launch("image/*") }
+                        isProcessingPhotos = isProcessingPhotos,
+                        onAddPhotos = onPickPhotos
                     )
                 }
             }
@@ -661,6 +700,7 @@ private fun Step2FirDetails(
 private fun Step3Photos(
     state: ReportWizardState,
     viewModel: ReportWizardViewModel,
+    isProcessingPhotos: Boolean = false,
     onAddPhotos: () -> Unit
 ) {
     Column(
@@ -682,8 +722,29 @@ private fun Step3Photos(
             )
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Photo Grid
-            if (state.photoFiles.isEmpty()) {
+            // Photo Grid / Picker
+            if (isProcessingPhotos) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(CreamBackground)
+                        .border(1.5.dp, LineBorder, RoundedCornerShape(14.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(color = BluePrimary, strokeWidth = 2.5.dp, modifier = Modifier.size(36.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "Processing photos...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = InkText
+                        )
+                    }
+                }
+            } else if (state.photoFiles.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

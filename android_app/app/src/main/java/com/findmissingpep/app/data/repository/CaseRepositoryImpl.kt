@@ -60,7 +60,7 @@ class CaseRepositoryImpl @Inject constructor(
             firPoliceStation?.let { put("fir_police_station", it) }
             firDate?.let { put("fir_date", it) }
         }.toString()
-        val reportDataBody = reportDataJson.toRequestBody("application/json".toMediaType())
+        val reportDataBody = reportDataJson.toRequestBody("text/plain".toMediaType())
 
         // Build photo parts
         val photoParts = photos.mapIndexed { index, file ->
