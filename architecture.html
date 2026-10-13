@@ -1,0 +1,3229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FIND-MISSING-PEP — System Architecture & Engineering Blueprint</title>
+  <meta name="description" content="Interactive System Architecture, Edge AI Pipeline, and Technical Blueprint for FIND-MISSING-PEP">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════════════════════════════════
+       DESIGN SYSTEM & MODERN THEME TOKENS
+       ══════════════════════════════════════════════════════════════════════ */
+    :root {
+      --bg-primary: #070a13;
+      --bg-secondary: #0d1222;
+      --bg-tertiary: #141b33;
+      --bg-card: rgba(16, 23, 44, 0.75);
+      --bg-card-hover: rgba(24, 34, 65, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(56, 189, 248, 0.35);
+      --border-active: #38bdf8;
+      
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      
+      --accent-cyan: #06b6d4;
+      --accent-sky: #38bdf8;
+      --accent-indigo: #6366f1;
+      --accent-purple: #a855f7;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+
+      --glow-cyan: 0 0 25px rgba(6, 182, 212, 0.25);
+      --glow-indigo: 0 0 25px rgba(99, 102, 241, 0.25);
+      --glow-emerald: 0 0 25px rgba(16, 185, 129, 0.25);
+
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-heading: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+      --radius-full: 9999px;
+
+      --transition-fast: 0.15s ease;
+      --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      line-height: 1.5;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 10%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 25%, rgba(6, 182, 212, 0.1) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       APP HEADER & CONTROLS
+       ══════════════════════════════════════════════════════════════════════ */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7, 10, 19, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0.85rem 2rem;
+    }
+
+    .header-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-indigo));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--glow-cyan);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .brand-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: #fff;
+    }
+
+    .brand-icon::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      animation: pulse-ring 2.5s infinite;
+    }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 0; }
+      100% { transform: scale(1); opacity: 0; }
+    }
+
+    .brand-titles h1 {
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(90deg, #ffffff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .brand-titles .badge-status {
+      font-size: 0.68rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      padding: 0.15rem 0.55rem;
+      border-radius: var(--radius-full);
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: var(--accent-emerald);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      -webkit-text-fill-color: initial;
+    }
+
+    .brand-titles p {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .search-wrapper {
+      position: relative;
+      width: 280px;
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(20, 27, 51, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 0.5rem 1rem 0.5rem 2.4rem;
+      font-size: 0.82rem;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      transition: var(--transition-fast);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 14px;
+      height: 14px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-full);
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition-normal);
+      border: 1px solid transparent;
+      text-decoration: none;
+      font-family: var(--font-sans);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-primary);
+      border-color: var(--border-subtle);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-indigo));
+      color: #fff;
+      font-weight: 600;
+      box-shadow: var(--glow-cyan);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 25px rgba(6, 182, 212, 0.45);
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       NAVIGATION TABS
+       ══════════════════════════════════════════════════════════════════════ */
+    .nav-bar {
+      background: rgba(13, 18, 34, 0.95);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 69px;
+      z-index: 90;
+      backdrop-filter: blur(15px);
+    }
+
+    .nav-container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-tab {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.9rem 1.15rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: var(--transition-fast);
+    }
+
+    .nav-tab:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .nav-tab.active {
+      color: var(--accent-cyan);
+      border-bottom-color: var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    .nav-tab svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       MAIN LAYOUT & HERO SUMMARY
+       ══════════════════════════════════════════════════════════════════════ */
+    .main-content {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(20, 27, 51, 0.6) 0%, rgba(13, 18, 34, 0.7) 100%);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .hero-text h2 {
+      font-family: var(--font-heading);
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-text p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      max-width: 880px;
+      line-height: 1.6;
+    }
+
+    .hero-metrics {
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .metric-pill {
+      background: rgba(10, 14, 28, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 0.85rem 1.25rem;
+      text-align: center;
+      min-width: 130px;
+    }
+
+    .metric-value {
+      font-family: var(--font-mono);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      display: block;
+    }
+
+    .metric-label {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 500;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       TAB VIEWS
+       ══════════════════════════════════════════════════════════════════════ */
+    .tab-pane {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       SECTION TITLES
+       ══════════════════════════════════════════════════════════════════════ */
+    .section-header {
+      margin-bottom: 1.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-title .section-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent-cyan);
+    }
+
+    .section-desc {
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      margin-top: 0.25rem;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       MACRO SYSTEM TOPOLOGY (SVG & INTERACTIVE TIERS)
+       ══════════════════════════════════════════════════════════════════════ */
+    .topology-container {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .topology-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 1200px) {
+      .topology-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .tier-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 1.5rem;
+      backdrop-filter: blur(14px);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      transition: var(--transition-normal);
+    }
+
+    .tier-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .tier-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.85rem;
+    }
+
+    .tier-tag {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      padding: 0.2rem 0.65rem;
+      border-radius: var(--radius-full);
+      font-weight: 600;
+    }
+
+    .tier-client .tier-tag {
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--accent-indigo);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    .tier-edge .tier-tag {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    .tier-cloud .tier-tag {
+      background: rgba(168, 85, 247, 0.15);
+      color: var(--accent-purple);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+
+    .tier-title {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .components-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .comp-box {
+      background: rgba(10, 14, 28, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      cursor: pointer;
+      transition: var(--transition-normal);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .comp-box::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--accent-cyan);
+      opacity: 0;
+      transition: var(--transition-fast);
+    }
+
+    .comp-box:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-glow);
+      transform: translateX(3px);
+    }
+
+    .comp-box:hover::before {
+      opacity: 1;
+    }
+
+    .comp-box-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.35rem;
+    }
+
+    .comp-box-title {
+      font-weight: 600;
+      font-size: 0.92rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .comp-box-badge {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+    }
+
+    .comp-box-desc {
+      font-size: 0.79rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    .comp-box-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px dashed rgba(255, 255, 255, 0.06);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .interactive-canvas-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 1.5rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .canvas-title-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       EDGE AI PIPELINE (10 STAGES)
+       ══════════════════════════════════════════════════════════════════════ */
+    .pipeline-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .pipeline-stepper {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .stage-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      cursor: pointer;
+      position: relative;
+      transition: var(--transition-normal);
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .stage-card:hover {
+      border-color: var(--border-glow);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .stage-card.highlighted {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+    }
+
+    .stage-card.novelty-badge {
+      border-color: rgba(245, 158, 11, 0.5);
+      background: linear-gradient(135deg, rgba(20, 27, 51, 0.8) 0%, rgba(35, 25, 15, 0.6) 100%);
+    }
+
+    .stage-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stage-number {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stage-latency {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--accent-emerald);
+      background: rgba(16, 185, 129, 0.1);
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-full);
+    }
+
+    .stage-title {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .stage-desc {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    .stage-meta {
+      font-family: var(--font-mono);
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 0.5rem;
+      margin-top: 0.25rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .research-callout {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(20, 27, 51, 0.7) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: var(--radius-xl);
+      padding: 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+    }
+
+    .research-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--accent-amber);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .research-body h4 {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      color: var(--accent-amber);
+      margin-bottom: 0.4rem;
+    }
+
+    .research-body p {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       SIMULATOR INTERACTIVE BOX
+       ══════════════════════════════════════════════════════════════════════ */
+    .simulator-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 1.75rem;
+      margin-top: 1rem;
+    }
+
+    .sim-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .sim-controls {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .sim-track {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      background: rgba(10, 14, 28, 0.8);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+    }
+
+    .sim-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 90px;
+      z-index: 2;
+    }
+
+    .sim-node-circle {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      transition: var(--transition-normal);
+    }
+
+    .sim-node.active .sim-node-circle {
+      border-color: var(--accent-cyan);
+      background: var(--accent-cyan);
+      color: #000;
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
+    }
+
+    .sim-node.pass .sim-node-circle {
+      border-color: var(--accent-emerald);
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--accent-emerald);
+    }
+
+    .sim-node-label {
+      font-size: 0.74rem;
+      color: var(--text-secondary);
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .sim-terminal {
+      background: #050811;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #38bdf8;
+      max-height: 200px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+
+    .terminal-line {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .terminal-ts {
+      color: var(--text-muted);
+    }
+
+    .terminal-success {
+      color: var(--accent-emerald);
+    }
+
+    .terminal-alert {
+      color: var(--accent-rose);
+      font-weight: 700;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       DATA MODELS & DATABASE ERD
+       ══════════════════════════════════════════════════════════════════════ */
+    .erd-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: var(--transition-fast);
+    }
+
+    .table-card:hover {
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .table-header {
+      background: rgba(20, 27, 51, 0.8);
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .table-name {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .table-scope {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--accent-indigo);
+    }
+
+    .table-fields {
+      padding: 0.5rem 0;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      padding: 0.45rem 1.25rem;
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .field-row:last-child {
+      border-bottom: none;
+    }
+
+    .field-row:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .field-name {
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .field-pk {
+      color: var(--accent-amber);
+      font-weight: 700;
+      font-size: 0.7rem;
+    }
+
+    .field-fk {
+      color: var(--accent-cyan);
+      font-weight: 700;
+      font-size: 0.7rem;
+    }
+
+    .field-type {
+      color: var(--accent-purple);
+    }
+
+    .field-desc {
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       SEQUENCE FLOW VISUALIZER
+       ══════════════════════════════════════════════════════════════════════ */
+    .flow-tabs {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .flow-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 0.6rem 1.25rem;
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: var(--transition-fast);
+    }
+
+    .flow-btn.active {
+      background: var(--accent-cyan);
+      color: #000;
+      font-weight: 600;
+      border-color: var(--accent-cyan);
+    }
+
+    .sequence-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+    }
+
+    .step-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      position: relative;
+    }
+
+    .step-timeline::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      bottom: 15px;
+      left: 20px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent-cyan), var(--accent-indigo));
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 1.5rem;
+      position: relative;
+    }
+
+    .timeline-bullet {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      border: 2px solid var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-cyan);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      z-index: 2;
+    }
+
+    .timeline-content {
+      background: rgba(10, 14, 28, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      flex-grow: 1;
+    }
+
+    .timeline-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.4rem;
+    }
+
+    .timeline-step-title {
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .timeline-actors {
+      font-family: var(--font-mono);
+      font-size: 0.73rem;
+      color: var(--accent-indigo);
+      background: rgba(99, 102, 241, 0.1);
+      padding: 0.15rem 0.6rem;
+      border-radius: var(--radius-full);
+    }
+
+    .timeline-text {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .timeline-code {
+      margin-top: 0.75rem;
+      background: #050811;
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: #94a3b8;
+      overflow-x: auto;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       API & PROTOCOL SPEC
+       ══════════════════════════════════════════════════════════════════════ */
+    .api-filter-bar {
+      display: flex;
+      gap: 0.65rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .api-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .api-endpoint-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: var(--transition-fast);
+    }
+
+    .api-endpoint-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .api-endpoint-header {
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      gap: 1rem;
+    }
+
+    .api-method-path {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      font-family: var(--font-mono);
+    }
+
+    .badge-method {
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .method-get { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+    .method-post { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+    .method-put { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+    .method-delete { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); }
+
+    .api-path {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .api-desc {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+
+    .api-endpoint-body {
+      padding: 1.25rem;
+      background: rgba(10, 14, 28, 0.8);
+      border-top: 1px solid var(--border-subtle);
+      display: none;
+    }
+
+    .api-endpoint-card.open .api-endpoint-body {
+      display: block;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       LATENCY & HARDWARE CALCULATOR
+       ══════════════════════════════════════════════════════════════════════ */
+    .calc-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 992px) {
+      .calc-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .calc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 1.75rem;
+    }
+
+    .calc-slider-group {
+      margin-bottom: 1.75rem;
+    }
+
+    .calc-slider-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.88rem;
+    }
+
+    .calc-slider-val {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    .calc-range {
+      width: 100%;
+      height: 6px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-full);
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .calc-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.7);
+    }
+
+    .hardware-results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .hw-result-box {
+      background: rgba(10, 14, 28, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      text-align: center;
+    }
+
+    .hw-result-num {
+      font-family: var(--font-mono);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      margin-bottom: 0.2rem;
+    }
+
+    .hw-result-label {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .hw-tier-recommendation {
+      margin-top: 1.5rem;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(6, 182, 212, 0.15));
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       COMPONENT DETAIL DRAWER / MODAL
+       ══════════════════════════════════════════════════════════════════════ */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition-normal);
+    }
+
+    .drawer-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .drawer-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 580px;
+      max-width: 90vw;
+      background: #0b1021;
+      border-left: 1px solid var(--border-subtle);
+      z-index: 210;
+      transform: translateX(100%);
+      transition: var(--transition-slow);
+      padding: 2rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      box-shadow: -10px 0 35px rgba(0, 0, 0, 0.5);
+    }
+
+    .drawer-overlay.open .drawer-panel {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 1rem;
+    }
+
+    .drawer-close {
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      color: #fff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-fast);
+    }
+
+    .drawer-close:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .drawer-title {
+      font-family: var(--font-heading);
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .drawer-file-path {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--accent-sky);
+      margin-top: 0.25rem;
+      word-break: break-all;
+    }
+
+    .drawer-section-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .drawer-content-box {
+      background: rgba(16, 23, 44, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      font-size: 0.86rem;
+      line-height: 1.55;
+    }
+
+    .drawer-code-snippet {
+      background: #050811;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       FOOTER
+       ══════════════════════════════════════════════════════════════════════ */
+    .footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: 2.5rem 2rem;
+      background: rgba(7, 10, 19, 0.95);
+      margin-top: 4rem;
+    }
+
+    .footer-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .footer-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: var(--transition-fast);
+    }
+
+    .footer-link:hover {
+      color: var(--accent-cyan);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       HEADER BAR
+       ══════════════════════════════════════════════════════════════════════ -->
+  <header class="header">
+    <div class="header-inner">
+      <a href="#" class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12h5l3 7 4-14 3 7h5"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </div>
+        <div class="brand-titles">
+          <h1>
+            FIND-MISSING-PEP
+            <span class="badge-status">Architecture Spec v2.4</span>
+          </h1>
+          <p>AI Biometric Facial Recognition & Real-Time Edge CCTV Sighting Platform</p>
+        </div>
+      </a>
+
+      <div class="header-actions">
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="globalSearch" class="search-input" placeholder="Search components, models, APIs...">
+        </div>
+
+        <button class="btn btn-secondary" onclick="exportDocumentation()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export Spec
+        </button>
+
+        <button class="btn btn-primary" onclick="switchTab('pipeline'); runPipelineSim();">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          Simulate Pipeline
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       NAVIGATION BAR
+       ══════════════════════════════════════════════════════════════════════ -->
+  <nav class="nav-bar">
+    <div class="nav-container">
+      <button class="nav-tab active" data-tab="topology" onclick="switchTab('topology')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+        System Topology
+      </button>
+
+      <button class="nav-tab" data-tab="pipeline" onclick="switchTab('pipeline')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        Edge AI Pipeline (10-Stage)
+      </button>
+
+      <button class="nav-tab" data-tab="sequences" onclick="switchTab('sequences')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        Sequence Flows
+      </button>
+
+      <button class="nav-tab" data-tab="database" onclick="switchTab('database')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+        Database & Schemas
+      </button>
+
+      <button class="nav-tab" data-tab="api" onclick="switchTab('api')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+        API & Protocols
+      </button>
+
+      <button class="nav-tab" data-tab="hardware" onclick="switchTab('hardware')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line></svg>
+        Sizing & Benchmarks
+      </button>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       MAIN CONTENT CONTAINER
+       ══════════════════════════════════════════════════════════════════════ -->
+  <main class="main-content">
+
+    <!-- HERO SUMMARY CARD -->
+    <div class="hero-banner">
+      <div class="hero-text">
+        <h2>Edge-AI Missing Person Sighting & Facial Biometrics System</h2>
+        <p>
+          A hybrid distributed architecture that couples <strong>FastAPI Central Cloud Hub</strong> with <strong>CPU-optimized PySide6 Edge Nodes</strong>. 
+          Combines SCRFD multi-face landmark detection, ByteTrack spatial-temporal tracking, ArcFace 512-D embeddings, and FAISS vector similarity with a novel 
+          <strong>Temporal Verification Window</strong> that lowers false positive rates from 22% to under 3.5%.
+        </p>
+      </div>
+
+      <div class="hero-metrics">
+        <div class="metric-pill">
+          <span class="metric-value">~24 ms</span>
+          <span class="metric-label">Pipeline Latency / Face</span>
+        </div>
+        <div class="metric-pill">
+          <span class="metric-value">3.2%</span>
+          <span class="metric-label">False Positive Rate</span>
+        </div>
+        <div class="metric-pill">
+          <span class="metric-value">512-D</span>
+          <span class="metric-label">ArcFace Embedding</span>
+        </div>
+        <div class="metric-pill">
+          <span class="metric-value">100% CPU</span>
+          <span class="metric-label">Zero GPU Dependency</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         TAB 1: SYSTEM TOPOLOGY (MACRO VIEW)
+         ════════════════════════════════════════════════════════════════════ -->
+    <div id="pane-topology" class="tab-pane active">
+      <div class="section-header">
+        <div>
+          <h3 class="section-title">
+            <span class="section-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect></svg>
+            </span>
+            Distributed Macro Architecture
+          </h3>
+          <p class="section-desc">Click any component card or architecture node to inspect source files, APIs, inputs, and failure recovery policies.</p>
+        </div>
+      </div>
+
+      <div class="topology-container">
+
+        <!-- INTERACTIVE SVG FLOW OVERVIEW -->
+        <div class="interactive-canvas-card">
+          <div class="canvas-title-bar">
+            <span style="font-weight: 600; font-size: 0.95rem; font-family: var(--font-heading); display:flex; align-items:center; gap:0.5rem;">
+              <span style="width:8px; height:8px; border-radius:50%; background:var(--accent-emerald);"></span>
+              Live System Data Bus & Connectivity Matrix
+            </span>
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">
+              RTSP (H.264) ➔ REST / Multipart ➔ SSE Stream ➔ FCM Push ➔ Binary Sync
+            </span>
+          </div>
+
+          <svg viewBox="0 0 1200 420" width="100%" height="auto" style="background: rgba(10, 14, 28, 0.7); border-radius: 12px; border: 1px solid var(--border-subtle);">
+            <defs>
+              <linearGradient id="cyanLine" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.8"/>
+                <stop offset="100%" stop-color="#38bdf8" stop-opacity="1"/>
+              </linearGradient>
+              <linearGradient id="purpleLine" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#6366f1" stop-opacity="0.8"/>
+                <stop offset="100%" stop-color="#a855f7" stop-opacity="1"/>
+              </linearGradient>
+              <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+
+            <!-- CONNECTOR PATHS -->
+            <!-- CCTV to Edge -->
+            <path d="M 120 180 L 220 180" stroke="url(#cyanLine)" stroke-width="2" stroke-dasharray="6,4" fill="none"/>
+            <!-- Edge to Backend (Sighting Upload) -->
+            <path d="M 440 180 L 580 180" stroke="url(#cyanLine)" stroke-width="2.5" fill="none"/>
+            <!-- Backend to Edge (Embedding Sync) -->
+            <path d="M 580 210 L 440 210" stroke="url(#purpleLine)" stroke-width="2" stroke-dasharray="6,4" fill="none"/>
+            <!-- Backend to DB -->
+            <path d="M 720 160 L 840 120" stroke="rgba(255,255,255,0.2)" stroke-width="2" fill="none"/>
+            <!-- Backend to Redis -->
+            <path d="M 720 220 L 840 250" stroke="rgba(255,255,255,0.2)" stroke-width="2" fill="none"/>
+            <!-- Backend to Web App (SSE / REST) -->
+            <path d="M 650 140 L 650 60 L 980 60" stroke="#38bdf8" stroke-width="2" stroke-dasharray="5,3" fill="none"/>
+            <!-- Backend to Android App (FCM / SSE) -->
+            <path d="M 650 240 L 650 340 L 980 340" stroke="#10b981" stroke-width="2" stroke-dasharray="5,3" fill="none"/>
+
+            <!-- NODE 1: CCTV CAMERA -->
+            <g transform="translate(40, 140)" style="cursor:pointer;" onclick="openDrawer('cctv')">
+              <rect width="80" height="80" rx="10" fill="#141b33" stroke="#06b6d4" stroke-width="1.5"/>
+              <text x="40" y="42" fill="#fff" font-size="12" font-family="'Outfit', sans-serif" font-weight="600" text-anchor="middle">CCTV CAM</text>
+              <text x="40" y="58" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace" text-anchor="middle">RTSP / 15 FPS</text>
+            </g>
+
+            <!-- NODE 2: EDGE AI AGENT -->
+            <g transform="translate(220, 110)" style="cursor:pointer;" onclick="openDrawer('edge_agent')">
+              <rect width="220" height="140" rx="14" fill="#0d142b" stroke="#38bdf8" stroke-width="2" filter="url(#glow)"/>
+              <text x="110" y="32" fill="#38bdf8" font-size="13" font-family="'Outfit', sans-serif" font-weight="700" text-anchor="middle">EDGE AGENT (Qt / PySide6)</text>
+              <text x="110" y="55" fill="#e2e8f0" font-size="11" font-family="'Inter', sans-serif" text-anchor="middle">SCRFD ➔ ByteTrack ➔ Quality</text>
+              <text x="110" y="73" fill="#e2e8f0" font-size="11" font-family="'Inter', sans-serif" text-anchor="middle">ArcFace (512-D) ➔ FAISS Index</text>
+              <rect x="25" y="88" width="170" height="24" rx="6" fill="rgba(245, 158, 11, 0.2)" stroke="#f59e0b"/>
+              <text x="110" y="104" fill="#f59e0b" font-size="10" font-family="'JetBrains Mono', monospace" font-weight="600" text-anchor="middle">Temporal Verifier (Mean≥0.42)</text>
+              <text x="110" y="130" fill="#64748b" font-size="9" font-family="'JetBrains Mono', monospace" text-anchor="middle">SQLite Queue + Auto-Reconnect</text>
+            </g>
+
+            <!-- NODE 3: CENTRAL FASTAPI BACKEND -->
+            <g transform="translate(580, 110)" style="cursor:pointer;" onclick="openDrawer('fastapi')">
+              <rect width="160" height="140" rx="14" fill="#0d142b" stroke="#6366f1" stroke-width="2"/>
+              <text x="80" y="32" fill="#818cf8" font-size="13" font-family="'Outfit', sans-serif" font-weight="700" text-anchor="middle">FASTAPI BACKEND</text>
+              <text x="80" y="55" fill="#cbd5e1" font-size="10" font-family="'Inter', sans-serif" text-anchor="middle">Photo Preprocessor</text>
+              <text x="80" y="72" fill="#cbd5e1" font-size="10" font-family="'Inter', sans-serif" text-anchor="middle">ArcFace 512-D Embedder</text>
+              <text x="80" y="90" fill="#cbd5e1" font-size="10" font-family="'Inter', sans-serif" text-anchor="middle">Binary Zero-Copy Sync</text>
+              <text x="80" y="108" fill="#cbd5e1" font-size="10" font-family="'Inter', sans-serif" text-anchor="middle">SSE Manager & Auth</text>
+              <text x="80" y="128" fill="#64748b" font-size="9" font-family="'JetBrains Mono', monospace" text-anchor="middle">Port 8000 / Uvicorn</text>
+            </g>
+
+            <!-- NODE 4: POSTGRESQL -->
+            <g transform="translate(840, 75)" style="cursor:pointer;" onclick="openDrawer('postgres')">
+              <rect width="120" height="70" rx="10" fill="#141b33" stroke="#3b82f6" stroke-width="1.5"/>
+              <text x="60" y="30" fill="#60a5fa" font-size="11" font-family="'Outfit', sans-serif" font-weight="600" text-anchor="middle">PostgreSQL 16</text>
+              <text x="60" y="48" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace" text-anchor="middle">Cases, Embeddings</text>
+              <text x="60" y="60" fill="#64748b" font-size="8" font-family="'JetBrains Mono', monospace" text-anchor="middle">Port 5432</text>
+            </g>
+
+            <!-- NODE 5: REDIS CACHE -->
+            <g transform="translate(840, 215)" style="cursor:pointer;" onclick="openDrawer('redis')">
+              <rect width="120" height="70" rx="10" fill="#141b33" stroke="#ef4444" stroke-width="1.5"/>
+              <text x="60" y="30" fill="#f87171" font-size="11" font-family="'Outfit', sans-serif" font-weight="600" text-anchor="middle">Redis 7 Pub/Sub</text>
+              <text x="60" y="48" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace" text-anchor="middle">SSE Events & Queue</text>
+              <text x="60" y="60" fill="#64748b" font-size="8" font-family="'JetBrains Mono', monospace" text-anchor="middle">Port 6379</text>
+            </g>
+
+            <!-- NODE 6: WEB APP -->
+            <g transform="translate(980, 25)" style="cursor:pointer;" onclick="openDrawer('web_app')">
+              <rect width="170" height="75" rx="10" fill="#141b33" stroke="#38bdf8" stroke-width="1.5"/>
+              <text x="85" y="28" fill="#38bdf8" font-size="12" font-family="'Outfit', sans-serif" font-weight="600" text-anchor="middle">WEB PORTAL</text>
+              <text x="85" y="45" fill="#94a3b8" font-size="9" font-family="'Inter', sans-serif" text-anchor="middle">React 18 + Vite + Leaflet Map</text>
+              <text x="85" y="60" fill="#64748b" font-size="8" font-family="'JetBrains Mono', monospace" text-anchor="middle">Forensic Review & Sightings</text>
+            </g>
+
+            <!-- NODE 7: ANDROID APP -->
+            <g transform="translate(980, 305)" style="cursor:pointer;" onclick="openDrawer('android_app')">
+              <rect width="170" height="75" rx="10" fill="#141b33" stroke="#10b981" stroke-width="1.5"/>
+              <text x="85" y="28" fill="#10b981" font-size="12" font-family="'Outfit', sans-serif" font-weight="600" text-anchor="middle">ANDROID MOBILE APP</text>
+              <text x="85" y="45" fill="#94a3b8" font-size="9" font-family="'Inter', sans-serif" text-anchor="middle">Kotlin Jetpack Compose</text>
+              <text x="85" y="60" fill="#64748b" font-size="8" font-family="'JetBrains Mono', monospace" text-anchor="middle">FCM Push + Case Registration</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 3-TIER DETAILED ARCHITECTURE CARDS -->
+        <div class="topology-grid">
+
+          <!-- TIER 1: CLIENTS & SURVEILLANCE -->
+          <div class="tier-card tier-client">
+            <div class="tier-header">
+              <h4 class="tier-title">Client & Surveillance Tier</h4>
+              <span class="tier-tag">Frontends & Video Feeds</span>
+            </div>
+
+            <div class="components-stack">
+              <div class="comp-box" onclick="openDrawer('web_app')">
+                <div class="comp-box-header">
+                  <span class="comp-box-title">Citizen & Forensic Web App</span>
+                  <span class="comp-box-badge">Vite / React 18</span>
+                </div>
+                <p class="comp-box-desc">
+                  Responsive portal with client-side canvas photo compression, side-by-side sighting evidence comparison, and interactive Leaflet GPS movement tracking.
+                </p>
+                <div class="comp-box-meta">
+                  <span>Port: 5173 / 3000</span>
+                  <span>SSE Live Feed</span>
+                  <span>Bilingual EN/HI</span>
+                </div>
+              </div>
+
+              <div class="comp-box" onclick="openDrawer('android_app')">
+                <div class="comp-box-header">
+                  <span class="comp-box-title">Native Android Client</span>
+                  <span class="comp-box-badge">Kotlin Compose</span>
+                </div>
+                <p class="comp-box-desc">
+                  Citizen reporting application built with Jetpack Compose, Room DB, Retrofit HTTP client, and Firebase Cloud Messaging for instant sighting alerts.
+                </p>
+                <div class="comp-box-meta">
+                  <span>Target: Android 14+</span>
+                  <span>FCM Push</span>
+                  <span>Retrofit</span>
+                </div>
+              </div>
+
+              <div class="comp-box" onclick="openDrawer('cctv')">
+                <div class="comp-box-header">
+                  <span class="comp-box-title">CCTV Surveillance Feeds</span>
+                  <span class="comp-box-badge">RTSP / ONVIF</span>
+                </div>
+                <p class="comp-box-desc">
+                  Multi-camera RTSP video ingestion supporting 1–4 camera streams, auto-discovery via WS-Discovery/ONVIF, and hardware decoding via OpenCV FFMPEG.
+                </p>
+                <div class="comp-box-meta">
+                  <span>H.264 / H.265</span>
+                  <span>Auto-Reconnect</span>
+                  <span>10-15 FPS</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TIER 2: EDGE AI COMPUTING -->
+          <div class="tier-card tier-edge">
+            <div class="tier-header">
+              <h4 class="tier-title">Edge AI Monitoring Node</h4>
+              <span class="tier-tag">CPU-Optimized Runtime</span>
+            </div>
+
+            <div class="components-stack">
+              <div class="comp-box" onclick="openDrawer('edge_pipeline')">
+                <div class="comp-box-header">
+                  <span class="comp-box-title">Inference Pipeline Orchestrator</span>
+                  <span class="comp-box-badge">Python / PySide6</span>
+                </div>
+                <p class="comp-box-desc">
+                  Camera thread workers executing SCRFD detector, ByteTrack tracker, quality filtering, ArcFace encoding, and FAISS vector matching.
+                </p>
+                <div class="comp-box-meta">
+                  <span>CPU Provider</span>
+                  <span>QThread Async</span>
+                  <span>15ms Detect</span>
+                </div>
+              </div>
+
+              <div class="comp-box" onclick="openDrawer('temporal_verifier')">
+                <div class="comp-box-header">
+                  <span class="comp-box-title">Temporal Score Verifier</span>
+                  <span class="comp-box-badge">Novel Research</span>
+                </div>
+                <p class="comp-box-desc">
+                  Multi-frame rolling score aggregator. Eliminates single-frame false matches by verifying 5 consecutive observations (mean cosine ≥ 0.42).
+                </p>
+                <div class="comp-box-meta">
+                  <span>Window: 5 frames</span>
+                  <span>Cooldown: 300s</span>
+                  <span>FPR: 3.2%</span>
+                </div>
+              </div>
+
+              <div class="comp-box" onclick="openDrawer('faiss_store')">
+                <div class="comp-box-header">
+                  <span class="comp-box-title">Local FAISS Vector Database</span>
+                  <span class="comp-box-badge">IndexFlatIP</span>
+                </div>
+                <p class="comp-box-desc">
+                  In-memory 512-D cosine similarity search index. Supports thread-safe atomic pointer swaps during periodic background embedding sync.
+                </p>
+                <div class="comp-box-meta">
+                  <span>Latency: ~0.1ms</span>
+                  <span>Zero-Copy</span>
+                  <span>Thread-Safe</span>
+                </div>
+              </div>
+
+              <div class="comp-box" onclick="openDrawer('offline_queue')">
+                <div class="comp-box-header">
+                  <span class="comp-box-title">Offline SQLite Queue & Sighting Store</span>
+                  <span class="comp-box-badge">local_data.db</span>
+                </div>
+                <p class="comp-box-desc">
+                  Guarantees zero evidence loss during network partition. Sightings, face crops, and video clips queue in SQLite and auto-drain on reconnect.
+                </p>
+                <div class="comp-box-meta">
+                  <span>Idempotent</span>
+                  <span>Circular Clip Buffer</span>
+                  <span>Exponential Backoff</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TIER 3: CENTRAL CLOUD HUB -->
+          <div class="tier-card tier-cloud">
+            <div class="tier-header">
+              <h4 class="tier-title">Central Backend & Data Hub</h4>
+              <span class="tier-tag">FastAPI & Storage</span>
+            </div>
+
+            <div class="components-stack">
+              <div class="comp-box" onclick="openDrawer('fastapi')">
+                <div class="comp-box-header">
+                  <span class="comp-box-title">FastAPI Application Server</span>
+                  <span class="comp-box-badge">Python 3.11</span>
+                </div>
+                <p class="comp-box-desc">
+                  High-performance async REST API, Firebase JWT token verification, SSE streaming hub, and atomic multipart photo upload preprocessor.
+                </p>
+                <div class="comp-box-meta">
+                  <span>Uvicorn Workers</span>
+                  <span>Pydantic v2</span>
+                  <span>Port: 8000</span>
+                </div>
+              </div>
+
+              <div class="comp-box" onclick="openDrawer('postgres')">
+                <div class="comp-box-header">
+                  <span class="comp-box-title">PostgreSQL 16 Storage</span>
+                  <span class="comp-box-badge">AsyncPG / SQLAlchemy</span>
+                </div>
+                <p class="comp-box-desc">
+                  Central relational database storing users, missing persons, 512-D BYTEA embeddings, camera locations, sightings, and immutable audit logs.
+                </p>
+                <div class="comp-box-meta">
+                  <span>PostgreSQL 16</span>
+                  <span>Alembic Migrations</span>
+                  <span>BYTEA 512-D</span>
+                </div>
+              </div>
+
+              <div class="comp-box" onclick="openDrawer('redis')">
+                <div class="comp-box-header">
+                  <span class="comp-box-title">Redis 7 Broker & SSE Pub/Sub</span>
+                  <span class="comp-box-badge">aioredis</span>
+                </div>
+                <p class="comp-box-desc">
+                  Pub/Sub channels for real-time Server-Sent Events fanout to connected web and edge clients, plus background notification scheduling.
+                </p>
+                <div class="comp-box-meta">
+                  <span>Pub/Sub</span>
+                  <span>SSE Fanout</span>
+                  <span>Port: 6379</span>
+                </div>
+              </div>
+
+              <div class="comp-box" onclick="openDrawer('firebase')">
+                <div class="comp-box-header">
+                  <span class="comp-box-title">Firebase Cloud Services</span>
+                  <span class="comp-box-badge">FCM & Auth</span>
+                </div>
+                <p class="comp-box-desc">
+                  Decentralized user authentication (Google OAuth / Email) and Firebase Cloud Messaging (FCM) high-priority push dispatch to Android devices.
+                </p>
+                <div class="comp-box-meta">
+                  <span>Firebase Admin SDK</span>
+                  <span>FCM Push</span>
+                  <span>OAuth 2.0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         TAB 2: EDGE AI PIPELINE (DEEP DIVE & SIMULATOR)
+         ════════════════════════════════════════════════════════════════════ -->
+    <div id="pane-pipeline" class="tab-pane">
+      <div class="section-header">
+        <div>
+          <h3 class="section-title">
+            <span class="section-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            </span>
+            10-Stage Edge AI Pipeline Architecture
+          </h3>
+          <p class="section-desc">Strictly ordered real-time inference workflow running locally on CPU in the PySide6 Edge Agent.</p>
+        </div>
+      </div>
+
+      <div class="pipeline-wrapper">
+
+        <!-- NOVELTY HIGHLIGHT BANNER -->
+        <div class="research-callout">
+          <div class="research-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <div class="research-body">
+            <h4>Primary Research Contribution: Spatial-Temporal Verification</h4>
+            <p>
+              Traditional video facial recognition suffers from high false-positive rates (15%–25%) due to motion blur, extreme head pose, and lighting variance on single frames. 
+              <strong>FIND-MISSING-PEP</strong> implements a <strong>Temporal Moving Window</strong>: face detections are first assigned a persistent ID via <strong>ByteTrack</strong>. 
+              Only tracks maintaining an average ArcFace similarity <strong>&mu; &ge; 0.42 across 5 temporal windows</strong> trigger verified sighting alerts, dropping false alerts by over 80%.
+            </p>
+          </div>
+        </div>
+
+        <!-- 10 PIPELINE STAGES STEPPER CARDS -->
+        <div class="pipeline-stepper">
+
+          <div class="stage-card" onclick="openDrawer('stage1')">
+            <div class="stage-top">
+              <span class="stage-number">01</span>
+              <span class="stage-latency">~0 ms (I/O)</span>
+            </div>
+            <h4 class="stage-title">RTSP Stream Ingestion</h4>
+            <p class="stage-desc">OpenCV FFMPEG decoder captures 10–15 FPS video from IP cameras. Auto-reconnect with exponential backoff on network drop.</p>
+            <div class="stage-meta">
+              <span>edge_agent/camera/rtsp_reader.py</span>
+              <span>cv2.VideoCapture</span>
+            </div>
+          </div>
+
+          <div class="stage-card" onclick="openDrawer('stage2')">
+            <div class="stage-top">
+              <span class="stage-number">02</span>
+              <span class="stage-latency">&lt;1 ms</span>
+            </div>
+            <h4 class="stage-title">Frame Sampling & Buffer</h4>
+            <p class="stage-desc">Throttles incoming stream to 1–15 FPS target rate to bound CPU load. Maintains circular RAM buffer for 5s pre-match video clip capture.</p>
+            <div class="stage-meta">
+              <span>edge_agent/camera/frame_sampler.py</span>
+              <span>Circular Deque</span>
+            </div>
+          </div>
+
+          <div class="stage-card" onclick="openDrawer('stage3')">
+            <div class="stage-top">
+              <span class="stage-number">03</span>
+              <span class="stage-latency">~15 ms</span>
+            </div>
+            <h4 class="stage-title">SCRFD Face Detector</h4>
+            <p class="stage-desc">Lightweight ONNX model (det_10g.onnx, 16 MB). Letterboxes frame to 640×640; outputs bounding boxes and 5 facial landmark coordinates.</p>
+            <div class="stage-meta">
+              <span>edge_agent/ai/face_detector.py</span>
+              <span>ONNX Runtime (CPU)</span>
+            </div>
+          </div>
+
+          <div class="stage-card" onclick="openDrawer('stage4')">
+            <div class="stage-top">
+              <span class="stage-number">04</span>
+              <span class="stage-latency">~1 ms</span>
+            </div>
+            <h4 class="stage-title">ByteTrack Object Tracker</h4>
+            <p class="stage-desc">Associates detections across consecutive frames using Kalman filter and two-stage IoU matching. Assigns persistent track IDs.</p>
+            <div class="stage-meta">
+              <span>edge_agent/ai/tracker.py</span>
+              <span>lapx / Kalman Filter</span>
+            </div>
+          </div>
+
+          <div class="stage-card" onclick="openDrawer('stage5')">
+            <div class="stage-top">
+              <span class="stage-number">05</span>
+              <span class="stage-latency">&lt;0.5 ms</span>
+            </div>
+            <h4 class="stage-title">Face Quality Gate</h4>
+            <p class="stage-desc">Rejects poor detections: Laplacian blur variance &ge; 100, min face size &ge; 40px, aspect ratio 0.6–1.2, and 5 landmarks enclosed within bbox.</p>
+            <div class="stage-meta">
+              <span>edge_agent/ai/face_quality.py</span>
+              <span>Laplacian Var</span>
+            </div>
+          </div>
+
+          <div class="stage-card" onclick="openDrawer('stage6')">
+            <div class="stage-top">
+              <span class="stage-number">06</span>
+              <span class="stage-latency">&lt;1 ms</span>
+            </div>
+            <h4 class="stage-title">5-Point Affine Alignment</h4>
+            <p class="stage-desc">Transforms face crop using standard Umeyama affine warp onto canonical 112×112 coordinate space based on eyes, nose, and mouth corners.</p>
+            <div class="stage-meta">
+              <span>edge_agent/ai/face_aligner.py</span>
+              <span>112×112 Aligned Crop</span>
+            </div>
+          </div>
+
+          <div class="stage-card" onclick="openDrawer('stage7')">
+            <div class="stage-top">
+              <span class="stage-number">07</span>
+              <span class="stage-latency">~8 ms</span>
+            </div>
+            <h4 class="stage-title">ArcFace 512-D Embedder</h4>
+            <p class="stage-desc">Deep ResNet-50 feature extractor (w600k_r50.onnx, 166 MB). Generates L2-normalized 512-dimensional float32 biometric feature vector.</p>
+            <div class="stage-meta">
+              <span>edge_agent/ai/face_recognizer.py</span>
+              <span>512-D L2-Norm</span>
+            </div>
+          </div>
+
+          <div class="stage-card" onclick="openDrawer('stage8')">
+            <div class="stage-top">
+              <span class="stage-number">08</span>
+              <span class="stage-latency">&lt;0.2 ms</span>
+            </div>
+            <h4 class="stage-title">FAISS Vector Search</h4>
+            <p class="stage-desc">In-memory exact inner-product (cosine) search against all active missing person embeddings. Filters candidates with score &ge; 0.30.</p>
+            <div class="stage-meta">
+              <span>edge_agent/ai/vector_search.py</span>
+              <span>FAISS IndexFlatIP</span>
+            </div>
+          </div>
+
+          <div class="stage-card novelty-badge" onclick="openDrawer('stage9')">
+            <div class="stage-top">
+              <span class="stage-number" style="background:var(--accent-amber); color:#000;">09</span>
+              <span class="stage-latency" style="color:var(--accent-amber); background:rgba(245,158,11,0.2);">Research Core</span>
+            </div>
+            <h4 class="stage-title" style="color:var(--accent-amber);">Temporal Verifier</h4>
+            <p class="stage-desc">Accumulates matching history for (track_id, person_id). Triggers sighting only if mean score across 5 frames &ge; 0.42 with 300s cooldown.</p>
+            <div class="stage-meta">
+              <span>edge_agent/ai/temporal_verifier.py</span>
+              <span>Sliding Window Average</span>
+            </div>
+          </div>
+
+          <div class="stage-card" onclick="openDrawer('stage10')">
+            <div class="stage-top">
+              <span class="stage-number">10</span>
+              <span class="stage-latency">Async</span>
+            </div>
+            <h4 class="stage-title">Evidence & Alert Dispatch</h4>
+            <p class="stage-desc">Saves 112×112 face crop, annotated full frame, and circular clip. Emits Qt alert, stores in SQLite offline queue, and uploads via HTTP.</p>
+            <div class="stage-meta">
+              <span>edge_agent/ai/evidence_collector.py</span>
+              <span>Multipart HTTP + SSE</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- INTERACTIVE PIPELINE SIMULATOR -->
+        <div class="simulator-box">
+          <div class="sim-header">
+            <div>
+              <h4 style="font-family: var(--font-heading); font-size: 1.15rem; margin-bottom: 0.2rem;">
+                Interactive AI Pipeline Simulator
+              </h4>
+              <p style="font-size: 0.82rem; color: var(--text-secondary);">
+                Test how a CCTV video frame flows through SCRFD, ByteTrack, Quality Gate, ArcFace, and Temporal Verification in real time.
+              </p>
+            </div>
+            <div class="sim-controls">
+              <button class="btn btn-secondary" onclick="resetPipelineSim()">Reset</button>
+              <button class="btn btn-primary" id="btnRunSim" onclick="runPipelineSim()">Run Simulation Step</button>
+            </div>
+          </div>
+
+          <div class="sim-track">
+            <div class="sim-node" id="simNode1">
+              <div class="sim-node-circle">01</div>
+              <span class="sim-node-label">RTSP Frame</span>
+            </div>
+            <div class="sim-node" id="simNode2">
+              <div class="sim-node-circle">02</div>
+              <span class="sim-node-label">Sampling</span>
+            </div>
+            <div class="sim-node" id="simNode3">
+              <div class="sim-node-circle">03</div>
+              <span class="sim-node-label">SCRFD Detect</span>
+            </div>
+            <div class="sim-node" id="simNode4">
+              <div class="sim-node-circle">04</div>
+              <span class="sim-node-label">ByteTrack</span>
+            </div>
+            <div class="sim-node" id="simNode5">
+              <div class="sim-node-circle">05</div>
+              <span class="sim-node-label">Quality Gate</span>
+            </div>
+            <div class="sim-node" id="simNode6">
+              <div class="sim-node-circle">06</div>
+              <span class="sim-node-label">Alignment</span>
+            </div>
+            <div class="sim-node" id="simNode7">
+              <div class="sim-node-circle">07</div>
+              <span class="sim-node-label">ArcFace 512D</span>
+            </div>
+            <div class="sim-node" id="simNode8">
+              <div class="sim-node-circle">08</div>
+              <span class="sim-node-label">FAISS Search</span>
+            </div>
+            <div class="sim-node" id="simNode9">
+              <div class="sim-node-circle">09</div>
+              <span class="sim-node-label">Temporal Window</span>
+            </div>
+            <div class="sim-node" id="simNode10">
+              <div class="sim-node-circle">10</div>
+              <span class="sim-node-label">Alert & Push</span>
+            </div>
+          </div>
+
+          <div class="sim-terminal" id="simTerminal">
+            <div class="terminal-line">
+              <span class="terminal-ts">[00:00.000]</span>
+              <span>Simulator initialized. Ready to inject synthetic CCTV test frames. Click 'Run Simulation Step'.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         TAB 3: SEQUENCE FLOWS
+         ════════════════════════════════════════════════════════════════════ -->
+    <div id="pane-sequences" class="tab-pane">
+      <div class="section-header">
+        <div>
+          <h3 class="section-title">
+            <span class="section-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            </span>
+            End-to-End System Sequence Flows
+          </h3>
+          <p class="section-desc">Interactive execution traces covering report creation, background sync, CCTV alert dispatch, and offline recovery.</p>
+        </div>
+      </div>
+
+      <div class="flow-tabs">
+        <button class="flow-btn active" onclick="switchSequence('report')">Flow A: Citizen Case Registration & Biometric Indexing</button>
+        <button class="flow-btn" onclick="switchSequence('sync')">Flow B: Zero-Copy Binary Embedding Sync</button>
+        <button class="flow-btn" onclick="switchSequence('sighting')">Flow C: Live CCTV Match, Evidence & FCM Alert</button>
+        <button class="flow-btn" onclick="switchSequence('offline')">Flow D: Offline Resilience & Sighting Drain</button>
+      </div>
+
+      <!-- SEQUENCE A: REPORT -->
+      <div id="seq-report" class="sequence-card">
+        <div class="step-timeline">
+          <div class="timeline-item">
+            <div class="timeline-bullet">1</div>
+            <div class="timeline-content">
+              <div class="timeline-title-row">
+                <span class="timeline-step-title">Citizen Photo Upload & Metadata Submission</span>
+                <span class="timeline-actors">Web/Android ➔ FastAPI</span>
+              </div>
+              <p class="timeline-text">
+                User selects 1–4 photos of the missing person. Web app compresses images via Canvas (<1 MB). Sends multipart request with metadata (name, age, last-seen location).
+              </p>
+              <div class="timeline-code">
+POST /api/reports/ HTTP/1.1
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+[ReportCreate JSON payload + 3 compressed JPEG photos]
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-bullet">2</div>
+            <div class="timeline-content">
+              <div class="timeline-title-row">
+                <span class="timeline-step-title">Server-Side Face Detection & Crop Alignment</span>
+                <span class="timeline-actors">FastAPI ➔ SCRFD ONNX</span>
+              </div>
+              <p class="timeline-text">
+                Backend loads photos into OpenCV, runs SCRFD detection. Selects largest face, checks quality score, aligns 5 landmarks to 112×112 canonical crop, and saves to <code>uploads/faces/</code>.
+              </p>
+              <div class="timeline-code">
+# backend/app/services/face_processing.py
+aligned_face = aligner.align(img, landmarks)
+cv2.imwrite("uploads/faces/{photo_id}.jpg", aligned_face)
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-bullet">3</div>
+            <div class="timeline-content">
+              <div class="timeline-title-row">
+                <span class="timeline-step-title">ArcFace 512-D Embedding Extraction & DB Storage</span>
+                <span class="timeline-actors">FastAPI ➔ PostgreSQL</span>
+              </div>
+              <p class="timeline-text">
+                Processes aligned crop through ArcFace (w600k_r50.onnx). Extracts 512-D float32 vector, L2-normalizes, and stores as 2048-byte binary blob in PostgreSQL. Updates report status to <code>ACTIVE</code>.
+              </p>
+              <div class="timeline-code">
+INSERT INTO face_embeddings (person_id, photo_id, embedding, quality_score)
+VALUES ($1, $2, $3::bytea, $4);
+UPDATE missing_persons SET status = 'ACTIVE' WHERE id = $1;
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-bullet">4</div>
+            <div class="timeline-content">
+              <div class="timeline-title-row">
+                <span class="timeline-step-title">Redis Pub/Sub Event Broadcast</span>
+                <span class="timeline-actors">FastAPI ➔ Redis Pub/Sub</span>
+              </div>
+              <p class="timeline-text">
+                Backend publishes <code>report_status_change</code> event to Redis channel. Connected Web clients and Edge Agents receive real-time notification to invalidate local embedding cache.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEQUENCE B: SYNC -->
+      <div id="seq-sync" class="sequence-card" style="display:none;">
+        <div class="step-timeline">
+          <div class="timeline-item">
+            <div class="timeline-bullet">1</div>
+            <div class="timeline-content">
+              <div class="timeline-title-row">
+                <span class="timeline-step-title">Periodic Incremental Sync Request</span>
+                <span class="timeline-actors">Edge Agent ➔ FastAPI</span>
+              </div>
+              <p class="timeline-text">
+                Every 60s, Edge Agent queries central backend with its device API key and the timestamp of its last successful sync (<code>since=ISO_TIMESTAMP</code>).
+              </p>
+              <div class="timeline-code">
+GET /api/embeddings/sync?since=2026-10-13T12:00:00Z HTTP/1.1
+X-API-Key: agent-sha256-key-token
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-bullet">2</div>
+            <div class="timeline-content">
+              <div class="timeline-title-row">
+                <span class="timeline-step-title">Zero-Copy Binary Vector Packing</span>
+                <span class="timeline-actors">FastAPI Serialization</span>
+              </div>
+              <p class="timeline-text">
+                Instead of slow JSON serialization (6 KB/person), backend streams embeddings as raw float32 bytes (2048 bytes/vector) with person UUID mapping list.
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-bullet">3</div>
+            <div class="timeline-content">
+              <div class="timeline-title-row">
+                <span class="timeline-step-title">Thread-Safe Atomic FAISS Swap</span>
+                <span class="timeline-actors">Edge Agent Vector Store</span>
+              </div>
+              <p class="timeline-text">
+                Edge Agent builds a new FAISS <code>IndexFlatIP</code> index in the background worker thread. When complete, atomically swaps the pointer without pausing ongoing CCTV camera streams.
+              </p>
+              <div class="timeline-code">
+# edge_agent/storage/faiss_store.py
+new_index = faiss.IndexFlatIP(512)
+new_index.add(np.ascontiguousarray(embedding_matrix))
+with self.lock:
+    self.active_index = new_index  # Atomic pointer swap
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEQUENCE C: SIGHTING -->
+      <div id="seq-sighting" class="sequence-card" style="display:none;">
+        <div class="step-timeline">
+          <div class="timeline-item">
+            <div class="timeline-bullet">1</div>
+            <div class="timeline-content">
+              <div class="timeline-title-row">
+                <span class="timeline-step-title">CCTV Recognition & Temporal Score Verification</span>
+                <span class="timeline-actors">Edge Agent Camera Thread</span>
+              </div>
+              <p class="timeline-text">
+                Track #42 matches Person #102 across 5 consecutive frames with similarities [0.61, 0.64, 0.65, 0.62, 0.66]. Mean score = 0.636 &ge; 0.42 threshold. Sighting confirmed!
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-bullet">2</div>
+            <div class="timeline-content">
+              <div class="timeline-title-row">
+                <span class="timeline-step-title">Evidence Capture & Local Storage</span>
+                <span class="timeline-actors">Edge Agent Evidence Collector</span>
+              </div>
+              <p class="timeline-text">
+                Captures 112×112 cropped face, 1920×1080 full frame with bounding box, and extracts 5s circular video buffer clip. Writes to local disk and creates pending record in SQLite.
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-bullet">3</div>
+            <div class="timeline-content">
+              <div class="timeline-title-row">
+                <span class="timeline-step-title">Multipart Evidence Upload to Backend</span>
+                <span class="timeline-actors">Edge Agent ➔ FastAPI</span>
+              </div>
+              <p class="timeline-text">
+                Edge Agent calls <code>POST /api/sightings/</code> with camera ID, GPS coordinates, timestamp, similarity score, and multipart JPEG files.
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-bullet">4</div>
+            <div class="timeline-content">
+              <div class="timeline-title-row">
+                <span class="timeline-step-title">Multi-Channel Push: SSE + FCM</span>
+                <span class="timeline-actors">FastAPI ➔ Web / Android Clients</span>
+              </div>
+              <p class="timeline-text">
+                Backend sends high-priority FCM push notification to family member's phone (rings in background) and broadcasts SSE event to all connected Web Command Centers.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEQUENCE D: OFFLINE -->
+      <div id="seq-offline" class="sequence-card" style="display:none;">
+        <div class="step-timeline">
+          <div class="timeline-item">
+            <div class="timeline-bullet">1</div>
+            <div class="timeline-content">
+              <div class="timeline-title-row">
+                <span class="timeline-step-title">Network Drop / Backend Offline</span>
+                <span class="timeline-actors">Edge Agent Network Layer</span>
+              </div>
+              <p class="timeline-text">
+                When internet connection drops or central server restarts, Edge Agent catches <code>httpx.ConnectError</code>. Pipeline execution continues uninterrupted.
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-bullet">2</div>
+            <div class="timeline-content">
+              <div class="timeline-title-row">
+                <span class="timeline-step-title">Local SQLite Queue Staging</span>
+                <span class="timeline-actors">Edge Agent local_data.db</span>
+              </div>
+              <p class="timeline-text">
+                Sighting event, evidence paths, and verification timestamps are saved to <code>offline_sightings</code> table in local SQLite database with status <code>QUEUED</code>.
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-bullet">3</div>
+            <div class="timeline-content">
+              <div class="timeline-title-row">
+                <span class="timeline-step-title">Health Recovery & Auto-Drain Worker</span>
+                <span class="timeline-actors">Edge Agent Background Worker</span>
+              </div>
+              <p class="timeline-text">
+                Background worker pings <code>GET /health</code> with exponential backoff. Upon 200 OK, drains queued sightings in chronological order and clears local queue.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         TAB 4: DATABASE & SCHEMAS
+         ════════════════════════════════════════════════════════════════════ -->
+    <div id="pane-database" class="tab-pane">
+      <div class="section-header">
+        <div>
+          <h3 class="section-title">
+            <span class="section-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+            </span>
+            Database Models & Entity Relationships
+          </h3>
+          <p class="section-desc">PostgreSQL 16 relational core and Edge Agent SQLite offline schemas.</p>
+        </div>
+      </div>
+
+      <div class="erd-grid">
+
+        <!-- TABLE: USERS -->
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-name">
+              <span class="field-pk">PK</span> users
+            </span>
+            <span class="table-scope">PostgreSQL</span>
+          </div>
+          <div class="table-fields">
+            <div class="field-row">
+              <span class="field-name"><span class="field-pk">&bull;</span> id</span>
+              <span class="field-type">UUID</span>
+              <span class="field-desc">Primary Key</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">firebase_uid</span>
+              <span class="field-type">VARCHAR(128)</span>
+              <span class="field-desc">Unique Index</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">name</span>
+              <span class="field-type">VARCHAR(255)</span>
+              <span class="field-desc">User Name</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">fcm_token</span>
+              <span class="field-type">TEXT</span>
+              <span class="field-desc">Mobile Push</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">language</span>
+              <span class="field-type">VARCHAR(5)</span>
+              <span class="field-desc">'en' | 'hi'</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABLE: MISSING_PERSONS -->
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-name">
+              <span class="field-pk">PK</span> missing_persons
+            </span>
+            <span class="table-scope">PostgreSQL</span>
+          </div>
+          <div class="table-fields">
+            <div class="field-row">
+              <span class="field-name"><span class="field-pk">&bull;</span> id</span>
+              <span class="field-type">UUID</span>
+              <span class="field-desc">Primary Key</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name"><span class="field-fk">&rarr;</span> user_id</span>
+              <span class="field-type">UUID</span>
+              <span class="field-desc">FK users.id</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">full_name</span>
+              <span class="field-type">VARCHAR(255)</span>
+              <span class="field-desc">Case Target</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">age, gender</span>
+              <span class="field-type">INT, VARCHAR</span>
+              <span class="field-desc">Demographics</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">status</span>
+              <span class="field-type">VARCHAR(20)</span>
+              <span class="field-desc">PROCESSING|ACTIVE|FOUND</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABLE: FACE_EMBEDDINGS -->
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-name">
+              <span class="field-pk">PK</span> face_embeddings
+            </span>
+            <span class="table-scope">PostgreSQL</span>
+          </div>
+          <div class="table-fields">
+            <div class="field-row">
+              <span class="field-name"><span class="field-pk">&bull;</span> id</span>
+              <span class="field-type">UUID</span>
+              <span class="field-desc">Primary Key</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name"><span class="field-fk">&rarr;</span> person_id</span>
+              <span class="field-type">UUID</span>
+              <span class="field-desc">FK missing_persons</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">embedding</span>
+              <span class="field-type">BYTEA (2048 B)</span>
+              <span class="field-desc">512-D float32</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">quality_score</span>
+              <span class="field-type">REAL</span>
+              <span class="field-desc">Laplacian Var</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">created_at</span>
+              <span class="field-type">TIMESTAMPTZ</span>
+              <span class="field-desc">Sync Filter</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABLE: SIGHTINGS -->
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-name">
+              <span class="field-pk">PK</span> sightings
+            </span>
+            <span class="table-scope">PostgreSQL</span>
+          </div>
+          <div class="table-fields">
+            <div class="field-row">
+              <span class="field-name"><span class="field-pk">&bull;</span> id</span>
+              <span class="field-type">UUID</span>
+              <span class="field-desc">Primary Key</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name"><span class="field-fk">&rarr;</span> person_id</span>
+              <span class="field-type">UUID</span>
+              <span class="field-desc">FK missing_persons</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name"><span class="field-fk">&rarr;</span> camera_id</span>
+              <span class="field-type">UUID</span>
+              <span class="field-desc">FK cameras.id</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">similarity_score</span>
+              <span class="field-type">REAL</span>
+              <span class="field-desc">0.0 – 1.0</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">evidence_crop_path</span>
+              <span class="field-type">VARCHAR(512)</span>
+              <span class="field-desc">112×112 JPEG</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">status</span>
+              <span class="field-type">VARCHAR(20)</span>
+              <span class="field-desc">PENDING|CONFIRMED|REJECTED</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABLE: EDGE_AGENTS -->
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-name">
+              <span class="field-pk">PK</span> edge_agents
+            </span>
+            <span class="table-scope">PostgreSQL</span>
+          </div>
+          <div class="table-fields">
+            <div class="field-row">
+              <span class="field-name"><span class="field-pk">&bull;</span> id</span>
+              <span class="field-type">UUID</span>
+              <span class="field-desc">Primary Key</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">device_id</span>
+              <span class="field-type">VARCHAR(128)</span>
+              <span class="field-desc">Unique Hardware ID</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">api_key_hash</span>
+              <span class="field-type">VARCHAR(64)</span>
+              <span class="field-desc">SHA-256 Token</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">last_heartbeat</span>
+              <span class="field-type">TIMESTAMPTZ</span>
+              <span class="field-desc">Status Monitor</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">status</span>
+              <span class="field-type">VARCHAR(20)</span>
+              <span class="field-desc">ONLINE|OFFLINE|ERROR</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABLE: LOCAL_DATA.DB (SQLITE) -->
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-name">
+              <span class="field-pk">PK</span> offline_sightings
+            </span>
+            <span class="table-scope">SQLite (Edge)</span>
+          </div>
+          <div class="table-fields">
+            <div class="field-row">
+              <span class="field-name"><span class="field-pk">&bull;</span> id</span>
+              <span class="field-type">INTEGER</span>
+              <span class="field-desc">Autoincrement</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">person_id</span>
+              <span class="field-type">TEXT</span>
+              <span class="field-desc">Target UUID</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">similarity</span>
+              <span class="field-type">REAL</span>
+              <span class="field-desc">Mean Score</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">crop_path, frame_path</span>
+              <span class="field-type">TEXT</span>
+              <span class="field-desc">Local Filesystem</span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">retry_count, uploaded</span>
+              <span class="field-type">INT, BOOLEAN</span>
+              <span class="field-desc">Sync Queue State</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         TAB 5: API & PROTOCOL SPEC
+         ════════════════════════════════════════════════════════════════════ -->
+    <div id="pane-api" class="tab-pane">
+      <div class="section-header">
+        <div>
+          <h3 class="section-title">
+            <span class="section-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+            </span>
+            REST Endpoints & Communication Protocols
+          </h3>
+          <p class="section-desc">Complete REST contract, Server-Sent Events stream, and Edge Agent binary sync specification.</p>
+        </div>
+      </div>
+
+      <div class="api-grid">
+
+        <!-- ENDPOINT 1 -->
+        <div class="api-endpoint-card open">
+          <div class="api-endpoint-header" onclick="toggleEndpoint(this)">
+            <div class="api-method-path">
+              <span class="badge-method method-get">GET</span>
+              <span class="api-path">/api/embeddings/sync</span>
+            </div>
+            <span class="api-desc">Edge Agent Biometric Synchronization Endpoint</span>
+          </div>
+          <div class="api-endpoint-body">
+            <p style="font-size:0.84rem; color:var(--text-secondary); margin-bottom:0.75rem;">
+              Retrieves missing person face embeddings as high-efficiency binary packets. Supports full sync or incremental sync via <code>since</code> query parameter.
+            </p>
+            <div class="timeline-code">
+<strong>Headers:</strong> X-API-Key: &lt;edge_agent_api_key&gt;
+<strong>Query:</strong> ?since=2026-10-13T12:00:00Z (Optional ISO timestamp)
+
+<strong>Response (200 OK JSON with Binary Base64/Raw Array):</strong>
+{
+  "full_sync": false,
+  "sync_timestamp": "2026-10-13T12:45:00Z",
+  "persons": [
+    {
+      "person_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "full_name": "Rohan Sharma",
+      "embeddings": ["&lt;base64_encoded_512_float32_bytes&gt;"],
+      "photo_url": "/uploads/faces/face_1.jpg"
+    }
+  ],
+  "removed_ids": []
+}
+            </div>
+          </div>
+        </div>
+
+        <!-- ENDPOINT 2 -->
+        <div class="api-endpoint-card">
+          <div class="api-endpoint-header" onclick="toggleEndpoint(this)">
+            <div class="api-method-path">
+              <span class="badge-method method-post">POST</span>
+              <span class="api-path">/api/sightings/</span>
+            </div>
+            <span class="api-desc">Edge CCTV Sighting Submission (Evidence Upload)</span>
+          </div>
+          <div class="api-endpoint-body">
+            <p style="font-size:0.84rem; color:var(--text-secondary); margin-bottom:0.75rem;">
+              Dispatched by Edge Agent when temporal verification criteria are met. Uploads cropped face, full frame, and telemetry metadata.
+            </p>
+            <div class="timeline-code">
+<strong>Headers:</strong> X-API-Key: &lt;edge_agent_api_key&gt;, Content-Type: multipart/form-data
+<strong>Form Fields:</strong>
+  person_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  camera_id: "8c7a6e12-32b1-4190-b981-d1f86c234a91"
+  similarity_score: 0.642
+  timestamp: "2026-10-13T12:48:22Z"
+  crop_image: [binary JPEG, 112×112]
+  frame_image: [binary JPEG, 1920×1080]
+            </div>
+          </div>
+        </div>
+
+        <!-- ENDPOINT 3 -->
+        <div class="api-endpoint-card">
+          <div class="api-endpoint-header" onclick="toggleEndpoint(this)">
+            <div class="api-method-path">
+              <span class="badge-method method-get">GET</span>
+              <span class="api-path">/api/events/stream</span>
+            </div>
+            <span class="api-desc">Server-Sent Events (SSE) Real-Time Notification Stream</span>
+          </div>
+          <div class="api-endpoint-body">
+            <p style="font-size:0.84rem; color:var(--text-secondary); margin-bottom:0.75rem;">
+              Long-lived HTTP streaming connection consumed by Web Portal and Edge GUI. Pushes instant sightings and heartbeat ping every 30s.
+            </p>
+            <div class="timeline-code">
+<strong>Event Schema:</strong>
+event: new_sighting
+data: {"sighting_id": "...", "person_id": "...", "full_name": "...", "similarity": 0.642, "camera_name": "North Gate", "timestamp": "..."}
+
+event: ping
+data: {"timestamp": 1791884400}
+            </div>
+          </div>
+        </div>
+
+        <!-- ENDPOINT 4 -->
+        <div class="api-endpoint-card">
+          <div class="api-endpoint-header" onclick="toggleEndpoint(this)">
+            <div class="api-method-path">
+              <span class="badge-method method-post">POST</span>
+              <span class="api-path">/api/reports/</span>
+            </div>
+            <span class="api-desc">Citizen Missing Person Report Creation</span>
+          </div>
+          <div class="api-endpoint-body">
+            <p style="font-size:0.84rem; color:var(--text-secondary); margin-bottom:0.75rem;">
+              Atomic creation of missing person dossier with photos. Triggers server-side SCRFD alignment and ArcFace embedding generation.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         TAB 6: SIZING & BENCHMARKS
+         ════════════════════════════════════════════════════════════════════ -->
+    <div id="pane-hardware" class="tab-pane">
+      <div class="section-header">
+        <div>
+          <h3 class="section-title">
+            <span class="section-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>
+            </span>
+            Edge Hardware Sizing & Latency Calculator
+          </h3>
+          <p class="section-desc">Interactive capacity planner to estimate CPU load, RAM usage, and FAISS lookup times for any deployment scale.</p>
+        </div>
+      </div>
+
+      <div class="calc-container">
+
+        <!-- SLIDER CONTROLS -->
+        <div class="calc-card">
+          <h4 style="font-family: var(--font-heading); font-size: 1.15rem; margin-bottom: 1.25rem;">
+            Surveillance Deployment Parameters
+          </h4>
+
+          <div class="calc-slider-group">
+            <div class="calc-slider-header">
+              <span>Active CCTV Cameras</span>
+              <span class="calc-slider-val" id="valCameras">4 Cameras</span>
+            </div>
+            <input type="range" class="calc-range" id="sliderCameras" min="1" max="16" value="4" oninput="updateCalculator()">
+          </div>
+
+          <div class="calc-slider-group">
+            <div class="calc-slider-header">
+              <span>Target Sampling Rate</span>
+              <span class="calc-slider-val" id="valFps">1 FPS (Standard)</span>
+            </div>
+            <input type="range" class="calc-range" id="sliderFps" min="1" max="15" value="1" oninput="updateCalculator()">
+          </div>
+
+          <div class="calc-slider-group">
+            <div class="calc-slider-header">
+              <span>Active Missing Persons in Database</span>
+              <span class="calc-slider-val" id="valPersons">500 Persons</span>
+            </div>
+            <input type="range" class="calc-range" id="sliderPersons" min="50" max="10000" step="50" value="500" oninput="updateCalculator()">
+          </div>
+
+          <div class="calc-slider-group">
+            <div class="calc-slider-header">
+              <span>Average Faces Detected / Frame</span>
+              <span class="calc-slider-val" id="valFaces">2 Faces</span>
+            </div>
+            <input type="range" class="calc-range" id="sliderFaces" min="1" max="10" value="2" oninput="updateCalculator()">
+          </div>
+        </div>
+
+        <!-- ESTIMATED RESOURCE CONSUMPTION -->
+        <div class="calc-card">
+          <h4 style="font-family: var(--font-heading); font-size: 1.15rem; margin-bottom: 1.25rem;">
+            Estimated Hardware Utilization
+          </h4>
+
+          <div class="hardware-results-grid">
+            <div class="hw-result-box">
+              <div class="hw-result-num" id="resCpu">38%</div>
+              <div class="hw-result-label">CPU Load (Intel i5 6-Core)</div>
+            </div>
+            <div class="hw-result-box">
+              <div class="hw-result-num" id="resRam">540 MB</div>
+              <div class="hw-result-label">Edge Agent RAM</div>
+            </div>
+            <div class="hw-result-box">
+              <div class="hw-result-num" id="resFaiss">0.08 ms</div>
+              <div class="hw-result-label">FAISS Query Latency</div>
+            </div>
+            <div class="hw-result-box">
+              <div class="hw-result-num" id="resBw">12 KB/s</div>
+              <div class="hw-result-label">Network Uplink</div>
+            </div>
+          </div>
+
+          <div class="hw-tier-recommendation">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <div>
+              <div style="font-weight: 700; font-size: 0.95rem; color: #fff;" id="resTierName">Recommended: Intel N100 / Core i3 Mini PC</div>
+              <div style="font-size: 0.78rem; color: var(--text-secondary);" id="resTierDesc">Capable of smooth real-time monitoring across all 4 cameras with CPU headroom.</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       COMPONENT DETAIL DRAWER
+       ══════════════════════════════════════════════════════════════════════ -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer(event)">
+    <div class="drawer-panel" id="drawerPanel" onclick="event.stopPropagation()">
+      <div class="drawer-header">
+        <div>
+          <h3 class="drawer-title" id="drawerTitle">Component Specification</h3>
+          <p class="drawer-file-path" id="drawerFilePath">path/to/component</p>
+        </div>
+        <button class="drawer-close" onclick="closeDrawer()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div>
+        <div class="drawer-section-title">Architectural Role & Description</div>
+        <div class="drawer-content-box" id="drawerDesc">
+          Detailed component description and operational responsibilities.
+        </div>
+      </div>
+
+      <div>
+        <div class="drawer-section-title">Inputs, Outputs & Invariants</div>
+        <div class="drawer-content-box" id="drawerInOut">
+          Inputs and outputs contract.
+        </div>
+      </div>
+
+      <div>
+        <div class="drawer-section-title">Source Code Implementation Reference</div>
+        <pre class="drawer-code-snippet"><code id="drawerCode"># Code snippet</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       FOOTER
+       ══════════════════════════════════════════════════════════════════════ -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <strong>FIND-MISSING-PEP</strong> &mdash; AI-Based Missing Person Detection & Real-Time CCTV Monitoring System.
+        <div style="font-size: 0.75rem; margin-top: 0.2rem;">Generated from repo specifications: ARCHITECTURE.md, DOC/5-Architecture.md</div>
+      </div>
+      <div class="footer-links">
+        <a href="#topology" class="footer-link" onclick="switchTab('topology')">Topology</a>
+        <a href="#pipeline" class="footer-link" onclick="switchTab('pipeline')">AI Pipeline</a>
+        <a href="#database" class="footer-link" onclick="switchTab('database')">Schemas</a>
+        <a href="#api" class="footer-link" onclick="switchTab('api')">REST API</a>
+        <a href="#hardware" class="footer-link" onclick="switchTab('hardware')">Calculator</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       INTERACTIVE JAVASCRIPT LOGIC
+       ══════════════════════════════════════════════════════════════════════ -->
+  <script>
+    // ── TAB SWITCHING ──────────────────────────────────────────────────
+    function switchTab(tabId) {
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabId);
+      });
+      document.querySelectorAll('.tab-pane').forEach(pane => {
+        pane.classList.toggle('active', pane.id === 'pane-' + tabId);
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── SEQUENCE FLOW TOGGLE ──────────────────────────────────────────
+    function switchSequence(seqId) {
+      document.querySelectorAll('.flow-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      ['report', 'sync', 'sighting', 'offline'].forEach(id => {
+        const el = document.getElementById('seq-' + id);
+        if (el) el.style.display = (id === seqId) ? 'block' : 'none';
+      });
+    }
+
+    // ── API ENDPOINT ACCORDION ────────────────────────────────────────
+    function toggleEndpoint(el) {
+      const card = el.closest('.api-endpoint-card');
+      card.classList.toggle('open');
+    }
+
+    // ── COMPONENT REGISTRY FOR DRAWER ─────────────────────────────────
+    const COMPONENT_DATA = {
+      'cctv': {
+        title: 'CCTV Camera Stream Ingestion',
+        file: 'edge_agent/camera/rtsp_reader.py & onvif_discovery.py',
+        desc: 'Connects to IP cameras via RTSP protocol over TCP/UDP. Supports auto-discovery on local subnets using ONVIF WS-Discovery. Decodes frames via OpenCV with hardware acceleration flags where available.',
+        inout: 'Input: RTSP URL stream (H.264 / H.265, 10–30 FPS)\nOutput: BGR Video Frame numpy.ndarray\nFailure Mode: Auto-reconnect worker with exponential backoff (1s, 2s, 4s... max 30s).',
+        code: `class RTSPReader:
+    def __init__(self, rtsp_url: str):
+        self.rtsp_url = rtsp_url
+        self.cap = cv2.VideoCapture(rtsp_url, cv2.CAP_FFMPEG)
+        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+
+    def read_frame(self) -> Tuple[bool, Optional[np.ndarray]]:
+        ret, frame = self.cap.read()
+        if not ret:
+            self.reconnect()
+        return ret, frame`
+      },
+      'edge_agent': {
+        title: 'PySide6 Edge Surveillance Agent',
+        file: 'edge_agent/main.py & edge_agent/ui/main_window.py',
+        desc: 'Standalone desktop GUI and background processing node installed at CCTV monitoring sites. Manages camera previews, real-time bounding box overlays, local SQLite database, and background QThread AI workers.',
+        inout: 'Input: Local RTSP camera feeds, central missing person sync\nOutput: Operator GUI alerts, sighting upload packets\nState: Fully autonomous, offline resilient.',
+        code: `class MainWindow(QMainWindow):
+    def __init__(self, config: AgentConfig):
+        super().__init__()
+        self.camera_manager = StreamManager(config)
+        self.sync_worker = SyncWorker(config)
+        self.sync_worker.embeddings_updated.connect(self.on_embeddings_updated)`
+      },
+      'temporal_verifier': {
+        title: 'Temporal Moving Window Verifier (Core Novelty)',
+        file: 'edge_agent/ai/temporal_verifier.py',
+        desc: 'Core research innovation: eliminates false-positive face alerts by aggregating multi-frame similarity scores across persistent ByteTrack track IDs. Requires mean similarity >= 0.42 across 5 temporal windows.',
+        inout: 'Input: track_id (int), person_id (UUID), instant_similarity (float)\nOutput: MatchEvent or None\nThresholds: window_size=5, mean_threshold=0.42, cooldown=300s',
+        code: `class TemporalVerifier:
+    def check_match(self, track_id: int, person_id: str, score: float) -> Optional[MatchEvent]:
+        history = self.scores[(track_id, person_id)]
+        history.append((time.time(), score))
+        if len(history) >= 5:
+            mean_score = np.mean([s for _, s in history[-5:]])
+            if mean_score >= 0.42 and not self.in_cooldown(track_id, person_id):
+                self.record_match(track_id, person_id)
+                return MatchEvent(track_id, person_id, mean_score)`
+      },
+      'faiss_store': {
+        title: 'Local FAISS In-Memory Vector Search Engine',
+        file: 'edge_agent/ai/vector_search.py & edge_agent/storage/faiss_store.py',
+        desc: 'Maintains an in-memory faiss.IndexFlatIP for exact L2-normalized cosine distance lookup across missing person 512-D ArcFace vectors. Implements thread-safe atomic pointer swaps during sync.',
+        inout: 'Input: 512-D query embedding (np.float32)\nOutput: Top-K candidates [(person_id, cosine_score)]\nLatency: ~0.08 ms on 1,000 vectors.',
+        code: `class VectorSearchEngine:
+    def __init__(self, dimension: int = 512):
+        self.index = faiss.IndexFlatIP(dimension)
+        self.person_ids: List[str] = []
+
+    def search(self, query: np.ndarray, top_k: int = 5):
+        query = np.ascontiguousarray(query.reshape(1, -1), dtype=np.float32)
+        scores, indices = self.index.search(query, top_k)
+        return [(self.person_ids[idx], float(score)) 
+                for score, idx in zip(scores[0], indices[0]) if idx != -1]`
+      },
+      'fastapi': {
+        title: 'Central FastAPI Cloud Backend Server',
+        file: 'backend/app/main.py & backend/app/api/*',
+        desc: 'Asynchronous Python web application providing REST endpoints, photo processing service, Firebase authentication validation, Redis SSE event publisher, and binary zero-copy embedding sync.',
+        inout: 'Input: HTTP multipart uploads, JSON payloads, Edge API key requests\nOutput: REST responses, SSE event stream, binary vectors\nRuntime: Uvicorn on Port 8000.',
+        code: `app = FastAPI(title="FIND-MISSING-PEP API", version="2.4.0")
+app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
+app.include_router(sightings.router, prefix="/api/sightings", tags=["Sightings"])
+app.include_router(embeddings.router, prefix="/api/embeddings", tags=["Embeddings"])
+app.include_router(sse.router, prefix="/api/events", tags=["SSE"])`
+      },
+      'postgres': {
+        title: 'PostgreSQL 16 Relational Database',
+        file: 'backend/app/models/* & backend/alembic/*',
+        desc: 'Primary persistent data hub storing user profiles, missing person dossiers, 512-D binary BYTEA face embeddings, registered CCTV camera locations, sighting events, and immutable audit logs.',
+        inout: 'Access: AsyncPG via SQLAlchemy 2.0 ORM\nSchema: 8 tables with foreign keys and compound indexes\nPort: 5432 (Docker Container).',
+        code: `class FaceEmbedding(Base):
+    __tablename__ = "face_embeddings"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    person_id = Column(UUID(as_uuid=True), ForeignKey("missing_persons.id", ondelete="CASCADE"))
+    embedding = Column(LargeBinary(2048), nullable=False) # 512-D float32
+    quality_score = Column(Float, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=func.now())`
+      },
+      'web_app': {
+        title: 'Citizen & Forensic Review Web App',
+        file: 'web_app/src/App.tsx & web_app/src/pages/*',
+        desc: 'Browser-based portal built with Vite, React 18, and TypeScript. Includes client-side Canvas photo compression, side-by-side evidence reviewer, interactive Leaflet GPS timeline map, and bilingual EN/HI dictionary.',
+        inout: 'Stack: React 18, TypeScript, Axios, EventSource SSE, Leaflet\nPort: 5173 (Dev) / 3000 (Prod Nginx).',
+        code: `// web_app/src/services/imageCompression.ts
+export async function compressPhoto(file: File, maxDim = 1280, quality = 0.82): Promise<Blob> {
+  const img = await createImageBitmap(file);
+  const canvas = document.createElement('canvas');
+  // Dynamic scale preserving aspect ratio
+  return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+}`
+      },
+      'android_app': {
+        title: 'Native Android Mobile Application',
+        file: 'android_app/app/src/main/java/com/findmissingpep/app/*',
+        desc: 'Citizen mobile application built natively with Kotlin and Jetpack Compose. Provides missing person reporting wizard, photo capture, FCM push notifications for real-time sighting alerts, and offline Room DB cache.',
+        inout: 'Stack: Kotlin, Jetpack Compose, Retrofit, Room DB, Firebase FCM\nTarget: Android 14 (API 34).',
+        code: `// NotificationScreen.kt
+@Composable
+fun NotificationItem(notification: NotificationDto, onSightingClick: (UUID) -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth().clickable { onSightingClick(notification.sightingId) }) {
+        Text(text = notification.title, style = MaterialTheme.typography.titleMedium)
+        Text(text = notification.body, style = MaterialTheme.typography.bodyMedium)
+    }
+}`
+      },
+      'redis': {
+        title: 'Redis 7 Message Broker & Cache',
+        file: 'backend/app/services/sse_manager.py',
+        desc: 'In-memory data store used for Server-Sent Events (SSE) pub/sub fanout to connected web and edge clients, as well as background job coordination.',
+        inout: 'Port: 6379\nClient: redis.asyncio\nChannels: sse:user_{id}, sse:broadcast',
+        code: `class SSEManager:
+    async def publish(self, user_id: str, event_type: str, data: dict):
+        channel = f"sse:{user_id}"
+        await self.redis.publish(channel, json.dumps({"event": event_type, "data": data}))`
+      },
+      'offline_queue': {
+        title: 'SQLite Offline Queue & Resilient Staging',
+        file: 'edge_agent/storage/local_db.py',
+        desc: 'Local ACID database ensuring zero sighting loss during network disconnection. Queue items are retried with exponential backoff on reconnection.',
+        inout: 'Location: edge_agent/local_data.db\nTable: offline_sightings\nStatus: QUEUED -> UPLOADING -> CONFIRMED',
+        code: `def save_pending_sighting(sighting: dict):
+    with sqlite3.connect("local_data.db") as conn:
+        conn.execute("""
+            INSERT INTO offline_sightings (person_id, similarity, crop_path, uploaded)
+            VALUES (?, ?, ?, 0)
+        """, (sighting['person_id'], sighting['similarity'], sighting['crop_path']))`
+      }
+    };
+
+    // Generic fallback for stages
+    for (let i = 1; i <= 10; i++) {
+      if (!COMPONENT_DATA['stage' + i]) {
+        COMPONENT_DATA['stage' + i] = {
+          title: 'AI Pipeline Stage ' + i,
+          file: 'edge_agent/ai/*',
+          desc: 'Strictly ordered sequential execution stage inside the Edge Agent camera worker thread.',
+          inout: 'Executed once per sampled frame (1–15 FPS).',
+          code: '# edge_agent/ai/pipeline.py\\n# See pipeline specification for stage ' + i
+        };
+      }
+    }
+
+    function openDrawer(id) {
+      const data = COMPONENT_DATA[id] || {
+        title: 'Component Detail',
+        file: 'FIND-MISSING-PEP',
+        desc: 'Component specification in system architecture.',
+        inout: 'Standard system interfaces.',
+        code: '# Code reference'
+      };
+
+      document.getElementById('drawerTitle').innerText = data.title;
+      document.getElementById('drawerFilePath').innerText = data.file;
+      document.getElementById('drawerDesc').innerText = data.desc;
+      document.getElementById('drawerInOut').innerText = data.inout;
+      document.getElementById('drawerCode').innerText = data.code;
+
+      document.getElementById('drawerOverlay').classList.add('open');
+    }
+
+    function closeDrawer(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('drawerOverlay').classList.remove('open');
+    }
+
+    // ── INTERACTIVE PIPELINE SIMULATOR ─────────────────────────────────
+    let simStep = 0;
+    const simSteps = [
+      { node: 1, text: "Ingesting 1920x1080 RTSP frame from CAM-01 (Main Gate)... [OK]" },
+      { node: 2, text: "Frame Sampler: Frame passed 1 FPS throttle check. Storing to circular RAM buffer... [OK]" },
+      { node: 3, text: "SCRFD ONNX Detector: Found 2 faces. Face #1 (x=412, y=180, w=118, h=142, conf=0.94)... [OK, 14.8ms]" },
+      { node: 4, text: "ByteTrack Tracker: Associated Face #1 with persistent Track ID #42 (State: TRACKED)... [OK, 0.9ms]" },
+      { node: 5, text: "Quality Gate: Blur Laplacian Var = 148.2 (>=100), Size = 118px (>=40px), Aspect = 0.83... [PASSED]" },
+      { node: 6, text: "Face Aligner: 5-point Umeyama affine warp applied. Generated 112x112 canonical crop... [OK, 0.7ms]" },
+      { node: 7, text: "ArcFace ONNX: Extracted 512-D L2-normalized biometric feature vector... [OK, 8.2ms]" },
+      { node: 8, text: "FAISS Vector Search: Searched 500 active cases. Top match: MP-102 (Rohan Sharma) Cosine = 0.642... [OK, 0.08ms]" },
+      { node: 9, text: "Temporal Verifier: Scores for Track #42 across last 5 frames: [0.61, 0.64, 0.65, 0.62, 0.66]. Mean = 0.636 >= 0.42... [MATCH CONFIRMED! 🚨]" },
+      { node: 10, text: "Evidence & Alert: Cropped face + 1080p frame + 5s clip captured. Dispatched Qt Alert + REST Upload + FCM Push! [COMPLETE]" }
+    ];
+
+    function runPipelineSim() {
+      if (simStep >= simSteps.length) {
+        simStep = 0;
+        resetPipelineSim();
+      }
+
+      const step = simSteps[simStep];
+      const nodeEl = document.getElementById('simNode' + step.node);
+      if (nodeEl) {
+        nodeEl.classList.add(step.node === 9 ? 'pass' : 'active');
+      }
+
+      const term = document.getElementById('simTerminal');
+      const timeStr = new Date().toISOString().substring(11, 23);
+      const line = document.createElement('div');
+      line.className = 'terminal-line';
+      line.innerHTML = `<span class="terminal-ts">[${timeStr}]</span> <span class="${step.node === 9 ? 'terminal-alert' : (step.node === 10 ? 'terminal-success' : '')}">${step.text}</span>`;
+      term.appendChild(line);
+      term.scrollTop = term.scrollHeight;
+
+      simStep++;
+      if (simStep < simSteps.length) {
+        document.getElementById('btnRunSim').innerText = `Run Next Step (${simStep + 1}/10)`;
+      } else {
+        document.getElementById('btnRunSim').innerText = 'Simulation Finished (Click to Restart)';
+      }
+    }
+
+    function resetPipelineSim() {
+      simStep = 0;
+      for (let i = 1; i <= 10; i++) {
+        const el = document.getElementById('simNode' + i);
+        if (el) el.className = 'sim-node';
+      }
+      const term = document.getElementById('simTerminal');
+      term.innerHTML = '<div class="terminal-line"><span class="terminal-ts">[RESET]</span> <span>Pipeline simulator reset to initial state.</span></div>';
+      document.getElementById('btnRunSim').innerText = 'Run Simulation Step';
+    }
+
+    // ── HARDWARE SIZING CALCULATOR ─────────────────────────────────────
+    function updateCalculator() {
+      const cams = parseInt(document.getElementById('sliderCameras').value);
+      const fps = parseInt(document.getElementById('sliderFps').value);
+      const persons = parseInt(document.getElementById('sliderPersons').value);
+      const faces = parseInt(document.getElementById('sliderFaces').value);
+
+      document.getElementById('valCameras').innerText = cams + (cams === 1 ? ' Camera' : ' Cameras');
+      document.getElementById('valFps').innerText = fps + ' FPS';
+      document.getElementById('valPersons').innerText = persons.toLocaleString() + ' Persons';
+      document.getElementById('valFaces').innerText = faces + (faces === 1 ? ' Face' : ' Faces');
+
+      // Formula estimations:
+      // Base overhead: 12% CPU
+      // SCRFD: ~15ms per frame * cams * fps = (0.015 * cams * fps) * 100%
+      // ArcFace: ~8ms per face * cams * fps * faces
+      const totalFramesSec = cams * fps;
+      const detectWorkSec = totalFramesSec * 0.015;
+      const recogWorkSec = totalFramesSec * faces * 0.008;
+      // Multi-threaded across 6 cores:
+      const totalCpu = Math.min(96, Math.max(15, Math.round((12 + (detectWorkSec + recogWorkSec) * 35))));
+
+      // RAM: Base 280MB + (cams * 45MB frame buffers) + (persons * 512 * 4 bytes FAISS)
+      const totalRam = Math.round(280 + (cams * 45) + (persons * 0.003));
+
+      // FAISS Query Latency: ~0.05ms + (persons / 50000) ms
+      const faissLat = (0.04 + (persons * 0.00006)).toFixed(2);
+
+      // Network: Base heartbeat 1KB/s + occasional evidence
+      const networkBw = Math.round(2 + (cams * 2.5));
+
+      document.getElementById('resCpu').innerText = totalCpu + '%';
+      document.getElementById('resRam').innerText = totalRam + ' MB';
+      document.getElementById('resFaiss').innerText = faissLat + ' ms';
+      document.getElementById('resBw').innerText = networkBw + ' KB/s';
+
+      const tierTitle = document.getElementById('resTierName');
+      const tierDesc = document.getElementById('resTierDesc');
+
+      if (totalCpu < 45) {
+        tierTitle.innerText = "Intel N100 / Core i3 Mini PC (Entry Edge)";
+        tierDesc.innerText = `Sufficient for ${cams} cameras at ${fps} FPS. Operates cool with passive or low-RPM cooling.`;
+      } else if (totalCpu < 75) {
+        tierTitle.innerText = "Intel Core i5-12400 / Ryzen 5 (Standard Edge)";
+        tierDesc.innerText = `Comfortably handles multi-face crowd tracking across ${cams} cameras with headroom.`;
+      } else {
+        tierTitle.innerText = "Intel Core i7 / Workstation / Dedicated Server";
+        tierDesc.innerText = `High load (${totalCpu}% CPU). Recommend multi-core CPU or distributed Edge agents across locations.`;
+      }
+    }
+
+    // ── SEARCH FILTER ─────────────────────────────────────────────────
+    document.getElementById('globalSearch').addEventListener('input', function(e) {
+      const query = e.target.value.toLowerCase().trim();
+      if (!query) return;
+
+      // Check for component names and trigger drawer if exact or highlight
+      const keys = Object.keys(COMPONENT_DATA);
+      for (const k of keys) {
+        if (COMPONENT_DATA[k].title.toLowerCase().includes(query) || k.includes(query)) {
+          openDrawer(k);
+          break;
+        }
+      }
+    });
+
+    // ── EXPORT SPEC ───────────────────────────────────────────────────
+    function exportDocumentation() {
+      window.print();
+    }
+
+    // Initialize calculator on page load
+    updateCalculator();
+  </script>
+</body>
+</html>
