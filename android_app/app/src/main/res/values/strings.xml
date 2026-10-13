@@ -66,4 +66,6 @@
     <string name="channel_sighting_alerts">CCTV Sighting Alerts</string>
     <string name="channel_case_updates">Case Updates</string>
     <string name="channel_general">System Notifications</string>
+    <!-- OAuth Client ID for Google Sign-In -->
+    <string name="default_web_client_id">293939241446-9rknuh5gclvfkjqml239830g6gid7tno.apps.googleusercontent.com</string>
 </resources>

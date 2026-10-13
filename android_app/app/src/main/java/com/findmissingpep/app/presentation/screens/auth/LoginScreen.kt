@@ -28,6 +28,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.findmissingpep.app.R
 import com.findmissingpep.app.presentation.common.GlassCard
 import com.findmissingpep.app.presentation.theme.*
@@ -39,6 +46,35 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
+    val webClientId = stringResource(R.string.default_web_client_id)
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                val idToken = account?.idToken
+                if (!idToken.isNullOrBlank()) {
+                    viewModel.signInWithGoogleCredential(idToken)
+                } else {
+                    viewModel.setAuthError("Google Sign-In completed, but no ID token was received.")
+                }
+            } catch (e: ApiException) {
+                viewModel.setAuthError("Google Sign-In failed (${e.statusCode}): ${e.localizedMessage}")
+            }
+        }
+    }
+
+    val googleSignInClient = remember(webClientId) {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(webClientId)
+            .requestEmail()
+            .build()
+        GoogleSignIn.getClient(context, gso)
+    }
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -302,9 +338,13 @@ fun LoginScreen(
             }
             Spacer(modifier = Modifier.height(20.dp))
 
-            // ── Google Sign-In Button ──
+            // ── Real Google Sign-In Button ──
             OutlinedButton(
-                onClick = { viewModel.loginAsDemoUser("google.user@gmail.com", "Google Verified User") },
+                onClick = {
+                    googleSignInClient.signOut().addOnCompleteListener {
+                        googleSignInLauncher.launch(googleSignInClient.signInIntent)
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
@@ -320,7 +360,7 @@ fun LoginScreen(
                     tint = TextPrimary
                 )
                 Spacer(modifier = Modifier.width(12.dp))
-                Text("Continue with Google (Demo)", fontWeight = FontWeight.Medium)
+                Text("Continue with Google", fontWeight = FontWeight.Medium)
             }
 
             Spacer(modifier = Modifier.height(48.dp))
