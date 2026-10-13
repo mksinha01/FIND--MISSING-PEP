@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,37 +77,30 @@ fun MyCasesScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        PullToRefreshBox(
+            isRefreshing = uiState.isLoading,
+            onRefresh = { viewModel.refreshCases() },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp)
         ) {
-            // Status Filter Chips
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
             ) {
-                FilterChip(
-                    selected = uiState.selectedStatusFilter == null,
-                    onClick = { viewModel.setStatusFilter(null) },
-                    label = { Text("All Cases") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = CyanPrimary,
-                        selectedLabelColor = Color.Black,
-                        containerColor = Slate800,
-                        labelColor = TextSecondary
-                    )
-                )
-
-                CaseStatus.entries.forEach { status ->
+                // Status Filter Chips
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     FilterChip(
-                        selected = uiState.selectedStatusFilter == status,
-                        onClick = { viewModel.setStatusFilter(status) },
-                        label = { Text(status.name.replace("_", " ")) },
+                        selected = uiState.selectedStatusFilter == null,
+                        onClick = { viewModel.setStatusFilter(null) },
+                        label = { Text("All Cases") },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = CyanPrimary,
                             selectedLabelColor = Color.Black,
@@ -114,50 +108,64 @@ fun MyCasesScreen(
                             labelColor = TextSecondary
                         )
                     )
-                }
-            }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Loading / Error / Empty / List
-            if (uiState.isLoading && uiState.cases.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = CyanPrimary)
-                }
-            } else if (uiState.cases.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Default.SearchOff,
-                            contentDescription = null,
-                            tint = Slate500,
-                            modifier = Modifier.size(64.dp)
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "No cases found in this category",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = TextSecondary
+                    CaseStatus.entries.forEach { status ->
+                        FilterChip(
+                            selected = uiState.selectedStatusFilter == status,
+                            onClick = { viewModel.setStatusFilter(status) },
+                            label = { Text(status.name.replace("_", " ")) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = CyanPrimary,
+                                selectedLabelColor = Color.Black,
+                                containerColor = Slate800,
+                                labelColor = TextSecondary
+                            )
                         )
                     }
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(bottom = 24.dp)
-                ) {
-                    items(uiState.cases, key = { it.id }) { missingCase ->
-                        CaseCardItem(
-                            missingCase = missingCase,
-                            onClick = { onNavigateToCaseDetail(missingCase.id) }
-                        )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Loading / Error / Empty / List
+                if (uiState.isLoading && uiState.cases.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = CyanPrimary)
+                    }
+                } else if (uiState.cases.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Default.SearchOff,
+                                contentDescription = null,
+                                tint = Slate500,
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "No cases found in this category",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = TextSecondary
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(bottom = 24.dp)
+                    ) {
+                        items(uiState.cases, key = { it.id }) { missingCase ->
+                            CaseCardItem(
+                                missingCase = missingCase,
+                                onClick = { onNavigateToCaseDetail(missingCase.id) }
+                            )
+                        }
                     }
                 }
             }

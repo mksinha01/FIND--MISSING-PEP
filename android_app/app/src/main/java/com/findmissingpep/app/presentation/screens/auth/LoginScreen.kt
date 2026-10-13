@@ -42,6 +42,7 @@ import com.findmissingpep.app.presentation.theme.*
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
+    onNavigateToForgotPassword: () -> Unit = {},
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -81,6 +82,9 @@ fun LoginScreen(
     var name by remember { mutableStateOf("") }
     var isSignUp by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
+    var showCustomDialog by remember { mutableStateOf(false) }
+    var customEmail by remember { mutableStateOf("") }
+    var customName by remember { mutableStateOf("") }
 
     // Navigate on successful auth
     LaunchedEffect(uiState.isAuthenticated) {
@@ -272,11 +276,48 @@ fun LoginScreen(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
+
+                // Forgot Password link
+                if (!isSignUp) {
+                    TextButton(
+                        onClick = onNavigateToForgotPassword,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Forgot Password?",
+                            color = TextSecondary,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // ── Quick Demo Login Options ──
+            OutlinedButton(
+                onClick = { viewModel.loginAsDemoUser("mksinha77756@gmail.com", "Mk Sinha") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = AmberPrimary.copy(alpha = 0.15f),
+                    contentColor = AmberPrimary
+                ),
+                border = BorderStroke(1.dp, AmberPrimary.copy(alpha = 0.6f))
+            ) {
+                Icon(
+                    Icons.Default.AccountCircle,
+                    contentDescription = null,
+                    tint = AmberPrimary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("1-Click Login: Mk Sinha (Synced Web Account)", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
             OutlinedButton(
                 onClick = { viewModel.loginAsDemoUser("officer.admin@police.gov.in", "Inspector Sharma") },
                 modifier = Modifier
@@ -319,6 +360,29 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("1-Click Demo Login (Citizen Reporter)", fontWeight = FontWeight.Medium, fontSize = 13.sp)
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            OutlinedButton(
+                onClick = { showCustomDialog = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Slate900.copy(alpha = 0.6f),
+                    contentColor = CyanPrimary
+                ),
+                border = BorderStroke(1.dp, CyanPrimary.copy(alpha = 0.4f))
+            ) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = null,
+                    tint = CyanPrimary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Sign in with Any Custom Google Account", fontWeight = FontWeight.Medium, fontSize = 13.sp)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -364,6 +428,66 @@ fun LoginScreen(
             }
 
             Spacer(modifier = Modifier.height(48.dp))
+        }
+
+        if (showCustomDialog) {
+            AlertDialog(
+                onDismissRequest = { showCustomDialog = false },
+                title = {
+                    Text("Sign in with Custom Google Account", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                },
+                text = {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            "Enter any Google email and name to sign in and auto-provision on the production database:",
+                            color = TextSecondary,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        OutlinedTextField(
+                            value = customEmail,
+                            onValueChange = { customEmail = it },
+                            label = { Text("Google Email (e.g. user@gmail.com)") },
+                            singleLine = true,
+                            colors = glassTextFieldColors(),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = customName,
+                            onValueChange = { customName = it },
+                            label = { Text("Display Name") },
+                            singleLine = true,
+                            colors = glassTextFieldColors(),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            if (customEmail.isNotBlank()) {
+                                showCustomDialog = false
+                                viewModel.loginAsDemoUser(
+                                    customEmail.trim(),
+                                    customName.trim().ifBlank { customEmail.substringBefore("@") }
+                                )
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = CyanPrimary, contentColor = Slate950)
+                    ) {
+                        Text("Sign In", fontWeight = FontWeight.SemiBold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showCustomDialog = false }) {
+                        Text("Cancel", color = TextSecondary)
+                    }
+                },
+                containerColor = Slate900,
+                tonalElevation = 8.dp
+            )
         }
     }
 }

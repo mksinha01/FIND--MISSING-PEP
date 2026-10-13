@@ -5,7 +5,7 @@ import { authService } from '../services/authService';
 interface AuthContextType extends AuthState {
   loginWithEmail: (email: string, pass: string) => Promise<UserProfile>;
   registerWithEmail: (email: string, pass: string, name: string) => Promise<UserProfile>;
-  loginWithGoogle: () => Promise<UserProfile>;
+  loginWithGoogle: (customEmail?: string, customName?: string) => Promise<UserProfile>;
   loginWithGoogleRedirect: () => Promise<void>;
   loginWithMock: (role?: string) => Promise<UserProfile>;
   signOut: () => Promise<void>;
@@ -59,10 +59,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = async (customEmail?: string, customName?: string) => {
     setIsLoading(true);
     try {
-      const p = await authService.loginWithGoogle();
+      const p = await authService.loginWithGoogle(customEmail, customName);
       setUser(p);
       setToken(localStorage.getItem('fmp_auth_token'));
       return p;

@@ -139,13 +139,25 @@ async def get_current_user(
         )
         if "@" in clean_name:
             email = clean_name
-            name = clean_name.split("@")[0].replace("_", " ").title()
+            name = clean_name.split("@")[0].replace("_", " ").replace(".", " ").title()
         elif "officer" in clean_name or "admin" in clean_name:
             email = "officer.admin@police.gov.in"
             name = "Inspector Sharma (Control Room)"
         elif "citizen" in clean_name:
             email = "citizen.user@example.com"
             name = "Aarav Patel (Citizen)"
+        elif any(k in clean_name for k in ["_gmail", "_yahoo", "_outlook", "_hotmail", "_police", ".com", "_com", ".in", "_in"]):
+            # Email was normalized with underscore replacing '@'
+            for domain in ["gmail", "yahoo", "outlook", "hotmail", "police.gov.in"]:
+                if f"_{domain}" in clean_name:
+                    u_part, d_part = clean_name.split(f"_{domain}", 1)
+                    tld = d_part.replace("_", ".").strip(".") or "com"
+                    email = f"{u_part}@{domain}.{tld}" if not domain.endswith(".in") else f"{u_part}@{domain}"
+                    name = u_part.replace(".", " ").replace("_", " ").title()
+                    break
+            if not email:
+                email = f"{clean_name}@example.com"
+                name = clean_name.replace("_", " ").title()
         else:
             email = f"{clean_name}@example.com"
             name = clean_name.replace("_", " ").title() if clean_name else "Demo User"

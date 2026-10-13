@@ -205,10 +205,22 @@ data class DeleteResponseDto(
 
 @Serializable
 data class SseAlertData(
-    @SerialName("sighting_id") val sightingId: String,
-    @SerialName("person_id") val personId: String,
+    @SerialName("sighting_id") val sightingId: String = "",
+    @SerialName("notification_id") val notificationId: String? = null,
+    @SerialName("person_id") val personId: String = "",
     @SerialName("person_name") val personName: String? = null,
+    val title: String? = null,
+    val body: String? = null,
     @SerialName("similarity_score") val similarityScore: Double = 0.0,
+    val similarity: Double? = null,
+    @SerialName("confidence_level") val confidenceLevel: String? = null,
+    @SerialName("camera_id") val cameraId: String? = null,
     @SerialName("camera_location") val cameraLocation: String? = null,
-    @SerialName("detected_at") val detectedAt: String = ""
+    @SerialName("detected_at") val detectedAt: String = "",
+    @SerialName("face_crop_path") val faceCropPath: String? = null,
+    @SerialName("full_frame_path") val fullFramePath: String? = null,
+    @SerialName("video_clip_path") val videoClipPath: String? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    @SerialName("num_frames_matched") val numFramesMatched: Int? = null
 )

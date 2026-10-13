@@ -56,38 +56,49 @@ async def get_db() -> AsyncSession:
         finally:
             await session.close()
 
-def _sync_sqlite_columns(sync_conn):
-    """Ensure newly added model columns exist in SQLite tables during development."""
+def _sync_table_columns(sync_conn):
+    """Ensure newly added model columns exist in database tables."""
+    is_sqlite = "sqlite" in sync_conn.dialect.name
     for table_name, table in Base.metadata.tables.items():
         try:
-            res = sync_conn.exec_driver_sql(f"PRAGMA table_info({table_name})")
-            existing_cols = {row[1] for row in res.fetchall()}
+            if is_sqlite:
+                res = sync_conn.exec_driver_sql(f"PRAGMA table_info({table_name})")
+                existing_cols = {row[1] for row in res.fetchall()}
+            else:
+                res = sync_conn.exec_driver_sql(
+                    f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table_name}'"
+                )
+                existing_cols = {row[0] for row in res.fetchall()}
+
             if not existing_cols:
                 continue
+
             for col in table.columns:
                 if col.name not in existing_cols:
                     col_type = col.type.compile(sync_conn.dialect)
                     default_clause = ""
                     if col.server_default is not None:
                         default_clause = f" DEFAULT {col.server_default.arg}"
-                    elif not col.nullable:
+                    elif not col.nullable and is_sqlite:
                         default_clause = " DEFAULT ''"
-                    sync_conn.exec_driver_sql(
-                        f"ALTER TABLE {table_name} ADD COLUMN {col.name} {col_type}{default_clause}"
-                    )
+
+                    if is_sqlite:
+                        sql = f"ALTER TABLE {table_name} ADD COLUMN {col.name} {col_type}{default_clause}"
+                    else:
+                        sql = f"ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS {col.name} {col_type}{default_clause}"
+                    sync_conn.exec_driver_sql(sql)
                     logger.info(f"Auto-added missing column '{col.name}' to table '{table_name}'")
         except Exception as e:
             logger.debug(f"Column sync skipped for {table_name}: {e}")
 
 
 async def init_db() -> None:
-    """Create all tables. If PostgreSQL is unreachable, seamlessly fall back to local SQLite in development."""
+    """Create all tables and sync missing columns."""
     global engine, async_session_factory
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-            if "sqlite" in str(engine.url):
-                await conn.run_sync(_sync_sqlite_columns)
+            await conn.run_sync(_sync_table_columns)
         logger.info(f"Database connection verified and tables initialized on {engine.url}")
     except Exception as e:
         err_msg = str(e).lower()

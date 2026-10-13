@@ -42,7 +42,8 @@ class AuthViewModel @Inject constructor(
     fun loginAsDemoUser(email: String = "officer.admin@police.gov.in", name: String = "Inspector Sharma") {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            val mockToken = "mock-token-${email.replace("@", "_")}"
+            val cleanEmail = email.trim()
+            val mockToken = "mock-token-$cleanEmail"
             val result = authRepository.verifyToken(mockToken)
             result.fold(
                 onSuccess = { user ->
@@ -58,7 +59,7 @@ class AuthViewModel @Inject constructor(
                         id = "demo_id",
                         firebaseUid = "uid_$mockToken",
                         name = name,
-                        email = email,
+                        email = cleanEmail,
                         phone = null,
                         avatarUrl = null,
                         language = "en",
@@ -84,7 +85,7 @@ class AuthViewModel @Inject constructor(
             } catch (e: Exception) {
                 // If Firebase fails (e.g. dummy credentials in dev/demo environment), authenticate directly with backend
                 val cleanEmail = email.trim()
-                val mockToken = "mock-token-${cleanEmail.replace("@", "_")}"
+                val mockToken = "mock-token-$cleanEmail"
                 val verifyResult = authRepository.verifyToken(mockToken)
                 verifyResult.fold(
                     onSuccess = { user ->
@@ -127,7 +128,7 @@ class AuthViewModel @Inject constructor(
             } catch (e: Exception) {
                 val cleanEmail = email.trim()
                 val cleanName = name.trim().ifEmpty { cleanEmail.split("@")[0] }
-                val mockToken = "mock-token-${cleanEmail.replace("@", "_")}"
+                val mockToken = "mock-token-$cleanEmail"
                 val verifyResult = authRepository.verifyToken(mockToken)
                 verifyResult.fold(
                     onSuccess = { user ->
@@ -269,6 +270,22 @@ class AuthViewModel @Inject constructor(
                 )
             } catch (_: Exception) {
                 _uiState.value = _uiState.value.copy(isLoading = false)
+            }
+        }
+    }
+
+    fun resetPassword(email: String, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            try {
+                firebaseAuth.sendPasswordResetEmail(email.trim()).await()
+                _uiState.value = _uiState.value.copy(isLoading = false, error = null)
+                onSuccess()
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = e.localizedMessage ?: "Failed to send reset email. Please try again."
+                )
             }
         }
     }

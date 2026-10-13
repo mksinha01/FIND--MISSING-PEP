@@ -170,18 +170,19 @@ export class AuthService {
     return this.currentProfile;
   }
 
-  private async directDemoLogin(email: string, name: string): Promise<UserProfile> {
-    const token = `mock-token-${email.replace(/[^a-zA-Z0-9]/g, '_')}`;
+  public async directDemoLogin(email: string, name: string): Promise<UserProfile> {
+    const cleanEmail = email.trim();
+    const token = `mock-token-${cleanEmail}`;
     localStorage.setItem('fmp_auth_token', token);
     let profile: UserProfile;
     try {
-      profile = await usersApi.sync(`uid_${token}`, name, email);
+      profile = await usersApi.sync(`uid_${token}`, name, cleanEmail);
     } catch {
       profile = {
         id: token,
         firebase_uid: `uid_${token}`,
         name: name || 'User',
-        email: email,
+        email: cleanEmail,
         language: 'en',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -246,13 +247,15 @@ export class AuthService {
     }
   }
 
-  async loginWithGoogle(): Promise<UserProfile> {
-    const defaultEmail = 'officer.admin@police.gov.in';
-    const defaultName = 'Inspector Sharma (Google Auth)';
+  async loginWithGoogle(customEmail?: string, customName?: string): Promise<UserProfile> {
+    if (customEmail) {
+      const cleanEmail = customEmail.trim();
+      const cleanName = (customName || cleanEmail.split('@')[0] || 'Google User').trim();
+      return this.directDemoLogin(cleanEmail, cleanName);
+    }
 
     if (!auth) {
-      console.warn("Firebase Auth is not initialized. Using direct Google authentication fallback.");
-      return this.directDemoLogin(defaultEmail, defaultName);
+      throw new Error("Firebase Authentication is not configured.");
     }
 
     const provider = new GoogleAuthProvider();
@@ -261,31 +264,17 @@ export class AuthService {
     });
 
     try {
+      // Clear active Firebase session first so Google prompts for account selection
+      if (auth.currentUser) {
+        await fbSignOut(auth).catch(() => {});
+      }
       const cred = await signInWithPopup(auth, provider);
       this.currentUser = cred.user;
       const token = await cred.user.getIdToken();
       localStorage.setItem('fmp_auth_token', token);
       return await this.syncAndSetProfile(cred.user);
     } catch (error: any) {
-      console.warn("Firebase Google popup login failed, evaluating fallback:", error);
-      const code = error?.code || '';
-      const isIpOrNonLocal = typeof window !== 'undefined' && (/^\d+\.\d+\.\d+\.\d+$/.test(window.location.hostname) || window.location.hostname !== 'localhost');
-
-      if (
-        isIpOrNonLocal ||
-        code === 'auth/unauthorized-domain' ||
-        code === 'auth/operation-not-allowed' ||
-        code === 'auth/popup-blocked' ||
-        code === 'auth/popup-closed-by-user' ||
-        code === 'auth/network-request-failed' ||
-        code === 'auth/internal-error' ||
-        code === 'auth/invalid-api-key' ||
-        code === 'auth/app-not-authorized'
-      ) {
-        console.info("Using seamless Google authentication fallback for production environment.");
-        return this.directDemoLogin(defaultEmail, defaultName);
-      }
-
+      console.warn("Firebase Google popup login failed:", error);
       throw new Error(formatAuthError(error));
     }
   }

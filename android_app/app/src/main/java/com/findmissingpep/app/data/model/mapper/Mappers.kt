@@ -215,3 +215,32 @@ fun NotificationEntity.toDomain() = AppNotification(
     isRead = isRead,
     createdAt = createdAt
 )
+
+fun SseAlertData.toDomain(): Sighting {
+    val score = if (similarityScore > 0.0) similarityScore else (similarity ?: 0.0)
+    val conf = confidenceLevel?.let { ConfidenceLevel.fromValue(it) } ?: when {
+        score >= 0.85 -> ConfidenceLevel.CONFIRMED
+        score >= 0.70 -> ConfidenceLevel.PROBABLE
+        else -> ConfidenceLevel.POSSIBLE
+    }
+    return Sighting(
+        id = sightingId,
+        personId = personId,
+        personName = personName ?: title,
+        agentId = "",
+        cameraId = cameraId ?: "CAM-ALERT",
+        similarityScore = score,
+        confidenceLevel = conf,
+        numFramesMatched = numFramesMatched,
+        faceCropPath = faceCropPath,
+        fullFramePath = fullFramePath,
+        videoClipPath = videoClipPath,
+        cameraLocation = cameraLocation,
+        latitude = latitude,
+        longitude = longitude,
+        detectedAt = detectedAt,
+        status = if (score >= 0.85) SightingStatus.CONFIRMED else SightingStatus.PENDING,
+        createdAt = detectedAt
+    )
+}
+

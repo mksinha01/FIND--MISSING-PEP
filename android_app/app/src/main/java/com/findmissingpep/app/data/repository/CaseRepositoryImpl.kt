@@ -10,6 +10,7 @@ import com.findmissingpep.app.domain.repository.CaseRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.put
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -46,7 +47,7 @@ class CaseRepositoryImpl @Inject constructor(
         firDocument: File?
     ): Result<MissingCase> = runCatching {
         // Build report_data JSON
-        val reportData = buildMap<String, Any?> {
+        val reportDataJson = kotlinx.serialization.json.buildJsonObject {
             put("full_name", fullName)
             age?.let { put("age", it) }
             gender?.let { put("gender", it) }
@@ -58,12 +59,7 @@ class CaseRepositoryImpl @Inject constructor(
             firNumber?.let { put("fir_number", it) }
             firPoliceStation?.let { put("fir_police_station", it) }
             firDate?.let { put("fir_date", it) }
-        }
-
-        val reportDataJson = json.encodeToString(
-            kotlinx.serialization.serializer<Map<String, Any?>>(),
-            reportData
-        )
+        }.toString()
         val reportDataBody = reportDataJson.toRequestBody("application/json".toMediaType())
 
         // Build photo parts

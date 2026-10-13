@@ -31,6 +31,8 @@ import coil3.compose.AsyncImage
 import com.findmissingpep.app.R
 import com.findmissingpep.app.presentation.common.GlassCard
 import com.findmissingpep.app.presentation.theme.*
+import com.findmissingpep.app.data.util.ImageCompressor
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 
@@ -43,6 +45,7 @@ fun ReportWizardScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     // Trigger navigation on success
     LaunchedEffect(uiState.submittedCaseId) {
@@ -51,25 +54,23 @@ fun ReportWizardScreen(
         }
     }
 
-    // Photo picker launcher
+    // Photo picker launcher with 1280px / 85% compression
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
     ) { uris: List<Uri> ->
         if (uris.isNotEmpty()) {
-            val files = uris.mapNotNull { uri ->
-                try {
-                    val inputStream = context.contentResolver.openInputStream(uri)
-                    val tempFile = File.createTempFile("ref_photo_", ".jpg", context.cacheDir)
-                    val outputStream = FileOutputStream(tempFile)
-                    inputStream?.copyTo(outputStream)
-                    inputStream?.close()
-                    outputStream.close()
-                    tempFile
-                } catch (e: Exception) {
-                    null
+            coroutineScope.launch {
+                val files = uris.mapNotNull { uri ->
+                    try {
+                        ImageCompressor.compress(context, uri)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                if (files.isNotEmpty()) {
+                    viewModel.addPhotos(files, uris.take(files.size))
                 }
             }
-            viewModel.addPhotos(files, uris)
         }
     }
 

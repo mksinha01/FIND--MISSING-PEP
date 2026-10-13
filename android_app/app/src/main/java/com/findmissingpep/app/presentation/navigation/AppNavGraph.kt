@@ -18,6 +18,7 @@ import com.findmissingpep.app.presentation.screens.profile.ProfileScreen
 import com.findmissingpep.app.presentation.screens.report_wizard.ReportWizardScreen
 import com.findmissingpep.app.presentation.screens.sightings.ForensicInspectorScreen
 import com.findmissingpep.app.presentation.screens.sightings.SightingsFeedScreen
+import com.findmissingpep.app.presentation.screens.auth.ForgotPasswordScreen
 import com.findmissingpep.app.presentation.screens.fir.FirQueueScreen
 
 @androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,7 +41,17 @@ fun AppNavGraph(
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
+                },
+                onNavigateToForgotPassword = {
+                    navController.navigate(Screen.ForgotPassword.route)
                 }
+            )
+        }
+
+        composable(Screen.ForgotPassword.route) {
+            ForgotPasswordScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onResetSent = { navController.popBackStack() }
             )
         }
 
