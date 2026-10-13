@@ -8,19 +8,21 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.findmissingpep.app.R
+import com.findmissingpep.app.domain.model.MissingCase
 import com.findmissingpep.app.presentation.common.*
 import com.findmissingpep.app.presentation.theme.*
 
@@ -39,70 +41,107 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
-        containerColor = Slate950,
+        containerColor = CreamBackground,
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        PulsingDot(color = if (uiState.isSseConnected) EmeraldPrimary else Slate500)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(R.string.dashboard_title),
-                            style = MaterialTheme.typography.titleLarge,
-                            color = TextPrimary
-                        )
-                        if (uiState.isSseConnected) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = EmeraldPrimary.copy(alpha = 0.15f)
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding(),
+                color = CreamBackground,
+                border = BorderStroke(1.dp, LineBorderSubtle)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Brand Mark + Title
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { onNavigateToCases() }
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(RoundedCornerShape(11.dp))
+                                .background(BluePrimary),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.PersonSearch,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "FIND-MISSING-PEP",
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 13.sp,
+                                letterSpacing = 0.4.sp,
+                                color = BlueDeep
+                            )
+                            Text(
+                                text = "Search & support",
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 10.sp,
+                                color = InkMuted
+                            )
+                        }
+                    }
+
+                    // Header Action Buttons
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        // Notifications
+                        IconButton(onClick = onNavigateToNotifications) {
+                            BadgedBox(
+                                badge = {
+                                    if (uiState.unreadNotifications > 0) {
+                                        Badge(
+                                            containerColor = RedDanger,
+                                            contentColor = Color.White
+                                        ) {
+                                            Text("${uiState.unreadNotifications}", fontSize = 9.sp)
+                                        }
+                                    }
+                                }
                             ) {
-                                Text(
-                                    text = "LIVE",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = EmeraldPrimary,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                Icon(
+                                    Icons.Outlined.Notifications,
+                                    contentDescription = "Notifications",
+                                    tint = InkText,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
+
+                        // Profile Avatar
+                        IconButton(onClick = onNavigateToProfile) {
+                            Box(
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clip(CircleShape)
+                                    .background(BlueWash),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Person,
+                                    contentDescription = "Profile",
+                                    tint = BluePrimary,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         }
                     }
-                },
-                actions = {
-                    // Notification bell with badge
-                    IconButton(onClick = onNavigateToNotifications) {
-                        BadgedBox(
-                            badge = {
-                                if (uiState.unreadNotifications > 0) {
-                                    Badge(
-                                        containerColor = RosePrimary,
-                                        contentColor = TextPrimary
-                                    ) {
-                                        Text("${uiState.unreadNotifications}")
-                                    }
-                                }
-                            }
-                        ) {
-                            Icon(
-                                Icons.Outlined.Notifications,
-                                contentDescription = "Notifications",
-                                tint = TextSecondary
-                            )
-                        }
-                    }
-                    // Profile
-                    IconButton(onClick = onNavigateToProfile) {
-                        Icon(
-                            Icons.Default.AccountCircle,
-                            contentDescription = "Profile",
-                            tint = TextSecondary
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Slate950
-                )
-            )
+                }
+            }
         }
     ) { padding ->
         PullToRefreshBox(
@@ -116,229 +155,446 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 18.dp, vertical = 12.dp)
             ) {
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // ── Stat Metric Cards ──
+                // ── 1. Greeting Section (Blue & Cream) ──
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
                 ) {
-                MetricCard(
-                    label = "Active Cases",
-                    value = "${uiState.activeCasesCount}",
-                    accentColor = CyanPrimary,
-                    modifier = Modifier.weight(1f)
-                )
-                MetricCard(
-                    label = "Matches Today",
-                    value = "${uiState.verifiedMatchesToday}",
-                    accentColor = EmeraldPrimary,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            Spacer(modifier = Modifier.height(20.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Your next step,\nmade clear.",
+                            fontSize = 22.sp,
+                            lineHeight = 26.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = InkText
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Report a missing person or follow up on a case.",
+                            fontSize = 12.sp,
+                            color = InkMuted
+                        )
+                    }
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = BlueWash,
+                        border = BorderStroke(1.dp, BluePrimary.copy(alpha = 0.2f))
+                    ) {
+                        Text(
+                            text = if (uiState.isOfficer) "Officer view" else "Citizen view",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BlueDeep,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
 
-            // ── Live Alert Banner ──
-            if (uiState.recentSightings.isNotEmpty()) {
-                val latestSighting = uiState.recentSightings.first()
-                GlassCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, RosePrimary.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
-                        .clickable {
-                            // Navigate to forensic inspector
-                        }
+                Spacer(modifier = Modifier.height(18.dp))
+
+                // ── 2. Review Possible Match Card ──
+                PaperCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onNavigateToSightings
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Review a possible match",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = InkText
+                        )
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = AmberAlertBg
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .clip(CircleShape)
+                                        .background(AmberAlert)
+                                )
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Text(
+                                    text = "Pending review",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AmberAlert
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Check a sighting before deciding",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = BlueDeep
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Compare the submitted evidence in the sightings feed. Verification lead confirms sighting area.",
+                        fontSize = 11.sp,
+                        lineHeight = 15.sp,
+                        color = InkMuted
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Browse surveillance observations",
+                            fontSize = 10.sp,
+                            color = InkSubtle
+                        )
+                        Button(
+                            onClick = onNavigateToSightings,
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = BluePrimary,
+                                contentColor = Color.White
+                            ),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                        ) {
+                            Text("Review sightings", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = null,
+                                modifier = Modifier.size(13.dp)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // ── 3. Report a Missing Person Card ──
+                PaperCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    backgroundColor = PaperWhite,
+                    onClick = onNavigateToReport
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Report a missing person",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = InkText
+                            )
+                            Spacer(modifier = Modifier.height(3.dp))
+                            Text(
+                                text = "Share key details, an FIR and reference photos.",
+                                fontSize = 11.sp,
+                                color = InkMuted
+                            )
+                        }
+                        Button(
+                            onClick = onNavigateToReport,
+                            shape = RoundedCornerShape(9.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = BluePrimary,
+                                contentColor = Color.White
+                            ),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+                        ) {
+                            Text("Start report", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                // ── 4. Your Casework Section ──
+                Text(
+                    text = "Your casework",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = InkText
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                PaperCard(modifier = Modifier.fillMaxWidth()) {
+                    // Row 1: Reported Cases
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onNavigateToCases() }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Box(
                             modifier = Modifier
-                                .size(48.dp)
-                                .clip(CircleShape)
-                                .background(RoseSurface),
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(9.dp))
+                                .background(BlueWash),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                Icons.Default.Warning,
+                                Icons.Default.Folder,
                                 contentDescription = null,
-                                tint = RosePrimary,
-                                modifier = Modifier.size(24.dp)
+                                tint = BluePrimary,
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "⚡ ${stringResource(R.string.possible_match)}",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = RosePrimary
+                                text = "Reported cases (${uiState.activeCasesCount} active)",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = InkText
                             )
                             Text(
-                                text = "${latestSighting.personName ?: "Unknown"} • ${latestSighting.cameraLocation ?: ""}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = TextSecondary
+                                text = "Open your cases and see their current status.",
+                                fontSize = 11.sp,
+                                color = InkMuted
                             )
                         }
-                        SimilarityGauge(
-                            score = latestSighting.similarityScore,
-                            size = 48
+                        Icon(
+                            Icons.Default.ChevronRight,
+                            contentDescription = null,
+                            tint = InkSubtle,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 10.dp),
+                        color = LineBorderSubtle
+                    )
+
+                    // Row 2: Live Sightings
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onNavigateToSightings() }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(9.dp))
+                                .background(GreenSuccessBg),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.CameraAlt,
+                                contentDescription = null,
+                                tint = GreenSuccess,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Live sightings (${uiState.verifiedMatchesToday} verified)",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = InkText
+                            )
+                            Text(
+                                text = "Browse and filter possible CCTV matches.",
+                                fontSize = 11.sp,
+                                color = InkMuted
+                            )
+                        }
+                        Icon(
+                            Icons.Default.ChevronRight,
+                            contentDescription = null,
+                            tint = InkSubtle,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(20.dp))
-            }
 
-            // ── Quick Action Buttons ──
-            Text(
-                text = "Quick Actions",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = TextPrimary
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                QuickActionButton(
-                    icon = Icons.Default.PersonAdd,
-                    label = stringResource(R.string.report_missing_person),
-                    color = CyanPrimary,
-                    onClick = onNavigateToReport,
-                    modifier = Modifier.weight(1f)
-                )
-                QuickActionButton(
-                    icon = Icons.Default.Visibility,
-                    label = "Live Sightings",
-                    color = EmeraldPrimary,
-                    onClick = onNavigateToSightings,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                QuickActionButton(
-                    icon = Icons.Default.FolderOpen,
-                    label = "My Cases",
-                    color = AmberPrimary,
-                    onClick = onNavigateToCases,
-                    modifier = Modifier.weight(1f)
-                )
+                // ── 5. Officer FIR Queue Card ──
                 if (uiState.isOfficer) {
-                    QuickActionButton(
-                        icon = Icons.Default.VerifiedUser,
-                        label = "FIR Queue",
-                        color = VioletPrimary,
-                        onClick = onNavigateToFirQueue,
-                        modifier = Modifier.weight(1f)
-                    )
-                } else {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // ── Recent Cases ──
-            if (uiState.myCases.isNotEmpty()) {
-                Text(
-                    text = "Recent Cases",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = TextPrimary
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(uiState.myCases) { case ->
-                        GlassCard(
-                            modifier = Modifier
-                                .width(240.dp)
-                                .clickable { onNavigateToCaseDetail(case.id) }
+                    Spacer(modifier = Modifier.height(14.dp))
+                    PaperCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        backgroundColor = PaperWhite,
+                        borderColor = LineBorder,
+                        onClick = onNavigateToFirQueue
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = case.fullName,
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = TextPrimary,
-                                maxLines = 1
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = case.lastSeenLocation ?: "Location unknown",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = TextTertiary,
-                                maxLines = 1
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            StatusBadge(status = case.status)
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(9.dp))
+                                    .background(AmberAlertBg),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Description,
+                                    contentDescription = null,
+                                    tint = AmberAlert,
+                                    modifier = Modifier.size(19.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "FIR verification queue",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp,
+                                    color = InkText
+                                )
+                                Text(
+                                    text = "For officers · review submitted documents",
+                                    fontSize = 11.sp,
+                                    color = InkMuted
+                                )
+                            }
+                            Button(
+                                onClick = onNavigateToFirQueue,
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = AmberAlert,
+                                    contentColor = Color.White
+                                ),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text("Open", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                            }
                         }
                     }
                 }
-            }
 
-            // ── Loading shimmer ──
-            if (uiState.isLoading) {
-                Spacer(modifier = Modifier.height(24.dp))
-                repeat(3) {
-                    ShimmerEffect(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(80.dp)
-                            .padding(vertical = 4.dp)
-                    )
+                // ── 6. Active Cases List (Horizontal Row) ──
+                if (uiState.myCases.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(18.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Recent cases",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = InkText
+                        )
+                        Text(
+                            text = "View all",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BluePrimary,
+                            modifier = Modifier.clickable { onNavigateToCases() }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        items(uiState.myCases.take(5)) { caseItem ->
+                            CaseCarouselItem(
+                                caseItem = caseItem,
+                                onClick = { onNavigateToCaseDetail(caseItem.id) }
+                            )
+                        }
+                    }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(28.dp))
+            }
         }
     }
 }
-}
 
 @Composable
-private fun QuickActionButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    label: String,
-    color: androidx.compose.ui.graphics.Color,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+private fun CaseCarouselItem(
+    caseItem: MissingCase,
+    onClick: () -> Unit
 ) {
-    Surface(
-        modifier = modifier
-            .height(100.dp)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        color = color.copy(alpha = 0.1f),
-        border = BorderStroke(1.dp, color.copy(alpha = 0.3f))
+    PaperCard(
+        modifier = Modifier
+            .width(200.dp)
+            .clickable { onClick() },
+        backgroundColor = PaperWhite
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = color,
-                modifier = Modifier.size(28.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(BlueWash),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Person,
+                    contentDescription = null,
+                    tint = BluePrimary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            StatusBadge(status = caseItem.status)
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Text(
+            text = caseItem.fullName,
+            fontWeight = FontWeight.Bold,
+            fontSize = 13.sp,
+            color = InkText,
+            maxLines = 1
+        )
+        Text(
+            text = "${caseItem.age ?: "?"} yrs • ${caseItem.gender ?: "Unknown"}",
+            fontSize = 11.sp,
+            color = InkMuted
+        )
+        val loc = caseItem.lastSeenLocation
+        if (!loc.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = color,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 2
+                text = loc,
+                fontSize = 10.sp,
+                color = InkSubtle,
+                maxLines = 1
             )
         }
     }

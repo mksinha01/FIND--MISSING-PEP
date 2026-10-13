@@ -1,51 +1,52 @@
 package com.findmissingpep.app.presentation.theme
 
 import android.app.Activity
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = CyanPrimary,
-    onPrimary = Slate950,
-    primaryContainer = CyanDark,
-    onPrimaryContainer = CyanLight,
+// ─── Blue & Cream Official Color Scheme (Human Design) ───────────────────────
+private val BlueAndCreamColorScheme = lightColorScheme(
+    primary = BluePrimary,
+    onPrimary = Color.White,
+    primaryContainer = BlueWash,
+    onPrimaryContainer = BlueDeep,
 
-    secondary = EmeraldPrimary,
-    onSecondary = Slate950,
-    secondaryContainer = EmeraldDark,
-    onSecondaryContainer = EmeraldLight,
+    secondary = GreenSuccess,
+    onSecondary = Color.White,
+    secondaryContainer = GreenSuccessBg,
+    onSecondaryContainer = GreenSuccess,
 
-    tertiary = AmberPrimary,
-    onTertiary = Slate950,
-    tertiaryContainer = AmberDark,
-    onTertiaryContainer = AmberLight,
+    tertiary = AmberAlert,
+    onTertiary = Color.White,
+    tertiaryContainer = AmberAlertBg,
+    onTertiaryContainer = AmberAlert,
 
-    error = RosePrimary,
-    onError = Slate950,
-    errorContainer = RoseDark,
-    onErrorContainer = RoseLight,
+    error = RedDanger,
+    onError = Color.White,
+    errorContainer = RedDangerBg,
+    onErrorContainer = RedDanger,
 
-    background = Slate950,
-    onBackground = TextPrimary,
+    background = CreamBackground,
+    onBackground = InkText,
 
-    surface = Slate900,
-    onSurface = TextPrimary,
-    surfaceVariant = Slate800,
-    onSurfaceVariant = TextSecondary,
+    surface = PaperWhite,
+    onSurface = InkText,
+    surfaceVariant = PaperSubtle,
+    onSurfaceVariant = InkMuted,
 
-    outline = Slate700,
-    outlineVariant = Slate600,
-    inverseSurface = Slate100,
-    inverseOnSurface = Slate900,
-    inversePrimary = CyanDark,
+    outline = LineBorder,
+    outlineVariant = LineBorderSubtle,
+    inverseSurface = InkText,
+    inverseOnSurface = CreamBackground,
+    inversePrimary = BlueWash,
 
-    surfaceTint = CyanPrimary
+    surfaceTint = BluePrimary
 )
 
 @Composable
@@ -56,17 +57,17 @@ fun FindMissingPepTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = Slate950.toArgb()
-            window.navigationBarColor = Slate950.toArgb()
+            window.statusBarColor = CreamBackground.toArgb()
+            window.navigationBarColor = PaperWhite.toArgb()
             WindowCompat.getInsetsController(window, view).apply {
-                isAppearanceLightStatusBars = false
-                isAppearanceLightNavigationBars = false
+                isAppearanceLightStatusBars = true
+                isAppearanceLightNavigationBars = true
             }
         }
     }
 
     MaterialTheme(
-        colorScheme = DarkColorScheme,
+        colorScheme = BlueAndCreamColorScheme,
         typography = AppTypography,
         content = content
     )

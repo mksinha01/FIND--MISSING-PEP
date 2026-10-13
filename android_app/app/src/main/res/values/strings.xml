@@ -2,14 +2,14 @@
 <resources>
     <!-- App Details -->
     <string name="app_name">FIND-MISSING-PEP</string>
-    <string name="app_tagline">AI-Based Missing Person Detection &amp; Real-Time CCTV Monitoring</string>
+    <string name="app_tagline">Missing Person Registry &amp; Real-Time Surveillance Search</string>
 
     <!-- Navigation & Screen Titles -->
     <string name="dashboard_title">Live Monitoring Hub</string>
     <string name="report_missing_person">Report Missing Person</string>
     <string name="my_cases">Reported Cases</string>
     <string name="live_sightings">Live CCTV Sightings</string>
-    <string name="forensic_inspector">Forensic Inspector</string>
+    <string name="forensic_inspector">Visual Evidence Review</string>
     <string name="movement_trajectory">Movement Trajectory</string>
     <string name="notification_center">Notification Center</string>
     <string name="user_profile">Officer / User Profile</string>
@@ -35,7 +35,7 @@
 
     <!-- Photo Intake -->
     <string name="upload_photos">Upload Clear Photos (1-5)</string>
-    <string name="photo_guidelines">Front-facing portraits with good lighting maximize ArcFace 512-D accuracy.</string>
+    <string name="photo_guidelines">Front-facing portraits with good lighting maximize visual matching accuracy.</string>
 
     <!-- Case Statuses -->
     <string name="status_processing">Processing</string>

@@ -1,6 +1,7 @@
 package com.findmissingpep.app.presentation.screens.cases
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -30,7 +31,7 @@ import coil3.compose.AsyncImage
 import com.findmissingpep.app.BuildConfig
 import com.findmissingpep.app.domain.model.CaseStatus
 import com.findmissingpep.app.domain.model.MissingCase
-import com.findmissingpep.app.presentation.common.GlassCard
+import com.findmissingpep.app.presentation.common.PaperCard
 import com.findmissingpep.app.presentation.common.StatusBadge
 import com.findmissingpep.app.presentation.theme.*
 
@@ -44,37 +45,51 @@ fun MyCasesScreen(
     val uiState by viewModel.listState.collectAsState()
 
     Scaffold(
-        containerColor = BackgroundDark,
+        containerColor = CreamBackground,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Reported Cases",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
-                },
-                navigationIcon = {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding(),
+                color = PaperWhite,
+                border = BorderStroke(1.dp, LineBorderSubtle)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = TextPrimary
+                            tint = InkText
                         )
                     }
-                },
-                actions = {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "My cases",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = InkText
+                        )
+                        Text(
+                            text = "Reported cases",
+                            fontSize = 11.sp,
+                            color = InkMuted
+                        )
+                    }
                     IconButton(onClick = { viewModel.refreshCases() }) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "Refresh",
-                            tint = CyanPrimary
+                            tint = BluePrimary
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-            )
+                }
+            }
         }
     ) { paddingValues ->
         PullToRefreshBox(
@@ -87,77 +102,133 @@ fun MyCasesScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 18.dp)
             ) {
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Heading Block
+                Text(
+                    text = "Your cases",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = InkText
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Review reports and their current status.",
+                    fontSize = 12.sp,
+                    color = InkMuted
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
                 // Status Filter Chips
+                Text(
+                    text = "Filter by status",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = InkText
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
-                        .padding(vertical = 8.dp),
+                        .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    FilterChip(
-                        selected = uiState.selectedStatusFilter == null,
+                    val isAllSelected = uiState.selectedStatusFilter == null
+                    Surface(
                         onClick = { viewModel.setStatusFilter(null) },
-                        label = { Text("All Cases") },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = CyanPrimary,
-                            selectedLabelColor = Color.Black,
-                            containerColor = Slate800,
-                            labelColor = TextSecondary
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (isAllSelected) BluePrimary else PaperWhite,
+                        border = BorderStroke(1.dp, if (isAllSelected) BluePrimary else LineBorder)
+                    ) {
+                        Text(
+                            text = "All cases",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isAllSelected) Color.White else InkText,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
                         )
-                    )
+                    }
 
                     CaseStatus.entries.forEach { status ->
-                        FilterChip(
-                            selected = uiState.selectedStatusFilter == status,
+                        val isSelected = uiState.selectedStatusFilter == status
+                        val label = when (status) {
+                            CaseStatus.PROCESSING -> "Processing"
+                            CaseStatus.PENDING_FIR_REVIEW -> "Pending FIR"
+                            CaseStatus.ACTIVE -> "Active search"
+                            CaseStatus.FOUND -> "Found"
+                            CaseStatus.CLOSED -> "Closed"
+                            CaseStatus.FIR_REJECTED -> "FIR rejected"
+                            CaseStatus.REJECTED_NO_FACE -> "Photo unclear"
+                        }
+                        Surface(
                             onClick = { viewModel.setStatusFilter(status) },
-                            label = { Text(status.name.replace("_", " ")) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = CyanPrimary,
-                                selectedLabelColor = Color.Black,
-                                containerColor = Slate800,
-                                labelColor = TextSecondary
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (isSelected) BluePrimary else PaperWhite,
+                            border = BorderStroke(1.dp, if (isSelected) BluePrimary else LineBorder)
+                        ) {
+                            Text(
+                                text = label,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isSelected) Color.White else InkText,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
                             )
-                        )
+                        }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-                // Loading / Error / Empty / List
+                // Loading / Empty / Cases List
                 if (uiState.isLoading && uiState.cases.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(color = CyanPrimary)
+                        CircularProgressIndicator(color = BluePrimary)
                     }
                 } else if (uiState.cases.isEmpty()) {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                imageVector = Icons.Default.SearchOff,
-                                contentDescription = null,
-                                tint = Slate500,
-                                modifier = Modifier.size(64.dp)
-                            )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(24.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(CircleShape)
+                                    .background(PaperSubtle),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.FolderOpen,
+                                    contentDescription = null,
+                                    tint = InkSubtle,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
                                 text = "No cases found in this category",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = TextSecondary
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = InkMuted
                             )
                         }
                     }
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
                         contentPadding = PaddingValues(bottom = 24.dp)
                     ) {
                         items(uiState.cases, key = { it.id }) { missingCase ->
@@ -181,10 +252,10 @@ private fun CaseCardItem(
     val primaryPhoto = missingCase.photos.firstOrNull { it.isPrimary } ?: missingCase.photos.firstOrNull()
     val photoUrl = primaryPhoto?.faceCropPath ?: primaryPhoto?.originalPath
 
-    GlassCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
+    PaperCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        backgroundColor = PaperWhite
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -193,10 +264,10 @@ private fun CaseCardItem(
             // Photo thumbnail
             Box(
                 modifier = Modifier
-                    .size(76.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .border(1.dp, GlassBorder, RoundedCornerShape(12.dp))
-                    .background(Slate800),
+                    .size(68.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .border(1.dp, LineBorderSubtle, RoundedCornerShape(10.dp))
+                    .background(BlueWash),
                 contentAlignment = Alignment.Center
             ) {
                 if (photoUrl != null) {
@@ -211,8 +282,8 @@ private fun CaseCardItem(
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = null,
-                        tint = Slate600,
-                        modifier = Modifier.size(36.dp)
+                        tint = BluePrimary,
+                        modifier = Modifier.size(32.dp)
                     )
                 }
             }
@@ -229,8 +300,9 @@ private fun CaseCardItem(
                     Text(
                         text = missingCase.fullName,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
+                        fontWeight = FontWeight.ExtraBold,
+                        color = InkText,
+                        maxLines = 1
                     )
                     StatusBadge(status = missingCase.status)
                 }
@@ -239,54 +311,52 @@ private fun CaseCardItem(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     missingCase.age?.let {
                         Text(
                             text = "$it yrs",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = TextSecondary
+                            fontSize = 11.sp,
+                            color = InkMuted
                         )
                     }
                     missingCase.gender?.let {
                         Text(
                             text = "• $it",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = TextSecondary
+                            fontSize = 11.sp,
+                            color = InkMuted
                         )
                     }
                     missingCase.firNumber?.let {
                         Surface(
                             shape = RoundedCornerShape(4.dp),
-                            color = Slate800,
-                            modifier = Modifier.padding(start = 4.dp)
+                            color = BlueWash
                         ) {
                             Text(
-                                text = "FIR Filed",
-                                style = MaterialTheme.typography.labelSmall,
+                                text = "FIR: $it",
                                 fontSize = 9.sp,
-                                color = EmeraldPrimary,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                fontWeight = FontWeight.Bold,
+                                color = BlueDeep,
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(6.dp))
-
                 missingCase.lastSeenLocation?.let {
+                    Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.Place,
                             contentDescription = null,
-                            tint = CyanPrimary,
-                            modifier = Modifier.size(13.dp)
+                            tint = BluePrimary,
+                            modifier = Modifier.size(12.dp)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(3.dp))
                         Text(
                             text = it,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Slate400,
+                            fontSize = 11.sp,
+                            color = InkMuted,
                             maxLines = 1
                         )
                     }
@@ -295,13 +365,20 @@ private fun CaseCardItem(
                 if (missingCase.sightingsCount > 0) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "${missingCase.sightingsCount} CCTV Sighting(s) Recorded",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = CyanPrimary,
-                        fontWeight = FontWeight.SemiBold
+                        text = "${missingCase.sightingsCount} sighting match(es) recorded",
+                        fontSize = 10.sp,
+                        color = GreenSuccess,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
+
+            Icon(
+                Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = InkSubtle,
+                modifier = Modifier.size(18.dp)
+            )
         }
     }
 }

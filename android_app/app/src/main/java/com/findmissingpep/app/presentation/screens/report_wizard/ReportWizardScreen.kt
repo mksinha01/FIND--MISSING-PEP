@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.findmissingpep.app.R
-import com.findmissingpep.app.presentation.common.GlassCard
+import com.findmissingpep.app.presentation.common.PaperCard
 import com.findmissingpep.app.presentation.theme.*
 import com.findmissingpep.app.data.util.ImageCompressor
 import kotlinx.coroutines.launch
@@ -94,7 +94,7 @@ fun ReportWizardScreen(
     }
 
     Scaffold(
-        containerColor = BackgroundDark,
+        containerColor = CreamBackground,
         topBar = {
             TopAppBar(
                 title = {
@@ -102,7 +102,7 @@ fun ReportWizardScreen(
                         text = stringResource(R.string.report_missing_person),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = TextPrimary
+                        color = InkText
                     )
                 },
                 navigationIcon = {
@@ -110,12 +110,12 @@ fun ReportWizardScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = TextPrimary
+                            tint = InkText
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
+                    containerColor = CreamBackground
                 )
             )
         }
@@ -138,8 +138,9 @@ fun ReportWizardScreen(
             AnimatedVisibility(visible = uiState.error != null) {
                 uiState.error?.let { err ->
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = RosePrimary.copy(alpha = 0.2f)),
+                        colors = CardDefaults.cardColors(containerColor = RedDanger.copy(alpha = 0.1f)),
                         shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, RedDanger.copy(alpha = 0.3f)),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 12.dp)
@@ -148,12 +149,12 @@ fun ReportWizardScreen(
                             modifier = Modifier.padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = RosePrimary)
+                            Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = RedDanger)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = err, color = RosePrimary, style = MaterialTheme.typography.bodySmall)
+                            Text(text = err, color = RedDanger, style = MaterialTheme.typography.bodySmall)
                             Spacer(modifier = Modifier.weight(1f))
                             IconButton(onClick = { viewModel.clearError() }, modifier = Modifier.size(24.dp)) {
-                                Icon(Icons.Default.Close, contentDescription = "Dismiss", tint = RosePrimary)
+                                Icon(Icons.Default.Close, contentDescription = "Dismiss", tint = RedDanger)
                             }
                         }
                     }
@@ -228,21 +229,21 @@ private fun StepProgressHeader(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(34.dp)
                         .clip(CircleShape)
                         .background(
                             when {
-                                isCompleted -> EmeraldPrimary
-                                isActive -> CyanPrimary
-                                else -> Slate800
+                                isCompleted -> GreenSuccess
+                                isActive -> BluePrimary
+                                else -> PaperWhite
                             }
                         )
                         .border(
                             width = 1.5.dp,
                             color = when {
-                                isCompleted -> EmeraldPrimary
-                                isActive -> CyanPrimary
-                                else -> Slate700
+                                isCompleted -> GreenSuccess
+                                isActive -> BluePrimary
+                                else -> LineBorder
                             },
                             shape = CircleShape
                         ),
@@ -252,7 +253,7 @@ private fun StepProgressHeader(
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
-                            tint = Color.Black,
+                            tint = Color.White,
                             modifier = Modifier.size(16.dp)
                         )
                     } else {
@@ -260,7 +261,7 @@ private fun StepProgressHeader(
                             text = "${index + 1}",
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
-                            color = if (isActive) Color.Black else TextSecondary
+                            color = if (isActive) Color.White else InkMuted
                         )
                     }
                 }
@@ -270,22 +271,37 @@ private fun StepProgressHeader(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (isActive) CyanPrimary else TextSecondary,
-                    fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
+                    color = if (isActive) BluePrimary else InkMuted,
+                    fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium
                 )
             }
 
             if (index < steps.size - 1) {
                 Box(
                     modifier = Modifier
-                        .width(40.dp)
+                        .width(36.dp)
                         .height(2.dp)
-                        .background(if (index < currentStep) EmeraldPrimary else Slate800)
+                        .background(if (index < currentStep) GreenSuccess else LineBorder)
                 )
             }
         }
     }
 }
+
+// ─── Common Text Field Colors Helper ────────────────────────────────────────
+
+@Composable
+private fun wizardFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedBorderColor = BluePrimary,
+    unfocusedBorderColor = LineBorder,
+    focusedTextColor = InkText,
+    unfocusedTextColor = InkText,
+    cursorColor = BluePrimary,
+    focusedLabelColor = BluePrimary,
+    unfocusedLabelColor = InkMuted,
+    focusedContainerColor = PaperWhite,
+    unfocusedContainerColor = PaperWhite
+)
 
 // ─── Step 1: Demographics ───────────────────────────────────────────────────
 
@@ -304,12 +320,12 @@ private fun Step1Demographics(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        GlassCard {
+        PaperCard {
             Text(
-                text = "Missing Person Demographics",
+                text = "Missing Person Details",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = CyanPrimary
+                color = InkText
             )
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -317,16 +333,11 @@ private fun Step1Demographics(
             OutlinedTextField(
                 value = state.fullName,
                 onValueChange = { viewModel.updateFullName(it) },
-                label = { Text("Full Name *", color = TextSecondary) },
-                placeholder = { Text("Enter official name", color = Slate500) },
+                label = { Text("Full Legal Name *") },
+                placeholder = { Text("Enter official name", color = InkMuted.copy(alpha = 0.6f)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = CyanPrimary,
-                    unfocusedBorderColor = GlassBorder,
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary
-                ),
+                colors = wizardFieldColors(),
                 shape = RoundedCornerShape(12.dp)
             )
 
@@ -338,7 +349,7 @@ private fun Step1Demographics(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Age: ${state.age} years", color = TextPrimary, style = MaterialTheme.typography.bodyMedium)
+                Text("Age: ${state.age} years", color = InkText, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
             }
             Slider(
                 value = state.age.toFloat(),
@@ -346,9 +357,9 @@ private fun Step1Demographics(
                 valueRange = 1f..100f,
                 steps = 99,
                 colors = SliderDefaults.colors(
-                    thumbColor = CyanPrimary,
-                    activeTrackColor = CyanPrimary,
-                    inactiveTrackColor = Slate800
+                    thumbColor = BluePrimary,
+                    activeTrackColor = BluePrimary,
+                    inactiveTrackColor = LineBorder
                 )
             )
 
@@ -363,27 +374,22 @@ private fun Step1Demographics(
                     value = state.gender.ifBlank { "Select Gender" },
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Gender", color = TextSecondary) },
+                    label = { Text("Gender") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = genderExpanded) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .menuAnchor(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = CyanPrimary,
-                        unfocusedBorderColor = GlassBorder,
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary
-                    ),
+                    colors = wizardFieldColors(),
                     shape = RoundedCornerShape(12.dp)
                 )
                 ExposedDropdownMenu(
                     expanded = genderExpanded,
                     onDismissRequest = { genderExpanded = false },
-                    modifier = Modifier.background(SurfaceDark)
+                    modifier = Modifier.background(PaperWhite)
                 ) {
                     genderOptions.forEach { option ->
                         DropdownMenuItem(
-                            text = { Text(option, color = TextPrimary) },
+                            text = { Text(option, color = InkText) },
                             onClick = {
                                 viewModel.updateGender(option)
                                 genderExpanded = false
@@ -401,7 +407,7 @@ private fun Step1Demographics(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Approximate Height: ${state.heightCm} cm", color = TextPrimary, style = MaterialTheme.typography.bodyMedium)
+                Text("Approximate Height: ${state.heightCm} cm", color = InkText, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
             }
             Slider(
                 value = state.heightCm.toFloat(),
@@ -409,9 +415,9 @@ private fun Step1Demographics(
                 valueRange = 60f..220f,
                 steps = 160,
                 colors = SliderDefaults.colors(
-                    thumbColor = CyanPrimary,
-                    activeTrackColor = CyanPrimary,
-                    inactiveTrackColor = Slate800
+                    thumbColor = BluePrimary,
+                    activeTrackColor = BluePrimary,
+                    inactiveTrackColor = LineBorder
                 )
             )
 
@@ -421,27 +427,22 @@ private fun Step1Demographics(
             OutlinedTextField(
                 value = state.description,
                 onValueChange = { viewModel.updateDescription(it) },
-                label = { Text("Physical Description & Clothing", color = TextSecondary) },
-                placeholder = { Text("e.g. Blue denim shirt, black shoes, birthmark on neck", color = Slate500) },
+                label = { Text("Physical Description & Distinct Features") },
+                placeholder = { Text("e.g. Blue denim shirt, black shoes, birthmark on neck", color = InkMuted.copy(alpha = 0.6f)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3,
                 maxLines = 5,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = CyanPrimary,
-                    unfocusedBorderColor = GlassBorder,
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary
-                ),
+                colors = wizardFieldColors(),
                 shape = RoundedCornerShape(12.dp)
             )
         }
 
-        GlassCard {
+        PaperCard {
             Text(
                 text = "Last Known Circumstances",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = CyanPrimary
+                color = InkText
             )
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -449,17 +450,12 @@ private fun Step1Demographics(
             OutlinedTextField(
                 value = state.lastSeenLocation,
                 onValueChange = { viewModel.updateLastSeenLocation(it) },
-                label = { Text("Last Seen Location", color = TextSecondary) },
-                placeholder = { Text("e.g. Saket Metro Station, Gate 2", color = Slate500) },
+                label = { Text("Last Seen Location") },
+                placeholder = { Text("e.g. Saket Metro Station, Gate 2", color = InkMuted.copy(alpha = 0.6f)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                leadingIcon = { Icon(Icons.Default.Place, contentDescription = null, tint = CyanPrimary) },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = CyanPrimary,
-                    unfocusedBorderColor = GlassBorder,
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary
-                ),
+                leadingIcon = { Icon(Icons.Default.Place, contentDescription = null, tint = BluePrimary) },
+                colors = wizardFieldColors(),
                 shape = RoundedCornerShape(12.dp)
             )
 
@@ -469,17 +465,12 @@ private fun Step1Demographics(
             OutlinedTextField(
                 value = state.lastSeenTime,
                 onValueChange = { viewModel.updateLastSeenTime(it) },
-                label = { Text("Last Seen Date & Time", color = TextSecondary) },
-                placeholder = { Text("e.g. 2026-10-10 14:30 IST", color = Slate500) },
+                label = { Text("Last Seen Date & Time") },
+                placeholder = { Text("e.g. 2026-10-10 14:30 IST", color = InkMuted.copy(alpha = 0.6f)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                leadingIcon = { Icon(Icons.Default.AccessTime, contentDescription = null, tint = CyanPrimary) },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = CyanPrimary,
-                    unfocusedBorderColor = GlassBorder,
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary
-                ),
+                leadingIcon = { Icon(Icons.Default.AccessTime, contentDescription = null, tint = BluePrimary) },
+                colors = wizardFieldColors(),
                 shape = RoundedCornerShape(12.dp)
             )
 
@@ -489,17 +480,12 @@ private fun Step1Demographics(
             OutlinedTextField(
                 value = state.contactInfo,
                 onValueChange = { viewModel.updateContactInfo(it) },
-                label = { Text("Emergency Contact Phone", color = TextSecondary) },
-                placeholder = { Text("+91 98765 43210", color = Slate500) },
+                label = { Text("Emergency Contact Phone") },
+                placeholder = { Text("+91 98765 43210", color = InkMuted.copy(alpha = 0.6f)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null, tint = CyanPrimary) },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = CyanPrimary,
-                    unfocusedBorderColor = GlassBorder,
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary
-                ),
+                leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null, tint = BluePrimary) },
+                colors = wizardFieldColors(),
                 shape = RoundedCornerShape(12.dp)
             )
         }
@@ -520,18 +506,18 @@ private fun Step2FirDetails(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        GlassCard {
+        PaperCard {
             Text(
                 text = "Police FIR Verification",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = CyanPrimary
+                color = InkText
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = "Providing an official First Information Report (FIR) accelerates facial recognition enrollment across city cameras.",
+                text = "Attaching an official First Information Report (FIR) verifies case legality and expedites official response.",
                 style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary
+                color = InkMuted
             )
             Spacer(modifier = Modifier.height(14.dp))
 
@@ -539,31 +525,26 @@ private fun Step2FirDetails(
             OutlinedTextField(
                 value = state.firNumber,
                 onValueChange = { viewModel.updateFirNumber(it) },
-                label = { Text("FIR Number (e.g. FIR/2026/1234)", color = TextSecondary) },
-                placeholder = { Text("FIR/YYYY/XXXX", color = Slate500) },
+                label = { Text("FIR Number (e.g. FIR/2026/1234)") },
+                placeholder = { Text("FIR/YYYY/XXXX", color = InkMuted.copy(alpha = 0.6f)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 trailingIcon = {
                     if (state.isValidatingFir) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(20.dp),
-                            color = CyanPrimary,
+                            color = BluePrimary,
                             strokeWidth = 2.dp
                         )
                     } else if (state.firValidation != null) {
                         if (state.firValidation.isValid) {
-                            Icon(Icons.Default.CheckCircle, contentDescription = "Valid", tint = EmeraldPrimary)
+                            Icon(Icons.Default.CheckCircle, contentDescription = "Valid", tint = GreenSuccess)
                         } else {
-                            Icon(Icons.Default.Error, contentDescription = "Invalid", tint = RosePrimary)
+                            Icon(Icons.Default.Error, contentDescription = "Invalid", tint = RedDanger)
                         }
                     }
                 },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (state.firValidation?.isValid == true) EmeraldPrimary else CyanPrimary,
-                    unfocusedBorderColor = GlassBorder,
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary
-                ),
+                colors = wizardFieldColors(),
                 shape = RoundedCornerShape(12.dp)
             )
 
@@ -574,7 +555,7 @@ private fun Step2FirDetails(
                     Text(
                         text = validation.message,
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (validation.isValid) EmeraldPrimary else RosePrimary,
+                        color = if (validation.isValid) GreenSuccess else RedDanger,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -586,17 +567,12 @@ private fun Step2FirDetails(
             OutlinedTextField(
                 value = state.firPoliceStation,
                 onValueChange = { viewModel.updateFirPoliceStation(it) },
-                label = { Text("Police Station Name", color = TextSecondary) },
-                placeholder = { Text("e.g. Saket Police Station, New Delhi", color = Slate500) },
+                label = { Text("Police Station Name") },
+                placeholder = { Text("e.g. Saket Police Station, New Delhi", color = InkMuted.copy(alpha = 0.6f)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                leadingIcon = { Icon(Icons.Default.Security, contentDescription = null, tint = CyanPrimary) },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = CyanPrimary,
-                    unfocusedBorderColor = GlassBorder,
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary
-                ),
+                leadingIcon = { Icon(Icons.Default.Security, contentDescription = null, tint = BluePrimary) },
+                colors = wizardFieldColors(),
                 shape = RoundedCornerShape(12.dp)
             )
 
@@ -606,63 +582,59 @@ private fun Step2FirDetails(
             OutlinedTextField(
                 value = state.firDate,
                 onValueChange = { viewModel.updateFirDate(it) },
-                label = { Text("Date of Filing FIR", color = TextSecondary) },
-                placeholder = { Text("YYYY-MM-DD", color = Slate500) },
+                label = { Text("Date of Filing FIR") },
+                placeholder = { Text("YYYY-MM-DD", color = InkMuted.copy(alpha = 0.6f)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null, tint = CyanPrimary) },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = CyanPrimary,
-                    unfocusedBorderColor = GlassBorder,
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary
-                ),
+                leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null, tint = BluePrimary) },
+                colors = wizardFieldColors(),
                 shape = RoundedCornerShape(12.dp)
             )
         }
 
-        GlassCard {
+        PaperCard {
             Text(
                 text = "Scanned FIR Document",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = CyanPrimary
+                color = InkText
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = "Attach a PDF or clear photograph of the stamped police FIR.",
                 style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary
+                color = InkMuted
             )
             Spacer(modifier = Modifier.height(14.dp))
 
             if (state.firDocument != null) {
                 Surface(
-                    color = Slate800,
+                    color = CreamBackground,
                     shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, LineBorder),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
                         modifier = Modifier.padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Description, contentDescription = null, tint = EmeraldPrimary)
+                        Icon(Icons.Default.Description, contentDescription = null, tint = BluePrimary)
                         Spacer(modifier = Modifier.width(10.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = state.firDocument.name,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = TextPrimary,
+                                color = InkText,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
                                 text = "${state.firDocument.length() / 1024} KB attached",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = TextSecondary
+                                color = InkMuted
                             )
                         }
                         IconButton(onClick = { viewModel.setFirDocument(null, null) }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Remove", tint = RosePrimary)
+                            Icon(Icons.Default.Delete, contentDescription = "Remove", tint = RedDanger)
                         }
                     }
                 }
@@ -671,8 +643,8 @@ private fun Step2FirDetails(
                     onClick = onAttachDocument,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = CyanPrimary),
-                    border = BorderStroke(1.dp, CyanPrimary.copy(alpha = 0.5f))
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = BluePrimary),
+                    border = BorderStroke(1.dp, BluePrimary.copy(alpha = 0.5f))
                 ) {
                     Icon(Icons.Default.AttachFile, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -695,18 +667,18 @@ private fun Step3Photos(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        GlassCard {
+        PaperCard {
             Text(
-                text = "Reference Photos Intake (1 to 5)",
+                text = "Reference Photos (1 to 5 Photos)",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = CyanPrimary
+                color = InkText
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = "Upload high-quality, front-facing photographs. Our ArcFace 512-D neural extractor will identify facial features down to 20x20 px.",
+                text = "Provide clear, front-facing photographs of the missing individual to help search teams identify them accurately.",
                 style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary
+                color = InkMuted
             )
             Spacer(modifier = Modifier.height(14.dp))
 
@@ -717,8 +689,8 @@ private fun Step3Photos(
                         .fillMaxWidth()
                         .height(180.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Slate800.copy(alpha = 0.5f))
-                        .border(1.5.dp, GlassBorder, RoundedCornerShape(14.dp))
+                        .background(CreamBackground)
+                        .border(1.5.dp, LineBorder, RoundedCornerShape(14.dp))
                         .clickable { onAddPhotos() },
                     contentAlignment = Alignment.Center
                 ) {
@@ -726,7 +698,7 @@ private fun Step3Photos(
                         Icon(
                             imageVector = Icons.Default.AddPhotoAlternate,
                             contentDescription = null,
-                            tint = CyanPrimary,
+                            tint = BluePrimary,
                             modifier = Modifier.size(48.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -734,12 +706,12 @@ private fun Step3Photos(
                             text = "Tap to Select Photos (Max 5)",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = TextPrimary
+                            color = InkText
                         )
                         Text(
-                            text = "JPEG / PNG format • Auto-compressed",
+                            text = "JPEG / PNG format • Clear portraits recommended",
                             style = MaterialTheme.typography.labelSmall,
-                            color = TextSecondary
+                            color = InkMuted
                         )
                     }
                 }
@@ -757,7 +729,7 @@ private fun Step3Photos(
                             modifier = Modifier
                                 .aspectRatio(1f)
                                 .clip(RoundedCornerShape(10.dp))
-                                .border(1.dp, if (index == 0) EmeraldPrimary else GlassBorder, RoundedCornerShape(10.dp))
+                                .border(1.5.dp, if (index == 0) BluePrimary else LineBorder, RoundedCornerShape(10.dp))
                         ) {
                             AsyncImage(
                                 model = file,
@@ -768,7 +740,7 @@ private fun Step3Photos(
 
                             if (index == 0) {
                                 Surface(
-                                    color = EmeraldPrimary,
+                                    color = BlueDeep,
                                     shape = RoundedCornerShape(bottomEnd = 8.dp),
                                     modifier = Modifier.align(Alignment.TopStart)
                                 ) {
@@ -776,9 +748,9 @@ private fun Step3Photos(
                                         text = "Primary",
                                         style = MaterialTheme.typography.labelSmall,
                                         fontSize = 9.sp,
-                                        color = Color.Black,
+                                        color = Color.White,
                                         fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                     )
                                 }
                             }
@@ -807,15 +779,15 @@ private fun Step3Photos(
                                 modifier = Modifier
                                     .aspectRatio(1f)
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(Slate800)
-                                    .border(1.dp, GlassBorder, RoundedCornerShape(10.dp))
+                                    .background(CreamBackground)
+                                    .border(1.dp, LineBorder, RoundedCornerShape(10.dp))
                                     .clickable { onAddPhotos() },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Add,
                                     contentDescription = "Add More",
-                                    tint = CyanPrimary,
+                                    tint = BluePrimary,
                                     modifier = Modifier.size(28.dp)
                                 )
                             }
@@ -826,20 +798,20 @@ private fun Step3Photos(
         }
 
         // Summary Card
-        GlassCard {
+        PaperCard {
             Text(
                 text = "Registration Checklist",
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
-                color = TextPrimary
+                color = InkText
             )
             Spacer(modifier = Modifier.height(8.dp))
             ChecklistItem(
-                label = "Demographics verified",
+                label = "Demographics completed",
                 isDone = state.fullName.isNotBlank()
             )
             ChecklistItem(
-                label = if (state.firValidation?.isValid == true) "Official FIR verified" else "FIR added",
+                label = if (state.firValidation?.isValid == true) "Official FIR verified" else "FIR reference added",
                 isDone = state.firNumber.isNotBlank()
             )
             ChecklistItem(
@@ -859,14 +831,14 @@ private fun ChecklistItem(label: String, isDone: Boolean) {
         Icon(
             imageVector = if (isDone) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
             contentDescription = null,
-            tint = if (isDone) EmeraldPrimary else Slate600,
+            tint = if (isDone) GreenSuccess else LineBorder,
             modifier = Modifier.size(16.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,
-            color = if (isDone) TextPrimary else TextSecondary
+            color = if (isDone) InkText else InkMuted
         )
     }
 }
@@ -893,8 +865,8 @@ private fun StepNavigationButtons(
                     .weight(1f)
                     .height(48.dp),
                 shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, GlassBorder),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = TextPrimary)
+                border = BorderStroke(1.dp, LineBorder),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = InkText)
             ) {
                 Text("Previous")
             }
@@ -909,8 +881,10 @@ private fun StepNavigationButtons(
                     .height(48.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = CyanPrimary,
-                    contentColor = Color.Black
+                    containerColor = BluePrimary,
+                    contentColor = Color.White,
+                    disabledContainerColor = LineBorder,
+                    disabledContentColor = InkMuted
                 )
             ) {
                 Text("Next Step", fontWeight = FontWeight.Bold)
@@ -924,14 +898,16 @@ private fun StepNavigationButtons(
                     .height(48.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = EmeraldPrimary,
-                    contentColor = Color.Black
+                    containerColor = GreenSuccess,
+                    contentColor = Color.White,
+                    disabledContainerColor = LineBorder,
+                    disabledContentColor = InkMuted
                 )
             ) {
                 if (isSubmitting) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
-                        color = Color.Black,
+                        color = Color.White,
                         strokeWidth = 2.dp
                     )
                 } else {

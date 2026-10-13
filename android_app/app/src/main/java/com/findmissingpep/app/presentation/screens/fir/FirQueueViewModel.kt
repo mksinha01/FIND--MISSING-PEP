@@ -54,7 +54,7 @@ class FirQueueViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isActing = false,
-                            successMessage = "FIR verified! ArcFace embeddings activated for live CCTV scanning."
+                            successMessage = "FIR verified! Case activated for live surveillance search."
                         )
                     }
                     refreshQueue()

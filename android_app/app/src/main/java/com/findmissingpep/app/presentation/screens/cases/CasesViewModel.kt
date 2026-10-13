@@ -117,7 +117,7 @@ class CasesViewModel @Inject constructor(
                         current.copy(
                             case = updatedCase,
                             isUploadingPhoto = false,
-                            successMessage = "Photo uploaded and queued for ArcFace embedding"
+                            successMessage = "Photo uploaded and queued for visual verification"
                         )
                     }
                 },

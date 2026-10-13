@@ -30,7 +30,7 @@ import com.findmissingpep.app.BuildConfig
 import com.findmissingpep.app.domain.model.CaseStatus
 import com.findmissingpep.app.domain.model.MissingCase
 import com.findmissingpep.app.domain.model.Sighting
-import com.findmissingpep.app.presentation.common.GlassCard
+import com.findmissingpep.app.presentation.common.PaperCard
 import com.findmissingpep.app.presentation.common.SimilarityGauge
 import com.findmissingpep.app.presentation.common.StatusBadge
 import com.findmissingpep.app.presentation.theme.*
@@ -54,7 +54,6 @@ fun CaseDetailScreen(
         viewModel.loadCaseDetail(caseId)
     }
 
-    // Photo picker for uploading additional reference photos
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -74,39 +73,50 @@ fun CaseDetailScreen(
     }
 
     Scaffold(
-        containerColor = BackgroundDark,
+        containerColor = CreamBackground,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = uiState.case?.fullName ?: "Case Details",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
-                },
-                navigationIcon = {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding(),
+                color = PaperWhite,
+                border = BorderStroke(1.dp, LineBorderSubtle)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = TextPrimary
+                            tint = InkText
                         )
                     }
-                },
-                actions = {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = uiState.case?.fullName ?: "Case details",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = InkText,
+                            maxLines = 1
+                        )
+                        Text(
+                            text = "Investigation record",
+                            fontSize = 11.sp,
+                            color = InkMuted
+                        )
+                    }
                     if (uiState.case != null && uiState.case?.status != CaseStatus.CLOSED && uiState.case?.status != CaseStatus.FOUND) {
-                        IconButton(onClick = { showCloseDialog = true }) {
-                            Icon(
-                                imageVector = Icons.Default.CheckCircleOutline,
-                                contentDescription = "Close Case",
-                                tint = EmeraldPrimary
-                            )
+                        TextButton(onClick = { showCloseDialog = true }) {
+                            Text("Close case", color = BluePrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-            )
+                }
+            }
         }
     ) { paddingValues ->
         if (uiState.isLoading && uiState.case == null) {
@@ -116,7 +126,7 @@ fun CaseDetailScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = CyanPrimary)
+                CircularProgressIndicator(color = BluePrimary)
             }
         } else if (uiState.case != null) {
             val caseItem = uiState.case!!
@@ -124,55 +134,112 @@ fun CaseDetailScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 18.dp)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // Success / Error message
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Success Message Banner
                 uiState.successMessage?.let {
                     Surface(
-                        color = EmeraldPrimary.copy(alpha = 0.2f),
-                        shape = RoundedCornerShape(10.dp),
+                        color = GreenSuccessBg,
+                        shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
                             text = it,
-                            color = EmeraldPrimary,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(12.dp)
+                            color = GreenSuccess,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(10.dp)
                         )
                     }
                 }
 
-                // Status Stepper
+                // ── Case Hero Card ──
+                PaperCard(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = caseItem.fullName,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = InkText
+                        )
+                        StatusBadge(status = caseItem.status)
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        caseItem.age?.let {
+                            Text(text = "$it years old", fontSize = 12.sp, color = InkMuted)
+                        }
+                        caseItem.gender?.let {
+                            Text(text = "• $it", fontSize = 12.sp, color = InkMuted)
+                        }
+                        caseItem.firNumber?.let {
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = BlueWash
+                            ) {
+                                Text(
+                                    text = "FIR: $it",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = BlueDeep,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    caseItem.lastSeenLocation?.let {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Place, contentDescription = null, tint = BluePrimary, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = it, fontSize = 11.sp, color = InkMuted)
+                        }
+                    }
+                }
+
+                // ── Status Stepper ──
                 CaseStatusStepper(status = caseItem.status)
 
-                // Photos Section (Side-by-side Enrolled vs Face Crop)
+                // ── Reference Photos Section ──
                 PhotosSection(
                     case = caseItem,
                     isUploading = uiState.isUploadingPhoto,
                     onAddPhoto = { photoPickerLauncher.launch("image/*") }
                 )
 
-                // Demographics & Last Seen
+                // ── Demographics & Last Seen Details ──
                 DemographicsCard(case = caseItem)
 
-                // FIR Legal Record
+                // ── Police FIR Record ──
                 FirLegalCard(case = caseItem)
 
-                // Timeline / Trajectory CTA
+                // ── Sighting Map Action Card ──
                 TrajectoryActionCard(
                     sightingsCount = uiState.sightings.size,
                     onNavigateToTimeline = onNavigateToTimeline
                 )
 
-                // Associated CCTV Sightings
+                // ── Associated CCTV Sightings ──
                 if (uiState.sightings.isNotEmpty()) {
                     Text(
-                        text = "Associated CCTV Sightings (${uiState.sightings.size})",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
+                        text = "Associated CCTV sightings (${uiState.sightings.size})",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = InkText
                     )
 
                     uiState.sightings.forEach { sighting ->
@@ -192,11 +259,12 @@ fun CaseDetailScreen(
     if (showCloseDialog) {
         AlertDialog(
             onDismissRequest = { showCloseDialog = false },
-            title = { Text("Close Missing Case", color = TextPrimary) },
+            title = { Text("Close missing case", color = InkText, fontWeight = FontWeight.Bold, fontSize = 16.sp) },
             text = {
                 Text(
-                    "Are you sure you want to resolve or close this case? This will deactivate live ArcFace CCTV scanning across the network.",
-                    color = TextSecondary
+                    "Are you sure you want to resolve or close this case? This marks the case as officially concluded in the registry.",
+                    color = InkMuted,
+                    fontSize = 13.sp
                 )
             },
             confirmButton = {
@@ -205,17 +273,19 @@ fun CaseDetailScreen(
                         showCloseDialog = false
                         viewModel.closeCase(caseId)
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary)
+                    colors = ButtonDefaults.buttonColors(containerColor = GreenSuccess, contentColor = Color.White),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Confirm Closure", color = Color.Black)
+                    Text("Confirm closure", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showCloseDialog = false }) {
-                    Text("Cancel", color = TextSecondary)
+                    Text("Cancel", color = InkMuted)
                 }
             },
-            containerColor = SurfaceDark
+            containerColor = PaperWhite,
+            shape = RoundedCornerShape(14.dp)
         )
     }
 }
@@ -224,7 +294,7 @@ fun CaseDetailScreen(
 
 @Composable
 private fun CaseStatusStepper(status: CaseStatus) {
-    val steps = listOf("Submitted", "Face Extracted", "FIR Verified", "CCTV Search", "Resolved")
+    val steps = listOf("Report Submitted", "Photos Verified", "FIR Approved", "Active Search", "Resolved")
     val activeIndex = when (status) {
         CaseStatus.PROCESSING -> 1
         CaseStatus.PENDING_FIR_REVIEW -> 1
@@ -233,17 +303,17 @@ private fun CaseStatusStepper(status: CaseStatus) {
         CaseStatus.FIR_REJECTED, CaseStatus.REJECTED_NO_FACE -> 1
     }
 
-    GlassCard {
+    PaperCard(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Investigation Status",
-                style = MaterialTheme.typography.titleSmall,
+                text = "Investigation progress",
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextPrimary
+                color = InkText
             )
             StatusBadge(status = status)
         }
@@ -253,7 +323,7 @@ private fun CaseStatusStepper(status: CaseStatus) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ) {
             steps.forEachIndexed { index, title ->
                 val isDone = index <= activeIndex
@@ -267,27 +337,23 @@ private fun CaseStatusStepper(status: CaseStatus) {
                         modifier = Modifier
                             .size(24.dp)
                             .clip(CircleShape)
-                            .background(
-                                when {
-                                    isDone -> EmeraldPrimary
-                                    else -> Slate800
-                                }
-                            ),
+                            .background(if (isDone) GreenSuccess else PaperSubtle),
                         contentAlignment = Alignment.Center
                     ) {
                         if (isDone) {
-                            Icon(Icons.Default.Check, contentDescription = null, tint = Color.Black, modifier = Modifier.size(14.dp))
+                            Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(13.dp))
                         } else {
-                            Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(Slate600))
+                            Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(InkSubtle))
                         }
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.labelSmall,
                         fontSize = 8.sp,
-                        color = if (isCurrent) CyanPrimary else if (isDone) TextPrimary else TextSecondary,
-                        maxLines = 1
+                        fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
+                        color = if (isCurrent) BluePrimary else if (isDone) InkText else InkSubtle,
+                        maxLines = 2,
+                        lineHeight = 10.sp
                     )
                 }
             }
@@ -303,38 +369,38 @@ private fun PhotosSection(
     isUploading: Boolean,
     onAddPhoto: () -> Unit
 ) {
-    GlassCard {
+    PaperCard(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Biometric Reference Photos",
-                style = MaterialTheme.typography.titleSmall,
+                text = "Reference photos",
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = CyanPrimary
+                color = InkText
             )
             if (case.photos.size < 5) {
                 TextButton(onClick = onAddPhoto, enabled = !isUploading) {
                     if (isUploading) {
-                        CircularProgressIndicator(modifier = Modifier.size(14.dp), color = CyanPrimary, strokeWidth = 2.dp)
+                        CircularProgressIndicator(modifier = Modifier.size(14.dp), color = BluePrimary, strokeWidth = 2.dp)
                     } else {
-                        Icon(Icons.Default.AddAPhoto, contentDescription = null, modifier = Modifier.size(16.dp), tint = CyanPrimary)
+                        Icon(Icons.Default.AddAPhoto, contentDescription = null, modifier = Modifier.size(15.dp), tint = BluePrimary)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("+ Add Photo", color = CyanPrimary, style = MaterialTheme.typography.labelSmall)
+                        Text("Add photo", color = BluePrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         if (case.photos.isEmpty()) {
-            Text("No reference photos attached", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+            Text("No reference photos attached", color = InkMuted, fontSize = 12.sp)
         } else {
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 items(case.photos) { photo ->
@@ -347,25 +413,23 @@ private fun PhotosSection(
 
                         Box(
                             modifier = Modifier
-                                .size(90.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .border(1.5.dp, if (photo.isPrimary) EmeraldPrimary else GlassBorder, RoundedCornerShape(12.dp))
+                                .size(84.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .border(1.dp, if (photo.isPrimary) BluePrimary else LineBorder, RoundedCornerShape(10.dp))
                         ) {
                             AsyncImage(
                                 model = photoUrl,
-                                contentDescription = "Face",
+                                contentDescription = "Reference photo",
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop
                             )
                         }
-
                         Spacer(modifier = Modifier.height(4.dp))
-
                         Text(
-                            text = if (photo.faceCropPath != null) "112x112 Crop" else "Original",
-                            style = MaterialTheme.typography.labelSmall,
+                            text = if (photo.faceCropPath != null) "Verified crop" else "Original",
                             fontSize = 9.sp,
-                            color = if (photo.faceCropPath != null) CyanPrimary else TextSecondary
+                            fontWeight = FontWeight.Bold,
+                            color = if (photo.faceCropPath != null) BluePrimary else InkMuted
                         )
                     }
                 }
@@ -378,14 +442,14 @@ private fun PhotosSection(
 
 @Composable
 private fun DemographicsCard(case: MissingCase) {
-    GlassCard {
+    PaperCard(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "Person Demographics & Details",
-            style = MaterialTheme.typography.titleSmall,
+            text = "Person details & description",
+            fontSize = 13.sp,
             fontWeight = FontWeight.Bold,
-            color = CyanPrimary
+            color = InkText
         )
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         DetailRow(label = "Full Name", value = case.fullName)
         case.age?.let { DetailRow(label = "Age", value = "$it years") }
@@ -393,7 +457,7 @@ private fun DemographicsCard(case: MissingCase) {
         case.heightCm?.let { DetailRow(label = "Height", value = "$it cm") }
         case.lastSeenLocation?.let { DetailRow(label = "Last Seen Area", value = it) }
         case.lastSeenTime?.let { DetailRow(label = "Last Seen Time", value = it) }
-        case.contactInfo?.let { DetailRow(label = "Family Contact", value = it) }
+        case.contactInfo?.let { DetailRow(label = "Contact Info", value = it) }
         case.description?.let { DetailRow(label = "Physical Description", value = it) }
     }
 }
@@ -403,15 +467,15 @@ private fun DetailRow(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 3.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = label, style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+        Text(text = label, fontSize = 11.sp, color = InkMuted)
         Text(
             text = value,
-            style = MaterialTheme.typography.bodySmall,
-            color = TextPrimary,
-            fontWeight = FontWeight.SemiBold
+            fontSize = 11.sp,
+            color = InkText,
+            fontWeight = FontWeight.Bold
         )
     }
 }
@@ -420,45 +484,46 @@ private fun DetailRow(label: String, value: String) {
 
 @Composable
 private fun FirLegalCard(case: MissingCase) {
-    GlassCard {
+    PaperCard(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Police FIR Verification",
-                style = MaterialTheme.typography.titleSmall,
+                text = "Police FIR record",
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = CyanPrimary
+                color = InkText
             )
             case.firStatus?.let {
                 Surface(
-                    color = if (it == "VERIFIED") EmeraldPrimary.copy(alpha = 0.2f) else AmberPrimary.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(6.dp)
+                    color = if (it == "VERIFIED") GreenSuccessBg else AmberAlertBg,
+                    shape = RoundedCornerShape(5.dp)
                 ) {
                     Text(
-                        text = it,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (it == "VERIFIED") EmeraldPrimary else AmberPrimary,
+                        text = if (it == "VERIFIED") "Verified" else it,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (it == "VERIFIED") GreenSuccess else AmberAlert,
                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         if (case.firNumber != null) {
             DetailRow(label = "FIR Number", value = case.firNumber)
             case.firPoliceStation?.let { DetailRow(label = "Police Station", value = it) }
-            case.firDate?.let { DetailRow(label = "Date of Filing", value = it) }
-            case.firRejectionReason?.let { DetailRow(label = "Rejection Notes", value = it) }
+            case.firDate?.let { DetailRow(label = "Date Filed", value = it) }
+            case.firRejectionReason?.let { DetailRow(label = "Review Notes", value = it) }
         } else {
             Text(
-                text = "No FIR registered. Cases with official FIRs receive priority CCTV scanning.",
-                style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary
+                text = "No FIR registered. Cases with registered FIRs receive priority support.",
+                fontSize = 11.sp,
+                color = InkMuted
             )
         }
     }
@@ -471,10 +536,9 @@ private fun TrajectoryActionCard(
     sightingsCount: Int,
     onNavigateToTimeline: () -> Unit
 ) {
-    GlassCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onNavigateToTimeline() }
+    PaperCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onNavigateToTimeline
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -482,36 +546,37 @@ private fun TrajectoryActionCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(CyanPrimary.copy(alpha = 0.15f)),
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(9.dp))
+                    .background(BlueWash),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Timeline,
                     contentDescription = null,
-                    tint = CyanPrimary,
-                    modifier = Modifier.size(24.dp)
+                    tint = BluePrimary,
+                    modifier = Modifier.size(20.dp)
                 )
             }
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Interactive Sighting Trajectory",
-                    style = MaterialTheme.typography.titleSmall,
+                    text = "Sighting location map",
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    color = InkText
                 )
                 Text(
-                    text = if (sightingsCount > 0) "$sightingsCount verified chronological location points" else "View CCTV map coverage area",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    text = if (sightingsCount > 0) "$sightingsCount verified chronological sighting(s)" else "View camera observation map",
+                    fontSize = 11.sp,
+                    color = InkMuted
                 )
             }
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = CyanPrimary
+                tint = InkSubtle,
+                modifier = Modifier.size(18.dp)
             )
         }
     }
@@ -524,34 +589,34 @@ private fun SightingMiniCard(
     sighting: Sighting,
     onClick: () -> Unit
 ) {
-    GlassCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
+    PaperCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SimilarityGauge(score = sighting.similarityScore, size = 48)
-            Spacer(modifier = Modifier.width(14.dp))
+            SimilarityGauge(score = sighting.similarityScore, size = 44)
+            Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = sighting.cameraLocation ?: "CCTV Node ${sighting.cameraId}",
-                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    color = InkText
                 )
                 Text(
-                    text = "Detected at ${sighting.detectedAt}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    text = "Observed at ${sighting.detectedAt}",
+                    fontSize = 11.sp,
+                    color = InkMuted
                 )
             }
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = Slate500
+                tint = InkSubtle,
+                modifier = Modifier.size(18.dp)
             )
         }
     }

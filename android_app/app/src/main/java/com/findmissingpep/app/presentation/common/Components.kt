@@ -22,45 +22,47 @@ import com.findmissingpep.app.domain.model.CaseStatus
 import com.findmissingpep.app.domain.model.SightingStatus
 import com.findmissingpep.app.presentation.theme.*
 
-// ─── Status Badge ───────────────────────────────────────────────────────────
+// ─── Status Badge (Blue & Cream Human Design) ───────────────────────────────
 
 @Composable
 fun StatusBadge(
     status: CaseStatus,
     modifier: Modifier = Modifier
 ) {
-    val (color, label) = when (status) {
-        CaseStatus.PROCESSING -> VioletPrimary to "Processing"
-        CaseStatus.PENDING_FIR_REVIEW -> AmberPrimary to "Pending FIR"
-        CaseStatus.ACTIVE -> EmeraldPrimary to "Active Search"
-        CaseStatus.FOUND -> CyanPrimary to "Found"
-        CaseStatus.CLOSED -> Slate500 to "Closed"
-        CaseStatus.FIR_REJECTED -> RosePrimary to "FIR Rejected"
-        CaseStatus.REJECTED_NO_FACE -> RosePrimary to "No Face"
+    val (textColor, bgColor, label) = when (status) {
+        CaseStatus.PROCESSING -> Triple(AmberAlert, AmberAlertBg, "Processing")
+        CaseStatus.PENDING_FIR_REVIEW -> Triple(AmberAlert, AmberAlertBg, "Pending FIR")
+        CaseStatus.ACTIVE -> Triple(GreenSuccess, GreenSuccessBg, "Active Search")
+        CaseStatus.FOUND -> Triple(BluePrimary, BlueWash, "Found")
+        CaseStatus.CLOSED -> Triple(InkMuted, LineBorderSubtle, "Closed")
+        CaseStatus.FIR_REJECTED -> Triple(RedDanger, RedDangerBg, "FIR Rejected")
+        CaseStatus.REJECTED_NO_FACE -> Triple(RedDanger, RedDangerBg, "Photo Unclear")
     }
 
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(8.dp),
-        color = color.copy(alpha = 0.15f),
-        contentColor = color
+        shape = RoundedCornerShape(6.dp),
+        color = bgColor,
+        contentColor = textColor,
+        border = null
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             Box(
                 modifier = Modifier
                     .size(6.dp)
                     .clip(CircleShape)
-                    .background(color)
+                    .background(textColor)
             )
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = color
+                fontWeight = FontWeight.Bold,
+                color = textColor,
+                fontSize = 11.sp
             )
         }
     }
@@ -73,46 +75,47 @@ fun SightingStatusBadge(
     status: SightingStatus,
     modifier: Modifier = Modifier
 ) {
-    val (color, label) = when (status) {
-        SightingStatus.PENDING -> AmberPrimary to "Pending Review"
-        SightingStatus.CONFIRMED -> EmeraldPrimary to "Confirmed"
-        SightingStatus.REJECTED -> RosePrimary to "Rejected"
+    val (textColor, bgColor, label) = when (status) {
+        SightingStatus.PENDING -> Triple(AmberAlert, AmberAlertBg, "Pending Review")
+        SightingStatus.CONFIRMED -> Triple(GreenSuccess, GreenSuccessBg, "Confirmed Match")
+        SightingStatus.REJECTED -> Triple(RedDanger, RedDangerBg, "Rejected · False Alarm")
     }
 
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(8.dp),
-        color = color.copy(alpha = 0.15f),
-        contentColor = color
+        shape = RoundedCornerShape(6.dp),
+        color = bgColor,
+        contentColor = textColor
     ) {
         Text(
             text = label,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
             style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = color
+            fontWeight = FontWeight.Bold,
+            color = textColor,
+            fontSize = 11.sp
         )
     }
 }
 
-// ─── Similarity Score Gauge ─────────────────────────────────────────────────
+// ─── Verification Match Gauge (Human CCTV Review) ───────────────────────────
 
 @Composable
 fun SimilarityGauge(
     score: Double,
     modifier: Modifier = Modifier,
-    size: Int = 56
+    size: Int = 48
 ) {
     val percentage = (score * 100).toInt()
     val color = when {
-        score >= 0.75 -> ConfidenceHigh
-        score >= 0.60 -> ConfidenceMedium
-        else -> ConfidenceLow
+        score >= 0.75 -> GreenSuccess
+        score >= 0.60 -> AmberAlert
+        else -> RedDanger
     }
 
     val animatedProgress by animateFloatAsState(
         targetValue = score.toFloat(),
-        animationSpec = tween(1000, easing = FastOutSlowInEasing),
+        animationSpec = tween(800, easing = FastOutSlowInEasing),
         label = "gauge"
     )
 
@@ -124,32 +127,37 @@ fun SimilarityGauge(
             progress = { animatedProgress },
             modifier = Modifier.fillMaxSize(),
             color = color,
-            trackColor = Slate700,
-            strokeWidth = 4.dp,
+            trackColor = LineBorderSubtle,
+            strokeWidth = 3.5.dp,
         )
         Text(
             text = "$percentage%",
             style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = color,
-            fontSize = if (size > 48) 14.sp else 10.sp
+            fontWeight = FontWeight.ExtraBold,
+            color = InkText,
+            fontSize = if (size > 48) 13.sp else 10.sp
         )
     }
 }
 
-// ─── Glass Card ─────────────────────────────────────────────────────────────
+// ─── Paper Card (Blue & Cream Design System) ────────────────────────────────
 
 @Composable
-fun GlassCard(
+fun PaperCard(
     modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+    backgroundColor: Color = PaperWhite,
+    borderColor: Color = LineBorder,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Surface(
+        onClick = onClick ?: {},
+        enabled = onClick != null,
         modifier = modifier
-            .border(1.dp, GlassBorder, RoundedCornerShape(16.dp)),
-        shape = RoundedCornerShape(16.dp),
-        color = GlassSurface,
-        tonalElevation = 0.dp
+            .border(1.dp, borderColor, RoundedCornerShape(14.dp)),
+        shape = RoundedCornerShape(14.dp),
+        color = backgroundColor,
+        shadowElevation = 1.dp
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -158,7 +166,19 @@ fun GlassCard(
     }
 }
 
-// ─── Shimmer Loading Effect ─────────────────────────────────────────────────
+// Backward compatibility alias for GlassCard
+@Composable
+fun GlassCard(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    PaperCard(
+        modifier = modifier,
+        content = content
+    )
+}
+
+// ─── Shimmer Loading Effect (Cream Palette) ─────────────────────────────────
 
 @Composable
 fun ShimmerEffect(
@@ -177,9 +197,9 @@ fun ShimmerEffect(
 
     val brush = Brush.linearGradient(
         colors = listOf(
-            Slate800.copy(alpha = 0.6f),
-            Slate700.copy(alpha = 0.3f),
-            Slate800.copy(alpha = 0.6f)
+            PaperSubtle,
+            LineBorderSubtle,
+            PaperSubtle
         ),
         start = Offset(translateAnim - 200, translateAnim - 200),
         end = Offset(translateAnim, translateAnim)
@@ -192,17 +212,17 @@ fun ShimmerEffect(
     )
 }
 
-// ─── Pulsing Dot (for live status) ──────────────────────────────────────────
+// ─── Pulsing Dot ────────────────────────────────────────────────────────────
 
 @Composable
 fun PulsingDot(
-    color: Color = EmeraldPrimary,
+    color: Color = GreenSuccess,
     modifier: Modifier = Modifier
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val alpha by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 0.3f,
+        targetValue = 0.35f,
         animationSpec = infiniteRepeatable(
             animation = tween(1000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
@@ -212,33 +232,34 @@ fun PulsingDot(
 
     Box(
         modifier = modifier
-            .size(8.dp)
+            .size(7.dp)
             .clip(CircleShape)
             .background(color.copy(alpha = alpha))
     )
 }
 
-// ─── Metric Stat Card ───────────────────────────────────────────────────────
+// ─── Metric Stat Card (Clean Human Layout) ──────────────────────────────────
 
 @Composable
 fun MetricCard(
     label: String,
     value: String,
-    accentColor: Color = CyanPrimary,
+    accentColor: Color = BluePrimary,
     modifier: Modifier = Modifier
 ) {
-    GlassCard(modifier = modifier) {
+    PaperCard(modifier = modifier) {
         Text(
             text = value,
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.ExtraBold,
             color = accentColor
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(3.dp))
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,
-            color = TextSecondary
+            color = InkMuted,
+            fontWeight = FontWeight.Medium
         )
     }
 }

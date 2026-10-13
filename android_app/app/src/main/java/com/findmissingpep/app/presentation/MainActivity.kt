@@ -11,8 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.findmissingpep.app.presentation.navigation.AppNavGraph
 import com.findmissingpep.app.presentation.navigation.Screen
+import com.findmissingpep.app.presentation.theme.CreamBackground
 import com.findmissingpep.app.presentation.theme.FindMissingPepTheme
-import com.findmissingpep.app.presentation.theme.Slate950
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
             FindMissingPepTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Slate950
+                    color = CreamBackground
                 ) {
                     val navController = rememberNavController()
 

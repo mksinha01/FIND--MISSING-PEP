@@ -1,6 +1,7 @@
 package com.findmissingpep.app.presentation.screens.sightings
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -42,41 +43,55 @@ fun SightingsFeedScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
-        containerColor = BackgroundDark,
+        containerColor = CreamBackground,
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "Live CCTV Matches",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = TextPrimary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        PulsingDot(color = EmeraldPrimary)
-                    }
-                },
-                navigationIcon = {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding(),
+                color = PaperWhite,
+                border = BorderStroke(1.dp, LineBorderSubtle)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = TextPrimary
+                            tint = InkText
                         )
                     }
-                },
-                actions = {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Sightings feed",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = InkText
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            PulsingDot(color = GreenSuccess)
+                        }
+                        Text(
+                            text = "Surveillance observations",
+                            fontSize = 11.sp,
+                            color = InkMuted
+                        )
+                    }
                     IconButton(onClick = { viewModel.refreshSightings() }) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "Refresh",
-                            tint = CyanPrimary
+                            tint = BluePrimary
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-            )
+                }
+            }
         }
     ) { paddingValues ->
         PullToRefreshBox(
@@ -89,117 +104,141 @@ fun SightingsFeedScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 18.dp)
             ) {
-            // Status Filters
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilterChip(
-                    selected = uiState.selectedFilter == null,
-                    onClick = { viewModel.setFilter(null) },
-                    label = { Text("All Matches") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = CyanPrimary,
-                        selectedLabelColor = Color.Black,
-                        containerColor = Slate800,
-                        labelColor = TextSecondary
-                    )
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Heading Block
+                Text(
+                    text = "Possible sightings",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = InkText
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Review camera observations and match leads.",
+                    fontSize = 12.sp,
+                    color = InkMuted
                 )
 
-                FilterChip(
-                    selected = uiState.selectedFilter == SightingStatus.PENDING,
-                    onClick = { viewModel.setFilter(SightingStatus.PENDING) },
-                    label = { Text("Pending Review") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = AmberPrimary,
-                        selectedLabelColor = Color.Black,
-                        containerColor = Slate800,
-                        labelColor = TextSecondary
-                    )
-                )
+                Spacer(modifier = Modifier.height(12.dp))
 
-                FilterChip(
-                    selected = uiState.selectedFilter == SightingStatus.CONFIRMED,
-                    onClick = { viewModel.setFilter(SightingStatus.CONFIRMED) },
-                    label = { Text("Confirmed Matches") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = EmeraldPrimary,
-                        selectedLabelColor = Color.Black,
-                        containerColor = Slate800,
-                        labelColor = TextSecondary
-                    )
-                )
-
-                FilterChip(
-                    selected = uiState.selectedFilter == SightingStatus.REJECTED,
-                    onClick = { viewModel.setFilter(SightingStatus.REJECTED) },
-                    label = { Text("Rejected (False Alarm)") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = RosePrimary,
-                        selectedLabelColor = Color.Black,
-                        containerColor = Slate800,
-                        labelColor = TextSecondary
-                    )
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Sightings Content
-            if (uiState.isLoading && uiState.sightings.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                // Status Filter Chips
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    CircularProgressIndicator(color = CyanPrimary)
-                }
-            } else if (uiState.sightings.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Default.VideocamOff,
-                            contentDescription = null,
-                            tint = Slate500,
-                            modifier = Modifier.size(64.dp)
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
+                    val isAllSelected = uiState.selectedFilter == null
+                    Surface(
+                        onClick = { viewModel.setFilter(null) },
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (isAllSelected) BluePrimary else PaperWhite,
+                        border = BorderStroke(1.dp, if (isAllSelected) BluePrimary else LineBorder)
+                    ) {
                         Text(
-                            text = "No CCTV detections recorded yet",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = TextSecondary
-                        )
-                        Text(
-                            text = "Matching runs automatically across live edge feeds",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Slate600
+                            text = "All matches",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isAllSelected) Color.White else InkText,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
                         )
                     }
+
+                    val filters = listOf(
+                        SightingStatus.PENDING to "Pending review",
+                        SightingStatus.CONFIRMED to "Confirmed",
+                        SightingStatus.REJECTED to "Rejected · False alarm"
+                    )
+
+                    filters.forEach { (status, label) ->
+                        val isSelected = uiState.selectedFilter == status
+                        Surface(
+                            onClick = { viewModel.setFilter(status) },
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (isSelected) BluePrimary else PaperWhite,
+                            border = BorderStroke(1.dp, if (isSelected) BluePrimary else LineBorder)
+                        ) {
+                            Text(
+                                text = label,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isSelected) Color.White else InkText,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
+                            )
+                        }
+                    }
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(bottom = 24.dp)
-                ) {
-                    items(uiState.sightings, key = { it.id }) { sighting ->
-                        SightingFeedCard(
-                            sighting = sighting,
-                            onClick = { onNavigateToInspector(sighting.id) }
-                        )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Sightings Content
+                if (uiState.isLoading && uiState.sightings.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = BluePrimary)
+                    }
+                } else if (uiState.sightings.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(24.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(PaperSubtle),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CameraAlt,
+                                    contentDescription = null,
+                                    tint = InkSubtle,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "No camera sightings recorded yet",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = InkMuted
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Observations will appear here when detected.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = InkSubtle
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        contentPadding = PaddingValues(bottom = 24.dp)
+                    ) {
+                        items(uiState.sightings, key = { it.id }) { sighting ->
+                            SightingFeedCard(
+                                sighting = sighting,
+                                onClick = { onNavigateToInspector(sighting.id) }
+                            )
+                        }
                     }
                 }
             }
         }
     }
-}
 }
 
 @Composable
@@ -211,10 +250,10 @@ private fun SightingFeedCard(
         if (it.startsWith("http")) it else "${BuildConfig.API_BASE_URL}$it"
     }
 
-    GlassCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
+    PaperCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        backgroundColor = PaperWhite
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -223,32 +262,32 @@ private fun SightingFeedCard(
             // CCTV Face Crop Thumbnail
             Box(
                 modifier = Modifier
-                    .size(76.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .border(1.dp, GlassBorder, RoundedCornerShape(12.dp))
-                    .background(Slate800),
+                    .size(70.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .border(1.dp, LineBorderSubtle, RoundedCornerShape(10.dp))
+                    .background(BlueWash),
                 contentAlignment = Alignment.Center
             ) {
                 if (faceUrl != null) {
                     AsyncImage(
                         model = faceUrl,
-                        contentDescription = "CCTV Face Crop",
+                        contentDescription = "CCTV observation",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.Default.Videocam,
+                        imageVector = Icons.Default.CameraAlt,
                         contentDescription = null,
-                        tint = Slate600,
-                        modifier = Modifier.size(36.dp)
+                        tint = BluePrimary,
+                        modifier = Modifier.size(28.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
-            // Middle Column: Person Name, Camera info, Timestamp
+            // Information Block
             Column(modifier = Modifier.weight(1f)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -256,64 +295,56 @@ private fun SightingFeedCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = sighting.personName ?: "Suspect Match",
+                        text = sighting.personName ?: "Identified subject",
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
+                        fontWeight = FontWeight.ExtraBold,
+                        color = InkText,
+                        maxLines = 1
                     )
                     SightingStatusBadge(status = sighting.status)
                 }
 
+                Spacer(modifier = Modifier.height(3.dp))
+
+                sighting.cameraLocation?.let {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Place,
+                            contentDescription = null,
+                            tint = BluePrimary,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = it,
+                            fontSize = 11.sp,
+                            color = InkMuted,
+                            maxLines = 1
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(3.dp))
+
+                Text(
+                    text = "Time: ${sighting.detectedAt}",
+                    fontSize = 10.sp,
+                    color = InkSubtle
+                )
+
                 Spacer(modifier = Modifier.height(4.dp))
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Videocam,
-                        contentDescription = null,
-                        tint = CyanPrimary,
-                        modifier = Modifier.size(13.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = sighting.cameraLocation ?: "Camera ${sighting.cameraId}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Slate300,
-                        maxLines = 1
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(2.dp))
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.AccessTime,
-                        contentDescription = null,
-                        tint = Slate500,
-                        modifier = Modifier.size(13.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = sighting.detectedAt,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = TextSecondary
-                    )
-                }
-
-                sighting.numFramesMatched?.let { frames ->
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "● $frames temporal frames verified (ByteTrack)",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontSize = 9.sp,
-                        color = EmeraldPrimary
-                    )
-                }
+                Text(
+                    text = "Review sighting evidence →",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = BluePrimary
+                )
             }
 
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
-            // Right Column: Similarity Gauge
-            SimilarityGauge(score = sighting.similarityScore, size = 52)
+            SimilarityGauge(score = sighting.similarityScore, size = 42)
         }
     }
 }

@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.findmissingpep.app.domain.model.TimelineEntry
-import com.findmissingpep.app.presentation.common.GlassCard
+import com.findmissingpep.app.presentation.common.PaperCard
 import com.findmissingpep.app.presentation.common.SimilarityGauge
 import com.findmissingpep.app.presentation.theme.*
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -66,21 +66,22 @@ fun BreadcrumbMapScreen(
     }
 
     Scaffold(
-        containerColor = BackgroundDark,
+        containerColor = CreamBackground,
         topBar = {
             TopAppBar(
                 title = {
                     Column {
                         Text(
-                            text = uiState.timeline?.personName ?: "Movement Trajectory",
+                            text = uiState.timeline?.personName ?: "Movement Timeline",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = TextPrimary
+                            color = InkText
                         )
                         Text(
-                            text = "${uiState.timeline?.entries?.size ?: 0} CCTV Breadcrumbs Recorded",
+                            text = "${uiState.timeline?.entries?.size ?: 0} Verified Camera Observations",
                             style = MaterialTheme.typography.labelSmall,
-                            color = CyanPrimary
+                            color = BluePrimary,
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 },
@@ -89,11 +90,13 @@ fun BreadcrumbMapScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = TextPrimary
+                            tint = InkText
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Slate900.copy(alpha = 0.85f))
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = PaperWhite
+                )
             )
         }
     ) { paddingValues ->
@@ -117,11 +120,11 @@ fun BreadcrumbMapScreen(
                     isBuildingEnabled = true
                 )
             ) {
-                // Directional polyline connecting CCTV camera locations
+                // Directional polyline connecting camera sighting locations
                 if (polylinePoints.size > 1) {
                     Polyline(
                         points = polylinePoints,
-                        color = CyanPrimary,
+                        color = BluePrimary,
                         width = 8f
                     )
                 }
@@ -129,8 +132,6 @@ fun BreadcrumbMapScreen(
                 // Numbered Waypoint Markers
                 validPoints.forEachIndexed { index, entry ->
                     val pos = LatLng(entry.latitude!!, entry.longitude!!)
-                    val isSelected = uiState.selectedEntry?.sightingId == entry.sightingId
-                    val isLatest = index == validPoints.size - 1
 
                     Marker(
                         state = rememberMarkerState(position = pos),
@@ -146,28 +147,29 @@ fun BreadcrumbMapScreen(
 
             // Top Status Overlay
             Surface(
-                color = Slate900.copy(alpha = 0.9f),
+                color = PaperWhite,
                 shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, GlassBorder),
+                border = BorderStroke(1.dp, LineBorder),
+                shadowElevation = 3.dp,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 12.dp)
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
                             .size(8.dp)
                             .clip(CircleShape)
-                            .background(EmeraldPrimary)
+                            .background(GreenSuccess)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Chronological CCTV Path",
+                        text = "Chronological Surveillance Timeline",
                         style = MaterialTheme.typography.labelSmall,
-                        color = TextPrimary,
+                        color = InkText,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -207,7 +209,7 @@ private fun SelectedWaypointCard(
     onNavigateToCamera: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    GlassCard(modifier = modifier.fillMaxWidth()) {
+    PaperCard(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -219,24 +221,25 @@ private fun SelectedWaypointCard(
                     text = entry.cameraName,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    color = InkText
                 )
                 entry.cameraLocation?.let {
                     Text(
                         text = it,
                         style = MaterialTheme.typography.bodySmall,
-                        color = CyanPrimary
+                        color = BluePrimary,
+                        fontWeight = FontWeight.Medium
                     )
                 }
                 Text(
-                    text = "Detected at ${entry.detectedAt}",
+                    text = "Observed at ${entry.detectedAt}",
                     style = MaterialTheme.typography.labelSmall,
-                    color = TextSecondary
+                    color = InkMuted
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         Button(
             onClick = onNavigateToCamera,
@@ -245,8 +248,8 @@ private fun SelectedWaypointCard(
                 .height(44.dp),
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = CyanPrimary,
-                contentColor = Color.Black
+                containerColor = BluePrimary,
+                contentColor = Color.White
             )
         ) {
             Icon(Icons.Default.Navigation, contentDescription = null, modifier = Modifier.size(18.dp))

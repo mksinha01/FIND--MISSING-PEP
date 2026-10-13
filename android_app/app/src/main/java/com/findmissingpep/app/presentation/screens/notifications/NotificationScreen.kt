@@ -1,6 +1,7 @@
 package com.findmissingpep.app.presentation.screens.notifications
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.findmissingpep.app.domain.model.AppNotification
-import com.findmissingpep.app.presentation.common.GlassCard
+import com.findmissingpep.app.presentation.common.PaperCard
 import com.findmissingpep.app.presentation.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,56 +39,53 @@ fun NotificationScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
-        containerColor = BackgroundDark,
+        containerColor = CreamBackground,
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "Notification Center",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = TextPrimary
-                        )
-                        if (uiState.unreadCount > 0) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Surface(
-                                color = RosePrimary,
-                                shape = CircleShape
-                            ) {
-                                Text(
-                                    text = "${uiState.unreadCount}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                                )
-                            }
-                        }
-                    }
-                },
-                navigationIcon = {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding(),
+                color = PaperWhite,
+                border = BorderStroke(1.dp, LineBorderSubtle)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = TextPrimary
+                            tint = InkText
                         )
                     }
-                },
-                actions = {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Notification Center",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = InkText
+                        )
+                        Text(
+                            text = "Case alerts & updates",
+                            fontSize = 11.sp,
+                            color = InkMuted
+                        )
+                    }
                     if (uiState.unreadCount > 0) {
-                        IconButton(onClick = { viewModel.markAllAsRead() }) {
-                            Icon(
-                                imageVector = Icons.Default.DoneAll,
-                                contentDescription = "Mark all as read",
-                                tint = CyanPrimary
-                            )
+                        TextButton(onClick = { viewModel.markAllAsRead() }) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.DoneAll, contentDescription = null, tint = BluePrimary, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Mark all read", color = BluePrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-            )
+                }
+            }
         }
     ) { paddingValues ->
         PullToRefreshBox(
@@ -100,66 +98,95 @@ fun NotificationScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 18.dp)
             ) {
-            if (uiState.isLoading && uiState.notifications.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = CyanPrimary)
-                }
-            } else if (uiState.notifications.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Default.NotificationsOff,
-                            contentDescription = null,
-                            tint = Slate500,
-                            modifier = Modifier.size(64.dp)
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "No alerts at this time",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = TextSecondary
-                        )
-                        Text(
-                            text = "CCTV sighting alerts and FIR updates appear here",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Slate600
-                        )
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Intro text
+                Text(
+                    text = "Recent alerts",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = InkText
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Case updates and sighting alerts, in one place.",
+                    fontSize = 12.sp,
+                    color = InkMuted
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Notifications List
+                if (uiState.isLoading && uiState.notifications.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = BluePrimary)
                     }
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(bottom = 24.dp)
-                ) {
-                    items(uiState.notifications, key = { it.id }) { notification ->
-                        NotificationCardItem(
-                            notification = notification,
-                            onClick = {
-                                viewModel.markAsRead(notification.id)
-                                notification.referenceId?.let { refId ->
-                                    if (notification.type.contains("sighting", ignoreCase = true)) {
-                                        onNavigateToSighting(refId)
-                                    } else {
-                                        onNavigateToCase(refId)
+                } else if (uiState.notifications.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(24.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(CircleShape)
+                                    .background(PaperSubtle),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.NotificationsNone,
+                                    contentDescription = null,
+                                    tint = InkSubtle,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "No notifications yet",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = InkMuted
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        contentPadding = PaddingValues(bottom = 24.dp)
+                    ) {
+                        items(uiState.notifications, key = { it.id }) { notification ->
+                            NotificationCardItem(
+                                notification = notification,
+                                onClick = {
+                                    if (!notification.isRead) viewModel.markAsRead(notification.id)
+                                    when (notification.type) {
+                                        "sighting", "sighting_match" -> {
+                                            notification.referenceId?.let { onNavigateToSighting(it) }
+                                        }
+                                        "case_status", "fir_verified", "fir_rejected" -> {
+                                            notification.referenceId?.let { onNavigateToCase(it) }
+                                        }
                                     }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
         }
     }
-}
 }
 
 @Composable
@@ -167,40 +194,31 @@ private fun NotificationCardItem(
     notification: AppNotification,
     onClick: () -> Unit
 ) {
-    val isSighting = notification.type.contains("sighting", ignoreCase = true)
-    val isFir = notification.type.contains("fir", ignoreCase = true)
-    val accentColor = when {
-        isSighting -> RosePrimary
-        isFir -> EmeraldPrimary
-        else -> CyanPrimary
+    val (icon, iconColor, iconBg, tagText) = when (notification.type) {
+        "sighting", "sighting_match" -> Quadruple(Icons.Default.CameraAlt, RedDanger, RedDangerBg, "Sighting alert")
+        "fir_verified" -> Quadruple(Icons.Default.CheckCircle, GreenSuccess, GreenSuccessBg, "FIR approved")
+        "fir_rejected" -> Quadruple(Icons.Default.HighlightOff, RedDanger, RedDangerBg, "FIR rejected")
+        else -> Quadruple(Icons.Default.Info, BluePrimary, BlueWash, "Case update")
     }
 
-    GlassCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
+    PaperCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        backgroundColor = if (notification.isRead) PaperWhite else Color(0xFFFBF8F5)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.Top
         ) {
+            // Icon Badge
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(accentColor.copy(alpha = 0.15f)),
+                    .size(38.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(iconBg),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = when {
-                        isSighting -> Icons.Default.Videocam
-                        isFir -> Icons.Default.Security
-                        else -> Icons.Default.Notifications
-                    },
-                    contentDescription = null,
-                    tint = accentColor,
-                    modifier = Modifier.size(20.dp)
-                )
+                Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(20.dp))
             }
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -213,37 +231,57 @@ private fun NotificationCardItem(
                 ) {
                     Text(
                         text = notification.title,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = if (!notification.isRead) FontWeight.Bold else FontWeight.Medium,
-                        color = TextPrimary
+                        fontWeight = if (!notification.isRead) FontWeight.ExtraBold else FontWeight.Bold,
+                        fontSize = 13.sp,
+                        color = InkText
                     )
                     if (!notification.isRead) {
                         Box(
                             modifier = Modifier
                                 .size(8.dp)
                                 .clip(CircleShape)
-                                .background(CyanPrimary)
+                                .background(BluePrimary)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(3.dp))
 
                 Text(
                     text = notification.message,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (!notification.isRead) Slate300 else TextSecondary
+                    fontSize = 11.sp,
+                    color = InkMuted,
+                    lineHeight = 15.sp
                 )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                Text(
-                    text = notification.createdAt,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontSize = 9.sp,
-                    color = Slate500
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        color = iconBg
+                    ) {
+                        Text(
+                            text = tagText,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = iconColor,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+
+                    Text(
+                        text = notification.createdAt,
+                        fontSize = 10.sp,
+                        color = InkSubtle
+                    )
+                }
             }
         }
     }
 }
+
+private data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)

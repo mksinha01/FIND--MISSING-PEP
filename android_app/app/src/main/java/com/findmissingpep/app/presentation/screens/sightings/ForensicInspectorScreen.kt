@@ -33,7 +33,7 @@ import com.findmissingpep.app.BuildConfig
 import com.findmissingpep.app.domain.model.ConfidenceLevel
 import com.findmissingpep.app.domain.model.Sighting
 import com.findmissingpep.app.domain.model.SightingStatus
-import com.findmissingpep.app.presentation.common.GlassCard
+import com.findmissingpep.app.presentation.common.PaperCard
 import com.findmissingpep.app.presentation.common.SightingStatusBadge
 import com.findmissingpep.app.presentation.theme.*
 
@@ -58,39 +58,53 @@ fun ForensicInspectorScreen(
     }
 
     Scaffold(
-        containerColor = BackgroundDark,
+        containerColor = CreamBackground,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Forensic Inspector",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
-                },
-                navigationIcon = {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding(),
+                color = PaperWhite,
+                border = BorderStroke(1.dp, LineBorderSubtle)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = TextPrimary
+                            tint = InkText
                         )
                     }
-                },
-                actions = {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Review sighting",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = InkText
+                        )
+                        Text(
+                            text = "CCTV evidence verification",
+                            fontSize = 11.sp,
+                            color = InkMuted
+                        )
+                    }
                     uiState.sighting?.let { s ->
                         IconButton(onClick = { onNavigateToMap(s.personId) }) {
                             Icon(
-                                imageVector = Icons.Default.Map,
-                                contentDescription = "View Trajectory Map",
-                                tint = CyanPrimary
+                                imageVector = Icons.Default.Place,
+                                contentDescription = "View Location Map",
+                                tint = BluePrimary
                             )
                         }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-            )
+                }
+            }
         }
     ) { paddingValues ->
         if (uiState.isLoading && uiState.sighting == null) {
@@ -100,7 +114,7 @@ fun ForensicInspectorScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = CyanPrimary)
+                CircularProgressIndicator(color = BluePrimary)
             }
         } else if (uiState.sighting != null) {
             val sighting = uiState.sighting!!
@@ -109,28 +123,31 @@ fun ForensicInspectorScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 18.dp)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
+                Spacer(modifier = Modifier.height(4.dp))
+
                 // Action notification message
                 uiState.actionSuccessMessage?.let {
                     Surface(
-                        color = EmeraldPrimary.copy(alpha = 0.2f),
-                        shape = RoundedCornerShape(10.dp),
+                        color = GreenSuccessBg,
+                        shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
                             text = it,
-                            color = EmeraldPrimary,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(12.dp)
+                            color = GreenSuccess,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(10.dp)
                         )
                     }
                 }
 
-                // Confidence Banner
-                ConfidenceGaugeCard(sighting = sighting)
+                // Match Lead Banner
+                MatchLeadCard(sighting = sighting)
 
                 // Split Comparison: Reference Photo vs CCTV Crop
                 FaceComparisonSection(
@@ -140,12 +157,12 @@ fun ForensicInspectorScreen(
                     }
                 )
 
-                // 5-Second Video Clip Buffer (ExoPlayer)
+                // Video Clip Buffer (if available)
                 sighting.videoClipPath?.let { clipPath ->
                     VideoClipCard(clipPath = clipPath)
                 }
 
-                // 1080p Full Surveillance Scene
+                // Full Surveillance Scene (if available)
                 sighting.fullFramePath?.let { scenePath ->
                     FullSceneCard(scenePath = scenePath)
                 }
@@ -161,16 +178,17 @@ fun ForensicInspectorScreen(
                         onReject = { showRejectDialog = true }
                     )
                 } else {
-                    GlassCard {
+                    PaperCard(modifier = Modifier.fillMaxWidth()) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Disposition Status",
-                                style = MaterialTheme.typography.titleSmall,
-                                color = TextPrimary
+                                text = "Verification status",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = InkText
                             )
                             SightingStatusBadge(status = sighting.status)
                         }
@@ -186,27 +204,22 @@ fun ForensicInspectorScreen(
     if (showConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
-            title = { Text("Confirm Verified Sighting", color = TextPrimary) },
+            title = { Text("Confirm verified sighting", color = InkText, fontWeight = FontWeight.Bold, fontSize = 16.sp) },
             text = {
                 Column {
                     Text(
-                        "Confirming this match will update the missing person status to FOUND and alert search units across the network.",
-                        color = TextSecondary,
-                        style = MaterialTheme.typography.bodySmall
+                        "Confirming this match verifies that the missing person was observed at this location.",
+                        color = InkMuted,
+                        fontSize = 13.sp
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     OutlinedTextField(
                         value = reviewNotes,
                         onValueChange = { reviewNotes = it },
-                        label = { Text("Officer Verification Notes", color = TextSecondary) },
-                        placeholder = { Text("e.g. Visual confirmation by Constable Sharma", color = Slate500) },
+                        label = { Text("Verification notes (optional)") },
+                        placeholder = { Text("e.g. Visual confirmation by Officer Sharma", fontSize = 12.sp) },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = EmeraldPrimary,
-                            unfocusedBorderColor = GlassBorder,
-                            focusedTextColor = TextPrimary,
-                            unfocusedTextColor = TextPrimary
-                        ),
+                        colors = humanTextFieldColors(),
                         shape = RoundedCornerShape(8.dp)
                     )
                 }
@@ -218,17 +231,19 @@ fun ForensicInspectorScreen(
                         viewModel.confirmSighting(reviewNotes)
                         reviewNotes = ""
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary)
+                    colors = ButtonDefaults.buttonColors(containerColor = GreenSuccess, contentColor = Color.White),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Confirm Match", color = Color.Black)
+                    Text("Confirm match", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showConfirmDialog = false }) {
-                    Text("Cancel", color = TextSecondary)
+                    Text("Cancel", color = InkMuted)
                 }
             },
-            containerColor = SurfaceDark
+            containerColor = PaperWhite,
+            shape = RoundedCornerShape(14.dp)
         )
     }
 
@@ -236,27 +251,22 @@ fun ForensicInspectorScreen(
     if (showRejectDialog) {
         AlertDialog(
             onDismissRequest = { showRejectDialog = false },
-            title = { Text("Reject False Alarm", color = TextPrimary) },
+            title = { Text("Reject false alarm", color = InkText, fontWeight = FontWeight.Bold, fontSize = 16.sp) },
             text = {
                 Column {
                     Text(
-                        "Flag this CCTV match as a false positive. Rejection helps refine neural edge thresholds.",
-                        color = TextSecondary,
-                        style = MaterialTheme.typography.bodySmall
+                        "Mark this observation as a false positive / unrelated individual.",
+                        color = InkMuted,
+                        fontSize = 13.sp
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     OutlinedTextField(
                         value = reviewNotes,
                         onValueChange = { reviewNotes = it },
-                        label = { Text("Rejection Reason", color = TextSecondary) },
-                        placeholder = { Text("e.g. Distinct facial features / false match", color = Slate500) },
+                        label = { Text("Reason (optional)") },
+                        placeholder = { Text("e.g. Unrelated pedestrian", fontSize = 12.sp) },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = RosePrimary,
-                            unfocusedBorderColor = GlassBorder,
-                            focusedTextColor = TextPrimary,
-                            unfocusedTextColor = TextPrimary
-                        ),
+                        colors = humanTextFieldColors(),
                         shape = RoundedCornerShape(8.dp)
                     )
                 }
@@ -268,38 +278,40 @@ fun ForensicInspectorScreen(
                         viewModel.rejectSighting(reviewNotes)
                         reviewNotes = ""
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = RosePrimary)
+                    colors = ButtonDefaults.buttonColors(containerColor = RedDanger, contentColor = Color.White),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Reject Alert", color = Color.White)
+                    Text("Reject observation", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showRejectDialog = false }) {
-                    Text("Cancel", color = TextSecondary)
+                    Text("Cancel", color = InkMuted)
                 }
             },
-            containerColor = SurfaceDark
+            containerColor = PaperWhite,
+            shape = RoundedCornerShape(14.dp)
         )
     }
 }
 
-// ─── Confidence Gauge Card ──────────────────────────────────────────────────
+// ─── Match Lead Card ────────────────────────────────────────────────────────
 
 @Composable
-private fun ConfidenceGaugeCard(sighting: Sighting) {
+private fun MatchLeadCard(sighting: Sighting) {
     val percentage = (sighting.similarityScore * 100).toInt()
     val color = when {
-        sighting.similarityScore >= 0.75 -> ConfidenceHigh
-        sighting.similarityScore >= 0.60 -> ConfidenceMedium
-        else -> ConfidenceLow
+        sighting.similarityScore >= 0.75 -> GreenSuccess
+        sighting.similarityScore >= 0.60 -> AmberAlert
+        else -> RedDanger
     }
-    val confidenceLabel = when {
-        sighting.similarityScore >= 0.75 -> "HIGH CONFIDENCE MATCH"
+    val leadLabel = when {
+        sighting.similarityScore >= 0.75 -> "HIGH MATCH CONFIDENCE"
         sighting.similarityScore >= 0.60 -> "PROBABLE MATCH"
-        else -> "UNCERTAIN SIMILARITY"
+        else -> "UNCONFIRMED SIMILARITY"
     }
 
-    GlassCard {
+    PaperCard(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -307,31 +319,31 @@ private fun ConfidenceGaugeCard(sighting: Sighting) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = confidenceLabel,
-                    style = MaterialTheme.typography.labelSmall,
+                    text = leadLabel,
+                    fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     color = color
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "$percentage% ArcFace Cosine Similarity",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    text = "Verification score: $percentage%",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = InkText
                 )
             }
             Box(
                 modifier = Modifier
-                    .size(54.dp)
+                    .size(46.dp)
                     .clip(CircleShape)
-                    .background(color.copy(alpha = 0.15f))
+                    .background(color.copy(alpha = 0.12f))
                     .border(2.dp, color, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "$percentage%",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.ExtraBold,
                     color = color
                 )
             }
@@ -339,7 +351,6 @@ private fun ConfidenceGaugeCard(sighting: Sighting) {
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Linear Progress Bar
         LinearProgressIndicator(
             progress = { sighting.similarityScore.toFloat() },
             modifier = Modifier
@@ -347,7 +358,7 @@ private fun ConfidenceGaugeCard(sighting: Sighting) {
                 .height(6.dp)
                 .clip(RoundedCornerShape(3.dp)),
             color = color,
-            trackColor = Slate800
+            trackColor = LineBorderSubtle
         )
     }
 }
@@ -359,12 +370,12 @@ private fun FaceComparisonSection(
     sighting: Sighting,
     refPhotoUrl: String?
 ) {
-    GlassCard {
+    PaperCard(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "Side-by-Side Facial Verification",
-            style = MaterialTheme.typography.titleSmall,
+            text = "Visual evidence comparison",
+            fontSize = 13.sp,
             fontWeight = FontWeight.Bold,
-            color = CyanPrimary
+            color = InkText
         )
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -372,7 +383,7 @@ private fun FaceComparisonSection(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Enrolled Reference Photo
+            // Reference Photo
             Column(
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -381,131 +392,127 @@ private fun FaceComparisonSection(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(12.dp))
-                        .border(1.5.dp, GlassBorder, RoundedCornerShape(12.dp))
-                        .background(Slate800),
+                        .clip(RoundedCornerShape(10.dp))
+                        .border(1.dp, LineBorder, RoundedCornerShape(10.dp))
+                        .background(BlueWash),
                     contentAlignment = Alignment.Center
                 ) {
                     if (refPhotoUrl != null) {
                         val fullUrl = if (refPhotoUrl.startsWith("http")) refPhotoUrl else "${BuildConfig.API_BASE_URL}$refPhotoUrl"
                         AsyncImage(
                             model = fullUrl,
-                            contentDescription = "Enrolled Reference",
+                            contentDescription = "Official reference portrait",
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
                     } else {
-                        Icon(Icons.Default.Person, contentDescription = null, tint = Slate600)
+                        Icon(Icons.Default.Person, contentDescription = null, tint = BluePrimary, modifier = Modifier.size(36.dp))
                     }
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Enrolled Reference",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = TextSecondary,
-                    fontWeight = FontWeight.SemiBold
+                    text = "Reference portrait",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = InkText
+                )
+                Text(
+                    text = "From registered case",
+                    fontSize = 9.sp,
+                    color = InkMuted
                 )
             }
 
-            // CCTV Face Crop (112x112)
+            // CCTV Sighting Crop
             Column(
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                val sightingCrop = sighting.faceCropPath?.let {
+                    if (it.startsWith("http")) it else "${BuildConfig.API_BASE_URL}$it"
+                }
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(12.dp))
-                        .border(1.5.dp, EmeraldPrimary, RoundedCornerShape(12.dp))
-                        .background(Slate800),
+                        .clip(RoundedCornerShape(10.dp))
+                        .border(1.dp, LineBorder, RoundedCornerShape(10.dp))
+                        .background(BlueWash),
                     contentAlignment = Alignment.Center
                 ) {
-                    sighting.faceCropPath?.let { cropPath ->
-                        val fullUrl = if (cropPath.startsWith("http")) cropPath else "${BuildConfig.API_BASE_URL}$cropPath"
+                    if (sightingCrop != null) {
                         AsyncImage(
-                            model = fullUrl,
-                            contentDescription = "CCTV Face Crop",
+                            model = sightingCrop,
+                            contentDescription = "CCTV observation frame",
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
+                    } else {
+                        Icon(Icons.Default.CameraAlt, contentDescription = null, tint = BluePrimary, modifier = Modifier.size(36.dp))
                     }
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "CCTV 112×112 Aligned",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = EmeraldPrimary,
-                    fontWeight = FontWeight.SemiBold
+                    text = "CCTV observation",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = InkText
+                )
+                Text(
+                    text = "Camera frame crop",
+                    fontSize = 9.sp,
+                    color = InkMuted
                 )
             }
         }
     }
 }
 
-// ─── 5-Second Video Clip Buffer (ExoPlayer) ─────────────────────────────────
+// ─── Video Clip Player Card ─────────────────────────────────────────────────
 
-@OptIn(UnstableApi::class)
 @Composable
 private fun VideoClipCard(clipPath: String) {
     val context = LocalContext.current
-    val fullVideoUrl = if (clipPath.startsWith("http")) clipPath else "${BuildConfig.API_BASE_URL}$clipPath"
+    val fullUrl = if (clipPath.startsWith("http")) clipPath else "${BuildConfig.API_BASE_URL}$clipPath"
+    var isPlaying by remember { mutableStateOf(false) }
 
-    val exoPlayer = remember(context, fullVideoUrl) {
+    val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
-            val mediaItem = MediaItem.fromUri(Uri.parse(fullVideoUrl))
-            setMediaItem(mediaItem)
-            repeatMode = Player.REPEAT_MODE_ALL
+            setMediaItem(MediaItem.fromUri(Uri.parse(fullUrl)))
             prepare()
-            playWhenReady = true
+            repeatMode = Player.REPEAT_MODE_ONE
         }
     }
 
-    DisposableEffect(exoPlayer) {
+    DisposableEffect(Unit) {
         onDispose {
             exoPlayer.release()
         }
     }
 
-    GlassCard {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "5-Second CCTV Video Clip Buffer",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = CyanPrimary
-            )
-            Surface(
-                color = EmeraldPrimary.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(6.dp)
-            ) {
-                Text(
-                    text = "Looping Gait",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = EmeraldPrimary,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
+    PaperCard(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "Camera video sequence",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            color = InkText
+        )
+        Spacer(modifier = Modifier.height(8.dp))
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color.Black)
+                .height(180.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(PaperSubtle),
+            contentAlignment = Alignment.Center
         ) {
             AndroidView(
                 factory = { ctx ->
                     PlayerView(ctx).apply {
                         player = exoPlayer
-                        useController = false
+                        useController = true
                     }
                 },
                 modifier = Modifier.fillMaxSize()
@@ -514,38 +521,32 @@ private fun VideoClipCard(clipPath: String) {
     }
 }
 
-// ─── 1080p Full Surveillance Scene ──────────────────────────────────────────
+// ─── Full Surveillance Scene Card ───────────────────────────────────────────
 
 @Composable
 private fun FullSceneCard(scenePath: String) {
-    val fullSceneUrl = if (scenePath.startsWith("http")) scenePath else "${BuildConfig.API_BASE_URL}$scenePath"
+    val fullUrl = if (scenePath.startsWith("http")) scenePath else "${BuildConfig.API_BASE_URL}$scenePath"
 
-    GlassCard {
+    PaperCard(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "1080p Surveillance Scene Context",
-            style = MaterialTheme.typography.titleSmall,
+            text = "Full surveillance frame",
+            fontSize = 13.sp,
             fontWeight = FontWeight.Bold,
-            color = CyanPrimary
+            color = InkText
         )
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            text = "Full camera frame captures subject surroundings, clothing, and companions.",
-            style = MaterialTheme.typography.bodySmall,
-            color = TextSecondary
-        )
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .border(1.dp, GlassBorder, RoundedCornerShape(12.dp))
-                .background(Slate800)
+                .height(180.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .border(1.dp, LineBorder, RoundedCornerShape(10.dp))
+                .background(PaperSubtle)
         ) {
             AsyncImage(
-                model = fullSceneUrl,
-                contentDescription = "Full Scene",
+                model = fullUrl,
+                contentDescription = "Full surveillance frame",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
@@ -553,46 +554,36 @@ private fun FullSceneCard(scenePath: String) {
     }
 }
 
-// ─── Evidence & Camera Details ──────────────────────────────────────────────
+// ─── Evidence & Camera Details Card ─────────────────────────────────────────
 
 @Composable
 private fun EvidenceDetailsCard(sighting: Sighting) {
-    GlassCard {
+    PaperCard(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "Camera & Detection Telemetry",
-            style = MaterialTheme.typography.titleSmall,
+            text = "Observation metadata",
+            fontSize = 13.sp,
             fontWeight = FontWeight.Bold,
-            color = CyanPrimary
+            color = InkText
         )
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        TelemetryRow(label = "Camera Location", value = sighting.cameraLocation ?: "Node ${sighting.cameraId}")
-        TelemetryRow(label = "CCTV Agent ID", value = sighting.agentId)
-        TelemetryRow(label = "Detection Timestamp", value = sighting.detectedAt)
-        sighting.numFramesMatched?.let {
-            TelemetryRow(label = "ByteTrack Verified Frames", value = "$it matched frames")
-        }
-        if (sighting.latitude != null && sighting.longitude != null) {
-            TelemetryRow(label = "GPS Coordinates", value = "${sighting.latitude}, ${sighting.longitude}")
-        }
+        DetailRow(label = "Camera Location", value = sighting.cameraLocation ?: "Public Camera")
+        DetailRow(label = "Camera ID", value = sighting.cameraId)
+        DetailRow(label = "Observation Time", value = sighting.detectedAt)
+        DetailRow(label = "Verification Status", value = sighting.status.name)
     }
 }
 
 @Composable
-private fun TelemetryRow(label: String, value: String) {
+private fun DetailRow(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 3.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = label, style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodySmall,
-            color = TextPrimary,
-            fontWeight = FontWeight.SemiBold
-        )
+        Text(text = label, fontSize = 11.sp, color = InkMuted)
+        Text(text = value, fontSize = 11.sp, color = InkText, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -608,40 +599,52 @@ private fun DispositionActionButtons(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        OutlinedButton(
-            onClick = onReject,
-            enabled = !isActing,
-            modifier = Modifier
-                .weight(1f)
-                .height(48.dp),
-            shape = RoundedCornerShape(12.dp),
-            border = BorderStroke(1.dp, RosePrimary.copy(alpha = 0.5f)),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = RosePrimary)
-        ) {
-            Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(modifier = Modifier.width(6.dp))
-            Text("Reject Alarm")
-        }
-
         Button(
             onClick = onConfirm,
             enabled = !isActing,
             modifier = Modifier
                 .weight(1f)
-                .height(48.dp),
-            shape = RoundedCornerShape(12.dp),
+                .height(46.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = EmeraldPrimary,
-                contentColor = Color.Black
-            )
+                containerColor = GreenSuccess,
+                contentColor = Color.White
+            ),
+            shape = RoundedCornerShape(10.dp)
         ) {
-            if (isActing) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.Black, strokeWidth = 2.dp)
-            } else {
-                Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("Confirm Match", fontWeight = FontWeight.Bold)
-            }
+            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("Confirm match", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+        }
+
+        OutlinedButton(
+            onClick = onReject,
+            enabled = !isActing,
+            modifier = Modifier
+                .weight(1f)
+                .height(46.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = PaperWhite,
+                contentColor = RedDanger
+            ),
+            border = BorderStroke(1.dp, RedDanger.copy(alpha = 0.5f)),
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp), tint = RedDanger)
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("Reject false alarm", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = RedDanger)
         }
     }
 }
+
+@Composable
+private fun humanTextFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedBorderColor = BluePrimary,
+    unfocusedBorderColor = LineBorder,
+    focusedLabelColor = BluePrimary,
+    unfocusedLabelColor = InkMuted,
+    cursorColor = BluePrimary,
+    focusedTextColor = InkText,
+    unfocusedTextColor = InkText,
+    focusedContainerColor = PaperWhite,
+    unfocusedContainerColor = PaperWhite
+)

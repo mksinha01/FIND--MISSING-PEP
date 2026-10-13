@@ -2,57 +2,89 @@ package com.findmissingpep.app.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ─── Base Slate Palette (Dark Glassmorphic) ─────────────────────────────────
-val Slate950 = Color(0xFF020617)
-val Slate900 = Color(0xFF0F172A)
-val Slate800 = Color(0xFF1E293B)
-val Slate700 = Color(0xFF334155)
-val Slate600 = Color(0xFF475569)
-val Slate500 = Color(0xFF64748B)
-val Slate400 = Color(0xFF94A3B8)
-val Slate300 = Color(0xFFCBD5E1)
-val Slate200 = Color(0xFFE2E8F0)
-val Slate100 = Color(0xFFF1F5F9)
-val Slate50 = Color(0xFFF8FAFC)
+// ─── Blue & Cream Signature Design Tokens (from Kestrel.canvas) ─────────────
+// Warm, human, government/public safety palette — clean, approachable & clear.
 
-val BackgroundDark = Slate950
-val SurfaceDark = Slate900
+val CreamBackground = Color(0xFFF8F3F0)      // Main screen canvas
+val PaperWhite = Color(0xFFFFFDFC)           // Clean card / sheet surface
+val PaperElevated = Color(0xFFFFFFFF)        // Top modals / elevated inputs
+val PaperSubtle = Color(0xFFF4EFEA)          // Inner tile / secondary wash
 
-// ─── Accent Colors ──────────────────────────────────────────────────────────
-val CyanPrimary = Color(0xFF06B6D4)      // Detection / Vision
-val CyanLight = Color(0xFF22D3EE)
-val CyanDark = Color(0xFF0891B2)
-val CyanSurface = Color(0x1A06B6D4)       // 10% opacity for glass panels
+val BluePrimary = Color(0xFF014BAA)          // Signature Official Royal Blue
+val BlueDeep = Color(0xFF07356F)             // Deep navy blue (headers/titles)
+val BlueWash = Color(0xFFEAF1FB)             // Soft light-blue background tint
+val BlueBorder = Color(0xFF90A6C2)           // Focused / primary outline
 
-val EmeraldPrimary = Color(0xFF10B981)    // Confirmed / Active / Success
-val EmeraldLight = Color(0xFF34D399)
-val EmeraldDark = Color(0xFF059669)
-val EmeraldSurface = Color(0x1A10B981)
+val InkText = Color(0xFF17243A)              // High-contrast legible text
+val InkMuted = Color(0xFF657187)             // Secondary / hint / subtitle text
+val InkSubtle = Color(0xFF8B96A5)            // Captions & footnotes
 
-val RosePrimary = Color(0xFFF43F5E)       // High Alert / Danger
-val RoseLight = Color(0xFFFB7185)
-val RoseDark = Color(0xFFE11D48)
-val RoseSurface = Color(0x1AF43F5E)
+val LineBorder = Color(0xFFE5DDD6)           // Card & input divider line
+val LineBorderSubtle = Color(0xFFEFE8E1)     // Soft separator
 
-val AmberPrimary = Color(0xFFF59E0B)      // Pending / Warning
-val AmberLight = Color(0xFFFBBF24)
-val AmberDark = Color(0xFFD97706)
-val AmberSurface = Color(0x1AF59E0B)
+val AmberAlert = Color(0xFF956114)           // Pending / Warning text
+val AmberAlertBg = Color(0xFFFBF0D9)         // Pending / Warning pill
+val GreenSuccess = Color(0xFF187757)         // Approved / Active / Match
+val GreenSuccessBg = Color(0xFFE6F3EC)       // Approved / Active pill
+val RedDanger = Color(0xFFA83B50)            // High alert / Rejected
+val RedDangerBg = Color(0xFFF8E8E9)          // Alert / Rejected pill
 
-val VioletPrimary = Color(0xFF8B5CF6)     // Processing / AI
-val VioletLight = Color(0xFFA78BFA)
+// ─── Semantic Mappings for Compose Compatibility ────────────────────────────
+val BackgroundLight = CreamBackground
+val SurfaceLight = PaperWhite
 
-// ─── Glassmorphic Surface Colors ────────────────────────────────────────────
-val GlassSurface = Color(0x801E293B)      // 50% opacity
-val GlassSurfaceLight = Color(0x40334155) // 25% opacity
-val GlassBorder = Color(0x40475569)       // 25% opacity border
+val TextPrimary = InkText
+val TextSecondary = InkMuted
+val TextTertiary = InkSubtle
 
-// ─── Text Colors ────────────────────────────────────────────────────────────
-val TextPrimary = Color(0xFFF1F5F9)
-val TextSecondary = Color(0xFF94A3B8)
-val TextTertiary = Color(0xFF64748B)
+val AmberPrimary = AmberAlert
+val AmberBg = AmberAlertBg
+val AmberLight = Color(0xFFB8781B)
+val AmberDark = Color(0xFF7A4B06)
+val AmberSurface = AmberAlertBg
 
-// ─── Functional Colors ──────────────────────────────────────────────────────
-val ConfidenceHigh = EmeraldPrimary       // >= 0.75
-val ConfidenceMedium = AmberPrimary       // 0.60 - 0.74
-val ConfidenceLow = RosePrimary           // < 0.60
+val EmeraldPrimary = GreenSuccess
+val EmeraldBg = GreenSuccessBg
+val EmeraldLight = Color(0xFF238E6A)
+val EmeraldDark = Color(0xFF105C41)
+val EmeraldSurface = GreenSuccessBg
+
+val RosePrimary = RedDanger
+val RoseBg = RedDangerBg
+val RoseLight = Color(0xFFC44B62)
+val RoseDark = Color(0xFF8B2B3E)
+val RoseSurface = RedDangerBg
+
+val CyanPrimary = BluePrimary
+val CyanLight = Color(0xFF1A6CE0)
+val CyanDark = BlueDeep
+val CyanSurface = BlueWash
+
+val VioletPrimary = BlueDeep
+val VioletLight = BluePrimary
+
+// ─── Glass & Card Surface Mappings (Paper Human UI) ─────────────────────────
+val GlassSurface = PaperWhite
+val GlassSurfaceLight = PaperElevated
+val GlassBorder = LineBorder
+
+// ─── Slate Aliases (mapped to Blue & Cream light aesthetic) ─────────────────
+val Slate950 = CreamBackground
+val Slate900 = PaperWhite
+val Slate800 = PaperSubtle
+val Slate700 = LineBorder
+val Slate600 = InkMuted
+val Slate500 = InkSubtle
+val Slate400 = InkSubtle
+val Slate300 = LineBorderSubtle
+val Slate200 = PaperSubtle
+val Slate100 = PaperWhite
+val Slate50 = CreamBackground
+
+val BackgroundDark = CreamBackground
+val SurfaceDark = PaperWhite
+
+// ─── Functional Confidence / Verification ───────────────────────────────────
+val ConfidenceHigh = GreenSuccess
+val ConfidenceMedium = AmberAlert
+val ConfidenceLow = RedDanger

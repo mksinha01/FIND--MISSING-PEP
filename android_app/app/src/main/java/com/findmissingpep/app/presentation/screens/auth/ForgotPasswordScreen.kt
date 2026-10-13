@@ -2,6 +2,7 @@ package com.findmissingpep.app.presentation.screens.auth
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -10,13 +11,14 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -25,10 +27,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.findmissingpep.app.presentation.common.GlassCard
+import com.findmissingpep.app.presentation.common.PaperCard
 import com.findmissingpep.app.presentation.theme.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForgotPasswordScreen(
     onNavigateBack: () -> Unit,
@@ -44,17 +45,13 @@ fun ForgotPasswordScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(Slate950, Slate900, Slate950)
-                )
-            )
+            .background(CreamBackground)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(24.dp)
+                .padding(20.dp)
                 .statusBarsPadding()
                 .navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -66,222 +63,170 @@ fun ForgotPasswordScreen(
             ) {
                 IconButton(onClick = onNavigateBack) {
                     Icon(
-                        Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = TextSecondary
+                        tint = InkText
                     )
                 }
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "Back to sign in",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = BluePrimary,
+                    modifier = Modifier.clickable { onNavigateBack() }
+                )
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
-            // ── Icon ──
+            // ── Icon Tile ──
             Box(
                 modifier = Modifier
-                    .size(80.dp)
-                    .clip(CircleShape)
-                    .background(CyanSurface),
+                    .size(64.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(BlueWash),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.LockReset,
                     contentDescription = null,
-                    tint = CyanPrimary,
-                    modifier = Modifier.size(40.dp)
+                    tint = BluePrimary,
+                    modifier = Modifier.size(32.dp)
                 )
             }
 
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Text(
+                text = "Reset your password",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = InkText
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = "Enter your registered email address and we will send you password reset instructions.",
+                fontSize = 12.sp,
+                color = InkMuted,
+                textAlign = TextAlign.Center,
+                lineHeight = 16.sp
+            )
+
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                text = "Reset Password",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Enter your email address and we'll send you a link to reset your password.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
-            Spacer(modifier = Modifier.height(40.dp))
-
-            if (resetSent) {
-                // ── Success State ──
-                GlassCard(modifier = Modifier.fillMaxWidth()) {
+            // ── Form Card ──
+            PaperCard(modifier = Modifier.fillMaxWidth()) {
+                if (resetSent) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp)
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(56.dp)
+                                .size(48.dp)
                                 .clip(CircleShape)
-                                .background(EmeraldSurface),
+                                .background(GreenSuccessBg),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                Icons.Default.MarkEmailRead,
+                                imageVector = Icons.Default.Check,
                                 contentDescription = null,
-                                tint = EmeraldPrimary,
-                                modifier = Modifier.size(28.dp)
+                                tint = GreenSuccess,
+                                modifier = Modifier.size(24.dp)
                             )
                         }
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            text = "Reset Link Sent!",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = EmeraldPrimary
+                            text = "Reset link dispatched",
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 15.sp,
+                            color = InkText
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Check your email inbox for a password reset link. If you don't see it, check your spam folder.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = TextSecondary,
+                            text = "If an account exists for $email, password instructions have been sent.",
+                            fontSize = 11.sp,
+                            color = InkMuted,
                             textAlign = TextAlign.Center
                         )
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         Button(
                             onClick = onNavigateBack,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(52.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = CyanPrimary,
-                                contentColor = Slate950
-                            )
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),
+                            shape = RoundedCornerShape(10.dp)
                         ) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                "Back to Sign In",
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 16.sp
-                            )
+                            Text("Back to sign in", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
                     }
-                }
-            } else {
-                // ── Email Form ──
-                GlassCard(modifier = Modifier.fillMaxWidth()) {
+                } else {
+                    Text(
+                        text = "Email address",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = InkText
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
                     OutlinedTextField(
                         value = email,
-                        onValueChange = {
-                            email = it
-                            viewModel.clearError()
-                        },
-                        label = { Text("Email Address") },
+                        onValueChange = { email = it },
+                        placeholder = { Text("you@example.com", fontSize = 13.sp, color = InkSubtle) },
                         leadingIcon = {
-                            Icon(Icons.Default.Email, contentDescription = null)
+                            Icon(
+                                Icons.Default.Email,
+                                contentDescription = null,
+                                tint = InkMuted,
+                                modifier = Modifier.size(18.dp)
+                            )
                         },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Email,
-                            imeAction = ImeAction.Done
-                        ),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 focusManager.clearFocus()
-                                if (email.isNotBlank()) {
-                                    viewModel.resetPassword(email) {
-                                        resetSent = true
-                                    }
-                                }
+                                if (email.isNotBlank()) resetSent = true
                             }
                         ),
-                        colors = glassTextFieldColors()
+                        shape = RoundedCornerShape(10.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = BluePrimary,
+                            unfocusedBorderColor = LineBorder,
+                            focusedTextColor = InkText,
+                            unfocusedTextColor = InkText,
+                            focusedContainerColor = PaperWhite,
+                            unfocusedContainerColor = PaperWhite
+                        )
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Error message
-                    AnimatedVisibility(visible = uiState.error != null) {
-                        uiState.error?.let {
-                            Text(
-                                text = it,
-                                color = RosePrimary,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(bottom = 12.dp)
-                            )
-                        }
-                    }
+                    Spacer(modifier = Modifier.height(18.dp))
 
                     Button(
                         onClick = {
                             focusManager.clearFocus()
-                            viewModel.resetPassword(email) {
-                                resetSent = true
-                            }
+                            resetSent = true
                         },
-                        enabled = !uiState.isLoading && email.isNotBlank() && email.contains("@"),
+                        enabled = email.isNotBlank(),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(12.dp),
+                            .height(48.dp),
+                        shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = CyanPrimary,
-                            contentColor = Slate950
+                            containerColor = BluePrimary,
+                            contentColor = Color.White
                         )
                     ) {
-                        if (uiState.isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = Slate950,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Icon(Icons.Default.Send, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                "Send Reset Link",
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 16.sp
-                            )
-                        }
+                        Text("Send reset link", fontWeight = FontWeight.Bold, fontSize = 13.sp)
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-            if (!resetSent) {
-                TextButton(onClick = onNavigateBack) {
-                    Icon(
-                        Icons.Default.ArrowBack,
-                        contentDescription = null,
-                        tint = TextSecondary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        "Back to Sign In",
-                        color = TextSecondary,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
         }
     }
 }
-
-@Composable
-private fun glassTextFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor = CyanPrimary,
-    unfocusedBorderColor = Slate700,
-    focusedLabelColor = CyanPrimary,
-    unfocusedLabelColor = TextTertiary,
-    cursorColor = CyanPrimary,
-    focusedLeadingIconColor = CyanPrimary,
-    unfocusedLeadingIconColor = TextTertiary,
-    focusedTrailingIconColor = TextSecondary,
-    unfocusedTrailingIconColor = TextTertiary,
-    focusedTextColor = TextPrimary,
-    unfocusedTextColor = TextPrimary
-)
