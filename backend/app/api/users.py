@@ -1,5 +1,6 @@
 """User management API endpoints."""
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, get_db
@@ -21,6 +22,12 @@ async def register_or_sync_user(
     Requires authentication. If the user already exists, returns the existing profile.
     """
     existing = await get_user_by_firebase_uid(db, data.firebase_uid)
+    if not existing and data.email:
+        result = await db.execute(select(User).where(User.email == data.email))
+        existing = result.scalars().first()
+        if existing and existing.firebase_uid != data.firebase_uid:
+            existing.firebase_uid = data.firebase_uid
+            await db.flush()
     if existing:
         return existing
     user = await create_user(db, data)

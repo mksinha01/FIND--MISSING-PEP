@@ -190,6 +190,10 @@ async def get_current_user(
         )
     user = result.scalars().first()
 
+    if user and user.firebase_uid != firebase_uid:
+        user.firebase_uid = firebase_uid
+        await db.flush()
+
     if not user:
         # Auto-provision user on first authenticated request
         user = User(
