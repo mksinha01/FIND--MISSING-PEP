@@ -130,7 +130,9 @@ fun MissingCase.toEntity() = CaseEntity(
     firRejectionReason = firRejectionReason,
     createdAt = createdAt,
     updatedAt = updatedAt,
-    primaryPhotoPath = photos.firstOrNull { it.isPrimary }?.originalPath
+    primaryPhotoPath = photos.firstOrNull { it.isPrimary }?.faceCropPath
+        ?: photos.firstOrNull { it.isPrimary }?.originalPath
+        ?: photos.firstOrNull()?.faceCropPath
         ?: photos.firstOrNull()?.originalPath
 )
 
@@ -184,7 +186,17 @@ fun CaseEntity.toDomain() = MissingCase(
     firDocumentPath = firDocumentPath,
     firRejectionReason = firRejectionReason,
     createdAt = createdAt,
-    updatedAt = updatedAt
+    updatedAt = updatedAt,
+    photos = if (!primaryPhotoPath.isNullOrBlank()) {
+        listOf(
+            Photo(
+                id = id,
+                originalPath = primaryPhotoPath,
+                faceCropPath = primaryPhotoPath,
+                isPrimary = true
+            )
+        )
+    } else emptyList()
 )
 
 fun SightingEntity.toDomain() = Sighting(

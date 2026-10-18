@@ -1,6 +1,7 @@
 package com.findmissingpep.app.presentation.screens.report_wizard
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -48,9 +49,19 @@ fun ReportWizardScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // Trigger navigation on success
+    // Handle Android system back gesture: go to previous wizard step if > 0, else navigate back
+    BackHandler(enabled = true) {
+        if (uiState.currentStep > 0) {
+            viewModel.previousStep()
+        } else {
+            onNavigateBack()
+        }
+    }
+
+    // Trigger navigation on success and immediately clear submittedCaseId
     LaunchedEffect(uiState.submittedCaseId) {
         uiState.submittedCaseId?.let { caseId ->
+            viewModel.resetForm()
             onReportSubmitted(caseId)
         }
     }
@@ -144,7 +155,15 @@ fun ReportWizardScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(
+                        onClick = {
+                            if (uiState.currentStep > 0) {
+                                viewModel.previousStep()
+                            } else {
+                                onNavigateBack()
+                            }
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",

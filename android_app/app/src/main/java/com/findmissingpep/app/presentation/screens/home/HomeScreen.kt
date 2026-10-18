@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,7 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit,
     onNavigateToFirQueue: () -> Unit,
     onNavigateToCaseDetail: (String) -> Unit,
+    onNavigateToDashboard: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -62,20 +64,7 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.clickable { onNavigateToCases() }
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(38.dp)
-                                .clip(RoundedCornerShape(11.dp))
-                                .background(BluePrimary),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.PersonSearch,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
+                        FmpLogo(size = 38.dp)
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
@@ -194,6 +183,114 @@ fun HomeScreen(
                 }
 
                 Spacer(modifier = Modifier.height(18.dp))
+
+                // ── AI Mission Radar & Trajectory Dashboard Card ──
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 8.dp,
+                            shape = RoundedCornerShape(18.dp),
+                            ambientColor = BluePrimary.copy(alpha = 0.15f),
+                            spotColor = BluePrimary.copy(alpha = 0.08f)
+                        )
+                        .clickable { onNavigateToDashboard() },
+                    shape = RoundedCornerShape(18.dp),
+                    color = PaperWhite,
+                    border = BorderStroke(1.5.dp, BluePrimary.copy(alpha = 0.4f))
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(999.dp),
+                                color = GreenSuccessBg,
+                                border = BorderStroke(0.5.dp, GreenSuccess.copy(alpha = 0.3f))
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    PulsingDot(color = GreenSuccess)
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text(
+                                        text = "SSE LIVE RADAR",
+                                        fontSize = 9.5.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = GreenSuccess
+                                    )
+                                }
+                            }
+
+                            Surface(
+                                shape = RoundedCornerShape(999.dp),
+                                color = RedDangerBg
+                            ) {
+                                Text(
+                                    text = "Critical Match • 94.8%",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = RedDanger,
+                                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "AI Breadcrumb GIS Radar",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = BlueDeep
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Real-time CCTV edge tracking, movement trajectory cone & forensic dossier verification.",
+                            fontSize = 11.5.sp,
+                            lineHeight = 15.sp,
+                            color = InkMuted
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "3-Screen Mission Control",
+                                fontSize = 10.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BluePrimary
+                            )
+
+                            Button(
+                                onClick = onNavigateToDashboard,
+                                shape = RoundedCornerShape(999.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = BluePrimary,
+                                    contentColor = Color.White
+                                ),
+                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                            ) {
+                                Text("Open Dashboard", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
 
                 // ── 2. Review Possible Match Card ──
                 PaperCard(

@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -64,13 +65,13 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.width(6.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Your account",
+                            text = "Profile",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.ExtraBold,
                             color = InkText
                         )
                         Text(
-                            text = "Profile & preferences",
+                            text = "Account, credentials & agency preferences",
                             fontSize = 11.sp,
                             color = InkMuted
                         )
@@ -216,7 +217,7 @@ fun ProfileScreen(
                 ),
                 border = BorderStroke(1.dp, RedDanger.copy(alpha = 0.5f))
             ) {
-                Icon(Icons.Default.ExitToApp, contentDescription = null, tint = RedDanger, modifier = Modifier.size(16.dp))
+                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null, tint = RedDanger, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(6.dp))
                 Text("Sign out of account", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = RedDanger)
             }

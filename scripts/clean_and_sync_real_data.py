@@ -114,8 +114,8 @@ def clean_edge_db(local_db_path: str = "local_data.db") -> None:
     # Retrieve backend UUIDs from backend_local.db if possible
     backend_db = "backend_local.db"
     cam_mappings = {
-        "CAM-01": "f6d8aceb-5bfa-4b6e-aeb1-69cf863e9ec1",
-        "CAM-02": "0308eb7b-0c3e-46e7-a8b0-340cc881fb37",
+        "CAM-01": "78c7c099-fcde-4bfb-89f2-4a63daf0a657",
+        "CAM-02": "f097b4d8-b567-4077-8c01-2ef380e078fe",
     }
     if os.path.isfile(backend_db):
         try:

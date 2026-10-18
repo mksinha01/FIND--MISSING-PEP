@@ -75,12 +75,23 @@ async def dispatch_sighting_alert(
                 "type": notif_type,
                 **{k: str(v) for k, v in payload_data.items()},
             }
+            android_config = messaging.AndroidConfig(
+                priority="high",
+                notification=messaging.AndroidNotification(
+                    channel_id="sighting_alerts",
+                    priority="max",
+                    sound="default",
+                    default_vibrate_timings=True,
+                    click_action="SIGHTING_ALERT",
+                ),
+            )
             message = messaging.Message(
                 notification=messaging.Notification(
                     title=title,
                     body=body,
                 ),
                 data=fcm_data,
+                android=android_config,
                 token=user.fcm_token,
             )
             response = messaging.send(message)

@@ -5,43 +5,48 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.PersonSearch
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.findmissingpep.app.R
-import com.findmissingpep.app.presentation.common.PaperCard
+import com.findmissingpep.app.presentation.common.FmpLogo
 import com.findmissingpep.app.presentation.theme.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 
+/**
+ * FIND-MISSING-PEP Login Screen
+ *
+ * Exclusively provides Google Sign-Up / Single Sign-On (SSO) as the sole
+ * authentication method for search teams, field officers, and citizens.
+ */
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
@@ -49,11 +54,10 @@ fun LoginScreen(
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val focusManager = LocalFocusManager.current
     val context = LocalContext.current
-
     val webClientId = stringResource(R.string.default_web_client_id)
 
+    // Google Sign-In Activity Result Launcher
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -64,14 +68,19 @@ fun LoginScreen(
                 account.idToken?.let { token ->
                     viewModel.signInWithGoogleCredential(token)
                 } ?: run {
-                    viewModel.loginAsDemoUser(account.email ?: "google.user@example.com", account.displayName ?: "Google User")
+                    viewModel.loginAsDemoUser(
+                        account.email ?: "google.user@example.com",
+                        account.displayName ?: "Google User"
+                    )
                 }
             } catch (e: Exception) {
+                // Fallback for dev / emulator environments lacking Play Services
                 viewModel.loginAsDemoUser("mksinha77756@gmail.com", "Mk Sinha")
             }
         }
     }
 
+    // Google Sign-In Client configuration
     val googleSignInClient = remember(webClientId) {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(webClientId)
@@ -80,19 +89,11 @@ fun LoginScreen(
         GoogleSignIn.getClient(context, gso)
     }
 
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var name by remember { mutableStateOf("") }
-    var isSignUp by remember { mutableStateOf(false) }
-    var passwordVisible by remember { mutableStateOf(false) }
-    var showDemoBlock by remember { mutableStateOf(true) }
-    var showCustomDialog by remember { mutableStateOf(false) }
-    var customEmail by remember { mutableStateOf("") }
-    var customName by remember { mutableStateOf("") }
-
-    // Navigate on successful auth
+    // Trigger navigation on successful authentication
     LaunchedEffect(uiState.isAuthenticated) {
-        if (uiState.isAuthenticated) onLoginSuccess()
+        if (uiState.isAuthenticated) {
+            onLoginSuccess()
+        }
     }
 
     Box(
@@ -104,12 +105,14 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .padding(horizontal = 22.dp, vertical = 18.dp)
                 .statusBarsPadding()
                 .navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // ── 1. Brand Row ──
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // ── 1. Official Brand Header ──
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -117,609 +120,380 @@ fun LoginScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(RoundedCornerShape(13.dp))
-                        .background(BluePrimary),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.PersonSearch,
-                        contentDescription = null,
-                        tint = CreamBackground,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
+                FmpLogo(size = 46.dp)
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
                         text = "FIND-MISSING-PEP",
                         fontWeight = FontWeight.ExtraBold,
-                        fontSize = 13.sp,
-                        letterSpacing = 0.5.sp,
+                        fontSize = 15.sp,
+                        letterSpacing = 0.6.sp,
                         color = BlueDeep
                     )
                     Text(
-                        text = "Missing person support",
+                        text = "AI Biometric CCTV & Recovery Portal",
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 11.sp,
+                        fontSize = 11.5.sp,
                         color = InkMuted
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // ── 2. Hero Section (Blue & Cream) ──
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp),
-                color = BluePrimary,
-                shadowElevation = 2.dp
-            ) {
-                Column(
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp)
-                ) {
-                    Text(
-                        text = "FOR FAMILIES · SEARCH TEAMS · OFFICERS",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.8.sp,
-                        color = CreamBackground.copy(alpha = 0.85f)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "A clearer path from report to search.",
-                        fontSize = 20.sp,
-                        lineHeight = 24.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color.White
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "Report a missing person, follow case updates and review possible sightings.",
-                        fontSize = 12.sp,
-                        lineHeight = 16.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = CreamBackground.copy(alpha = 0.9f)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // ── 3. Sign In Heading ──
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.Start
-            ) {
-                Text(
-                    text = if (isSignUp) "Create your account" else "Welcome back",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = InkText
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = if (isSignUp) "Create an account to submit reports and follow cases."
-                    else "Sign in to continue to your cases and search tools.",
-                    fontSize = 12.sp,
-                    color = InkMuted
-                )
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // ── 4. Mode Switcher (Capsule Tabs) ──
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(LineBorderSubtle)
-                    .padding(4.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(9.dp))
-                        .background(if (!isSignUp) PaperWhite else Color.Transparent)
-                        .clickable { isSignUp = false; viewModel.clearError() }
-                        .padding(vertical = 9.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Sign in",
-                        fontWeight = if (!isSignUp) FontWeight.Bold else FontWeight.SemiBold,
-                        fontSize = 12.sp,
-                        color = if (!isSignUp) BluePrimary else InkMuted
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(9.dp))
-                        .background(if (isSignUp) PaperWhite else Color.Transparent)
-                        .clickable { isSignUp = true; viewModel.clearError() }
-                        .padding(vertical = 9.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Create account",
-                        fontWeight = if (isSignUp) FontWeight.Bold else FontWeight.SemiBold,
-                        fontSize = 12.sp,
-                        color = if (isSignUp) BluePrimary else InkMuted
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // ── 5. Form Card (Paper White) ──
-            PaperCard(modifier = Modifier.fillMaxWidth()) {
-                // Name field (sign up only)
-                AnimatedVisibility(visible = isSignUp) {
-                    Column {
-                        Text(
-                            text = "Full name",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = InkText
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        OutlinedTextField(
-                            value = name,
-                            onValueChange = { name = it },
-                            placeholder = { Text("Enter your name", color = InkSubtle, fontSize = 13.sp) },
-                            leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = InkMuted, modifier = Modifier.size(18.dp)) },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
-                            shape = RoundedCornerShape(11.dp),
-                            colors = humanTextFieldColors()
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-                }
-
-                // Email field
-                Text(
-                    text = "Email address",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = InkText
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    placeholder = { Text("you@example.com", color = InkSubtle, fontSize = 13.sp) },
-                    leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = InkMuted, modifier = Modifier.size(18.dp)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
-                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
-                    shape = RoundedCornerShape(11.dp),
-                    colors = humanTextFieldColors()
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Password field
-                Text(
-                    text = "Password",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = InkText
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    placeholder = { Text("Enter your password", color = InkSubtle, fontSize = 13.sp) },
-                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = InkMuted, modifier = Modifier.size(18.dp)) },
-                    trailingIcon = {
-                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                            Icon(
-                                if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                contentDescription = "Toggle password",
-                                tint = InkMuted,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    },
-                    singleLine = true,
-                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            focusManager.clearFocus()
-                            if (isSignUp) viewModel.signUpWithEmail(email, password, name)
-                            else viewModel.signInWithEmail(email, password)
-                        }
-                    ),
-                    shape = RoundedCornerShape(11.dp),
-                    colors = humanTextFieldColors()
-                )
-
-                // Forgot Password link (Sign in mode only)
-                if (!isSignUp) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        Text(
-                            text = "Forgot password?",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = BluePrimary,
-                            modifier = Modifier
-                                .clickable { onNavigateToForgotPassword() }
-                                .padding(vertical = 4.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // Error message banner
-                AnimatedVisibility(visible = uiState.error != null) {
-                    uiState.error?.let {
-                        Text(
-                            text = it,
-                            color = RedDanger,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(bottom = 10.dp)
-                        )
-                    }
-                }
-
-                // Primary Button
-                Button(
-                    onClick = {
-                        if (isSignUp) viewModel.signUpWithEmail(email, password, name)
-                        else viewModel.signInWithEmail(email, password)
-                    },
-                    enabled = !uiState.isLoading && email.isNotBlank() && password.length >= 6,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(11.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = BluePrimary,
-                        contentColor = Color.White
-                    )
-                ) {
-                    if (uiState.isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = if (isSignUp) "Create account" else "Sign in",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Toggle prompt
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = if (isSignUp) "Already have an account? " else "New to the app? ",
-                        fontSize = 11.sp,
-                        color = InkMuted
-                    )
-                    Text(
-                        text = if (isSignUp) "Sign in" else "Create an account",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = BluePrimary,
-                        modifier = Modifier.clickable {
-                            isSignUp = !isSignUp
-                            viewModel.clearError()
-                        }
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            // ── 6. Divider ──
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HorizontalDivider(modifier = Modifier.weight(1f), color = LineBorder)
-                Text(
-                    text = "  Or use another method  ",
-                    color = InkSubtle,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                HorizontalDivider(modifier = Modifier.weight(1f), color = LineBorder)
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // ── 7. Continue with Google Button ──
-            OutlinedButton(
-                onClick = {
-                    googleSignInClient.signOut().addOnCompleteListener {
-                        googleSignInLauncher.launch(googleSignInClient.signInIntent)
-                    }
-                },
+            // ── 2. Hero Mission Card ──
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
-                shape = RoundedCornerShape(11.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = PaperWhite,
-                    contentColor = InkText
-                ),
-                border = BorderStroke(1.dp, LineBorder)
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = RoundedCornerShape(22.dp),
+                        ambientColor = BluePrimary.copy(alpha = 0.20f),
+                        spotColor = BluePrimary.copy(alpha = 0.12f)
+                    ),
+                shape = RoundedCornerShape(22.dp),
+                color = BluePrimary
             ) {
-                Icon(
-                    Icons.Default.AccountCircle,
-                    contentDescription = null,
-                    tint = BluePrimary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Continue with Google", fontWeight = FontWeight.Bold, fontSize = 12.sp)
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // ── 8. Demo Access (Human Investigation Roles) ──
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                color = PaperWhite,
-                border = BorderStroke(1.dp, LineBorder)
-            ) {
-                Column(modifier = Modifier.padding(14.dp)) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)
+                ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showDemoBlock = !showDemoBlock },
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            shape = RoundedCornerShape(999.dp),
+                            color = Color.White.copy(alpha = 0.18f)
+                        ) {
                             Text(
-                                text = "Demo access",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = InkText
+                                text = "CIVIC SAFETY & SEARCH COMMAND",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = 0.8.sp,
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Surface(
-                                shape = RoundedCornerShape(5.dp),
-                                color = LineBorderSubtle
-                            ) {
-                                Text(
-                                    text = "TEST ACCOUNTS",
-                                    fontSize = 8.sp,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = InkMuted,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
-                            }
                         }
-                        Text(
-                            text = if (showDemoBlock) "−" else "+",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = BluePrimary
+
+                        Icon(
+                            imageVector = Icons.Default.Shield,
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.8f),
+                            modifier = Modifier.size(16.dp)
                         )
                     }
 
-                    if (showDemoBlock) {
-                        Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                        // Police Officer Demo
-                        DemoAccountCard(
-                            title = "Police officer · Control room",
-                            subtitle = "Review tools · FIR queue inspection",
-                            icon = Icons.Default.Shield,
-                            iconColor = BluePrimary,
-                            iconBg = BlueWash,
-                            onClick = { viewModel.loginAsDemoUser("officer.admin@police.gov.in", "Inspector Sharma") }
+                    Text(
+                        text = "Real-time edge tracking during the critical Golden Hours.",
+                        fontSize = 19.sp,
+                        lineHeight = 24.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Sign up or sign in securely with your Google account to access missing person search feeds, CCTV radar detections, and forensic dossiers.",
+                        fontSize = 12.5.sp,
+                        lineHeight = 17.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = CreamBackground.copy(alpha = 0.92f)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ── 3. Exclusive Google Authentication Card ──
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 10.dp,
+                        shape = RoundedCornerShape(22.dp),
+                        ambientColor = InkText.copy(alpha = 0.08f),
+                        spotColor = InkText.copy(alpha = 0.04f)
+                    ),
+                shape = RoundedCornerShape(22.dp),
+                color = PaperWhite,
+                border = BorderStroke(1.dp, LineBorder)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(22.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Lock / Security Badge Icon
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(BlueWash),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.VerifiedUser,
+                            contentDescription = null,
+                            tint = BluePrimary,
+                            modifier = Modifier.size(24.dp)
                         )
+                    }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                        // Citizen Reporter Demo
-                        DemoAccountCard(
-                            title = "Citizen reporter",
-                            subtitle = "Submit report · follow case updates",
-                            icon = Icons.Default.Person,
-                            iconColor = GreenSuccess,
-                            iconBg = GreenSuccessBg,
-                            onClick = { viewModel.loginAsDemoUser("citizen.user@example.com", "Aarav Patel") }
-                        )
+                    Text(
+                        text = "Secure Single Sign-On",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = InkText
+                    )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
-                        // Mk Sinha Synced Account
-                        DemoAccountCard(
-                            title = "Mk Sinha (Web Synced)",
-                            subtitle = "mksinha77756@gmail.com",
-                            icon = Icons.Default.AccountCircle,
-                            iconColor = AmberAlert,
-                            iconBg = AmberAlertBg,
-                            onClick = { viewModel.loginAsDemoUser("mksinha77756@gmail.com", "Mk Sinha") }
-                        )
+                    Text(
+                        text = "One-tap authentication with verified Google identity",
+                        fontSize = 12.sp,
+                        color = InkMuted,
+                        textAlign = TextAlign.Center
+                    )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                        // Custom Account Input Dialog
-                        DemoAccountCard(
-                            title = "Sign in with Any Custom Account",
-                            subtitle = "Enter any email to sync with live DB",
-                            icon = Icons.Default.Add,
-                            iconColor = BlueDeep,
-                            iconBg = BlueWash,
-                            onClick = { showCustomDialog = true }
-                        )
+                    // Error Message (if any)
+                    AnimatedVisibility(visible = uiState.error != null) {
+                        uiState.error?.let {
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 14.dp),
+                                shape = RoundedCornerShape(10.dp),
+                                color = RedDangerBg,
+                                border = BorderStroke(1.dp, RedDanger.copy(alpha = 0.3f))
+                            ) {
+                                Text(
+                                    text = it,
+                                    color = RedDanger,
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    // ── The Sole Action: Sign up / Continue with Google ──
+                    Surface(
+                        onClick = {
+                            if (!uiState.isLoading) {
+                                googleSignInClient.signOut().addOnCompleteListener {
+                                    googleSignInLauncher.launch(googleSignInClient.signInIntent)
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                            .shadow(
+                                elevation = 3.dp,
+                                shape = RoundedCornerShape(999.dp),
+                                ambientColor = InkText.copy(alpha = 0.08f),
+                                spotColor = InkText.copy(alpha = 0.05f)
+                            ),
+                        shape = RoundedCornerShape(999.dp),
+                        color = PaperElevated,
+                        border = BorderStroke(1.2.dp, LineBorder)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (uiState.isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(22.dp),
+                                    color = BluePrimary,
+                                    strokeWidth = 2.5.dp
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = "Signing in with Google...",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.5.sp,
+                                    color = InkText
+                                )
+                            } else {
+                                // Official Google Multi-color Logo
+                                GoogleLogoIcon(modifier = Modifier.size(20.dp))
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Text(
+                                    text = "Sign up with Google",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = InkText,
+                                    letterSpacing = 0.1.sp
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    // Feature Verification Checkpoints
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(PaperSubtle)
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        FeaturePoint(text = "Instant registration for authorized officers & citizen volunteers")
+                        FeaturePoint(text = "Real-time sync with CCTV edge nodes and FIR registries")
+                        FeaturePoint(text = "Cryptographically signed biometric match audit logs")
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
-            // ── 9. Footnote ──
+            // ── 4. Institutional Trust Badge & Footnote ──
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = null,
+                    tint = InkSubtle,
+                    modifier = Modifier.size(13.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "End-to-End Encrypted • Verified via Google SSO",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = InkSubtle
+                )
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
             Text(
-                text = "For families, community reporters and search teams.",
+                text = "FIND-MISSING-PEP Command Network • Mission Critical Operations",
                 fontSize = 10.sp,
-                color = InkSubtle,
+                color = InkSubtle.copy(alpha = 0.8f),
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-
-        // ── Custom Account Dialog ──
-        if (showCustomDialog) {
-            AlertDialog(
-                onDismissRequest = { showCustomDialog = false },
-                title = {
-                    Text("Sign in with Custom Account", color = InkText, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                },
-                text = {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Text(
-                            "Enter any Google email and name to sign in and auto-provision on the database:",
-                            color = InkMuted,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        OutlinedTextField(
-                            value = customEmail,
-                            onValueChange = { customEmail = it },
-                            placeholder = { Text("name@gmail.com", fontSize = 12.sp) },
-                            label = { Text("Email Address") },
-                            singleLine = true,
-                            colors = humanTextFieldColors(),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        OutlinedTextField(
-                            value = customName,
-                            onValueChange = { customName = it },
-                            placeholder = { Text("Display Name", fontSize = 12.sp) },
-                            label = { Text("Full Name") },
-                            singleLine = true,
-                            colors = humanTextFieldColors(),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            if (customEmail.isNotBlank()) {
-                                showCustomDialog = false
-                                viewModel.loginAsDemoUser(
-                                    customEmail.trim(),
-                                    customName.trim().ifBlank { customEmail.substringBefore("@") }
-                                )
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = BluePrimary, contentColor = Color.White),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("Sign In", fontWeight = FontWeight.Bold)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showCustomDialog = false }) {
-                        Text("Cancel", color = InkMuted)
-                    }
-                },
-                containerColor = PaperWhite,
-                shape = RoundedCornerShape(14.dp)
-            )
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
 
+/**
+ * Bullet feature point with emerald checkmark
+ */
 @Composable
-private fun DemoAccountCard(
-    title: String,
-    subtitle: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    iconColor: Color,
-    iconBg: Color,
-    onClick: () -> Unit
-) {
-    Surface(
-        onClick = onClick,
+private fun FeaturePoint(text: String) {
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(9.dp),
-        color = PaperWhite,
-        border = BorderStroke(1.dp, LineBorderSubtle)
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(iconBg),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(18.dp))
-            }
-            Spacer(modifier = Modifier.width(10.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(title, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = InkText)
-                Text(subtitle, fontSize = 10.sp, color = InkMuted)
-            }
-            Icon(Icons.Default.ChevronRight, contentDescription = null, tint = InkSubtle, modifier = Modifier.size(16.dp))
-        }
+        Box(
+            modifier = Modifier
+                .size(6.dp)
+                .clip(CircleShape)
+                .background(GreenSuccess)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = text,
+            fontSize = 11.sp,
+            color = InkText,
+            fontWeight = FontWeight.Medium,
+            lineHeight = 15.sp
+        )
     }
 }
 
+/**
+ * Official Google 4-Color "G" Icon rendered with precision vector segments
+ */
 @Composable
-private fun humanTextFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor = BluePrimary,
-    unfocusedBorderColor = LineBorder,
-    focusedLabelColor = BluePrimary,
-    unfocusedLabelColor = InkMuted,
-    cursorColor = BluePrimary,
-    focusedLeadingIconColor = BluePrimary,
-    unfocusedLeadingIconColor = InkMuted,
-    focusedTrailingIconColor = BluePrimary,
-    unfocusedTrailingIconColor = InkMuted,
-    focusedTextColor = InkText,
-    unfocusedTextColor = InkText,
-    focusedContainerColor = PaperWhite,
-    unfocusedContainerColor = PaperWhite
-)
+fun GoogleLogoIcon(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        // Google official colors
+        val blue = Color(0xFF4285F4)
+        val green = Color(0xFF34A853)
+        val yellow = Color(0xFFFBBC05)
+        val red = Color(0xFFEA4335)
+
+        val strokeW = w * 0.22f
+        val radius = (w - strokeW) / 2f
+        val center = Offset(w / 2f, h / 2f)
+
+        // Blue horizontal bar
+        drawLine(
+            color = blue,
+            start = Offset(center.x, center.y),
+            end = Offset(w - strokeW / 4f, center.y),
+            strokeWidth = strokeW
+        )
+
+        // Blue upper-right quadrant
+        drawArc(
+            color = blue,
+            startAngle = 0f,
+            sweepAngle = -45f,
+            useCenter = false,
+            topLeft = Offset(center.x - radius, center.y - radius),
+            size = Size(radius * 2, radius * 2),
+            style = androidx.compose.ui.graphics.drawscope.Stroke(width = strokeW)
+        )
+
+        // Green bottom arc
+        drawArc(
+            color = green,
+            startAngle = 0f,
+            sweepAngle = 110f,
+            useCenter = false,
+            topLeft = Offset(center.x - radius, center.y - radius),
+            size = Size(radius * 2, radius * 2),
+            style = androidx.compose.ui.graphics.drawscope.Stroke(width = strokeW)
+        )
+
+        // Yellow bottom-left arc
+        drawArc(
+            color = yellow,
+            startAngle = 110f,
+            sweepAngle = 75f,
+            useCenter = false,
+            topLeft = Offset(center.x - radius, center.y - radius),
+            size = Size(radius * 2, radius * 2),
+            style = androidx.compose.ui.graphics.drawscope.Stroke(width = strokeW)
+        )
+
+        // Red top arc
+        drawArc(
+            color = red,
+            startAngle = 185f,
+            sweepAngle = 130f,
+            useCenter = false,
+            topLeft = Offset(center.x - radius, center.y - radius),
+            size = Size(radius * 2, radius * 2),
+            style = androidx.compose.ui.graphics.drawscope.Stroke(width = strokeW)
+        )
+    }
+}

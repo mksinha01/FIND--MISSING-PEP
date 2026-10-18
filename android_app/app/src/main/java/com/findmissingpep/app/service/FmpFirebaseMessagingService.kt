@@ -34,13 +34,16 @@ class FmpFirebaseMessagingService : FirebaseMessagingService() {
     @Inject
     lateinit var authRepository: AuthRepository
 
+    @Inject
+    lateinit var liveAlertManager: LiveAlertManager
+
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d(TAG, "New FCM token: $token")
 
-        // Register the new FCM token with our backend
+        // Register the new FCM token with our backend and LiveAlertManager
         serviceScope.launch {
             try {
                 authRepository.updateProfile(fcmToken = token)
@@ -53,60 +56,50 @@ class FmpFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
-        Log.d(TAG, "FCM message received: ${message.data}")
+        Log.d(TAG, "FCM message received. Data: ${message.data}, Notification: ${message.notification?.title}")
 
         val data = message.data
-        val type = data[KEY_TYPE] ?: "general"
+        val type = data[KEY_TYPE] ?: ""
+        val notifTitle = message.notification?.title ?: ""
 
-        when (type) {
-            "sighting" -> handleSightingAlert(data)
-            "case_update" -> handleCaseUpdate(data)
+        val isSighting = type.equals("sighting", ignoreCase = true) ||
+                data.containsKey(KEY_SIGHTING_ID) ||
+                data.containsKey("similarity") ||
+                notifTitle.contains("Match", ignoreCase = true) ||
+                notifTitle.contains("Sighting", ignoreCase = true)
+
+        val isCaseUpdate = type.equals("case_update", ignoreCase = true) ||
+                data.containsKey("case_id")
+
+        when {
+            isSighting -> handleSightingAlert(message)
+            isCaseUpdate -> handleCaseUpdate(data)
             else -> handleGenericNotification(message.notification, data)
         }
     }
 
-    private fun handleSightingAlert(data: Map<String, String>) {
-        val sightingId = data[KEY_SIGHTING_ID] ?: return
-        val personName = data[KEY_PERSON_NAME] ?: "Unknown"
-        val similarity = data[KEY_SIMILARITY] ?: "N/A"
-        val camera = data[KEY_CAMERA] ?: "Unknown Camera"
-
-        // Deep link into the Forensic Inspector screen
-        val intent = Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("navigate_to", "forensic_inspector")
-            putExtra("sighting_id", sightingId)
-            action = "SIGHTING_ALERT"
+    private fun handleSightingAlert(message: RemoteMessage) {
+        val data = message.data
+        val sightingId = data[KEY_SIGHTING_ID] ?: data["id"] ?: System.currentTimeMillis().toString()
+        val personName = data[KEY_PERSON_NAME] ?: data["person"] ?: message.notification?.title ?: "Missing Person"
+        val rawSim = data[KEY_SIMILARITY] ?: data["similarity"] ?: "85"
+        val similarityText = try {
+            val d = rawSim.toDouble()
+            if (d <= 1.0) "${(d * 100).toInt()}%" else "${d.toInt()}%"
+        } catch (_: Exception) {
+            rawSim
         }
+        val camera = data[KEY_CAMERA] ?: data["camera"] ?: "Surveillance Camera"
+        val detectedAt = data["detected_at"] ?: ""
 
-        val pendingIntent = PendingIntent.getActivity(
-            this, sightingId.hashCode(), intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        Log.i(TAG, "Dispatching sighting alert via LiveAlertManager for $personName ($sightingId)")
+        liveAlertManager.dispatchAlert(
+            sightingId = sightingId,
+            personName = personName,
+            similarityText = similarityText,
+            cameraLocation = camera,
+            detectedAt = detectedAt
         )
-
-        val alertSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-
-        val notification = NotificationCompat.Builder(this, FindMissingPepApp.CHANNEL_SIGHTING_ALERTS)
-            .setSmallIcon(R.drawable.ic_alert)
-            .setContentTitle("🚨 Match Detected: $personName")
-            .setContentText("${similarity}% match at $camera")
-            .setStyle(
-                NotificationCompat.BigTextStyle()
-                    .bigText("A possible match for $personName was detected at $camera with ${similarity}% similarity. Tap to inspect.")
-            )
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_ALARM)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-            .setSound(alertSound)
-            .setVibrate(longArrayOf(0, 300, 200, 300, 200, 300))
-            .build()
-
-        try {
-            NotificationManagerCompat.from(this).notify(sightingId.hashCode(), notification)
-        } catch (e: SecurityException) {
-            Log.e(TAG, "Notification permission not granted", e)
-        }
     }
 
     private fun handleCaseUpdate(data: Map<String, String>) {

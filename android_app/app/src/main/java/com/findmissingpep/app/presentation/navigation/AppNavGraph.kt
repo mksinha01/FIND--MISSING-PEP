@@ -20,6 +20,7 @@ import com.findmissingpep.app.presentation.screens.sightings.ForensicInspectorSc
 import com.findmissingpep.app.presentation.screens.sightings.SightingsFeedScreen
 import com.findmissingpep.app.presentation.screens.auth.ForgotPasswordScreen
 import com.findmissingpep.app.presentation.screens.fir.FirQueueScreen
+import com.findmissingpep.app.presentation.screens.dashboard.DashboardScreen
 
 @androidx.compose.material3.ExperimentalMaterial3Api
 @Composable
@@ -38,7 +39,7 @@ fun AppNavGraph(
         composable(Screen.Login.route) {
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate(Screen.Home.route) {
+                    navController.navigate(Screen.Dashboard.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
@@ -63,6 +64,7 @@ fun AppNavGraph(
                 onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
                 onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
                 onNavigateToFirQueue = { navController.navigate(Screen.FirQueue.route) },
+                onNavigateToDashboard = { navController.navigate(Screen.Dashboard.route) },
                 onNavigateToCaseDetail = { caseId ->
                     navController.navigate(Screen.CaseDetail.createRoute(caseId))
                 }
@@ -72,11 +74,20 @@ fun AppNavGraph(
         composable(Screen.ReportWizard.route) {
             ReportWizardScreen(
                 onReportSubmitted = { caseId ->
-                    navController.navigate(Screen.CaseDetail.createRoute(caseId)) {
-                        popUpTo(Screen.Home.route)
+                    navController.navigate(Screen.MyCases.route) {
+                        popUpTo(Screen.Dashboard.route) {
+                            saveState = false
+                        }
+                        launchSingleTop = true
                     }
                 },
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = {
+                    if (!navController.popBackStack()) {
+                        navController.navigate(Screen.Dashboard.route) {
+                            popUpTo(Screen.Dashboard.route) { inclusive = true }
+                        }
+                    }
+                }
             )
         }
 
@@ -85,7 +96,13 @@ fun AppNavGraph(
                 onNavigateToCaseDetail = { caseId ->
                     navController.navigate(Screen.CaseDetail.createRoute(caseId))
                 },
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = {
+                    if (!navController.popBackStack()) {
+                        navController.navigate(Screen.Dashboard.route) {
+                            popUpTo(Screen.Dashboard.route) { inclusive = true }
+                        }
+                    }
+                }
             )
         }
 
@@ -102,7 +119,13 @@ fun AppNavGraph(
                 onNavigateToSighting = { sightingId ->
                     navController.navigate(Screen.ForensicInspector.createRoute(sightingId))
                 },
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = {
+                    if (!navController.popBackStack()) {
+                        navController.navigate(Screen.MyCases.route) {
+                            popUpTo(Screen.Dashboard.route)
+                        }
+                    }
+                }
             )
         }
 
@@ -142,7 +165,13 @@ fun AppNavGraph(
 
         composable(Screen.Notifications.route) {
             NotificationScreen(
-                onNavigateBack = { navController.popBackStack() },
+                onNavigateBack = {
+                    if (!navController.popBackStack()) {
+                        navController.navigate(Screen.Dashboard.route) {
+                            popUpTo(Screen.Dashboard.route) { inclusive = true }
+                        }
+                    }
+                },
                 onNavigateToCase = { caseId ->
                     navController.navigate(Screen.CaseDetail.createRoute(caseId))
                 },
@@ -154,7 +183,13 @@ fun AppNavGraph(
 
         composable(Screen.Profile.route) {
             ProfileScreen(
-                onNavigateBack = { navController.popBackStack() },
+                onNavigateBack = {
+                    if (!navController.popBackStack()) {
+                        navController.navigate(Screen.Dashboard.route) {
+                            popUpTo(Screen.Dashboard.route) { inclusive = true }
+                        }
+                    }
+                },
                 onSignOut = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
@@ -168,6 +203,18 @@ fun AppNavGraph(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToCaseDetail = { caseId ->
                     navController.navigate(Screen.CaseDetail.createRoute(caseId))
+                }
+            )
+        }
+
+        composable(Screen.Dashboard.route) {
+            DashboardScreen(
+                onNavigateBack = null,
+                onNavigateToInspector = { sightingId ->
+                    navController.navigate(Screen.ForensicInspector.createRoute(sightingId))
+                },
+                onNavigateToMap = { caseId ->
+                    navController.navigate(Screen.BreadcrumbMap.createRoute(caseId))
                 }
             )
         }

@@ -43,6 +43,10 @@ fun MyCasesScreen(
     viewModel: CasesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.listState.collectAsState()
+ 
+    LaunchedEffect(Unit) {
+        viewModel.refreshCases()
+    }
 
     Scaffold(
         containerColor = CreamBackground,
@@ -70,13 +74,13 @@ fun MyCasesScreen(
                     Spacer(modifier = Modifier.width(6.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "My cases",
+                            text = "My Reports",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.ExtraBold,
                             color = InkText
                         )
                         Text(
-                            text = "Reported cases",
+                            text = "Track and manage filed missing person cases",
                             fontSize = 11.sp,
                             color = InkMuted
                         )

@@ -156,4 +156,8 @@ class ReportWizardViewModel @Inject constructor(
     }
 
     fun clearError() { _uiState.update { it.copy(error = null) } }
+
+    fun resetForm() {
+        _uiState.value = ReportWizardState()
+    }
 }

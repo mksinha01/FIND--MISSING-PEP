@@ -21,6 +21,12 @@ class FindMissingPepApp : Application() {
     }
 
     private fun createNotificationChannels() {
+        val soundUri = android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION)
+        val audioAttributes = android.media.AudioAttributes.Builder()
+            .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_INSTANT)
+            .build()
+
         val sightingChannel = NotificationChannel(
             CHANNEL_SIGHTING_ALERTS,
             getString(R.string.channel_sighting_alerts),
@@ -28,7 +34,11 @@ class FindMissingPepApp : Application() {
         ).apply {
             description = "Real-time CCTV match alerts for missing persons"
             enableVibration(true)
-            vibrationPattern = longArrayOf(0, 300, 200, 300)
+            vibrationPattern = longArrayOf(0, 400, 200, 400, 200, 400)
+            enableLights(true)
+            lightColor = android.graphics.Color.RED
+            setSound(soundUri, audioAttributes)
+            lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
             setShowBadge(true)
         }
 
@@ -38,6 +48,8 @@ class FindMissingPepApp : Application() {
             NotificationManager.IMPORTANCE_DEFAULT
         ).apply {
             description = "Status updates for your missing person cases"
+            enableVibration(true)
+            setShowBadge(true)
         }
 
         val generalChannel = NotificationChannel(

@@ -64,13 +64,13 @@ fun NotificationScreen(
                     Spacer(modifier = Modifier.width(6.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Notification Center",
+                            text = "Alerts",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.ExtraBold,
                             color = InkText
                         )
                         Text(
-                            text = "Case alerts & updates",
+                            text = "Real-time CCTV biometric matches & case updates",
                             fontSize = 11.sp,
                             color = InkMuted
                         )

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- Official FIND-MISSING-PEP Protective Shield Base -->
+    <path
+        android:fillColor="#014BAA"
+        android:pathData="M50,8 L85,24 V50 C85,72 50,92 50,92 C50,92 15,72 15,50 V24 Z" />
+
+    <!-- Shield Subtle Depth Highlight (Right Bevel) -->
+    <path
+        android:fillColor="#0284C7"
+        android:pathData="M50,8 L85,24 V50 C85,72 50,92 50,92 L50,8 Z" />
+
+    <!-- Person Silhouette Head -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50,28 C57.73,28 64,34.27 64,42 C64,49.73 57.73,56 50,56 C42.27,56 36,49.73 36,42 C36,34.27 42.27,28 50,28 Z" />
+
+    <!-- Person Silhouette Shoulders / Torso -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,68 C32,58 40,54 50,54 C60,54 68,58 68,68 L32,68 Z" />
+</vector>
