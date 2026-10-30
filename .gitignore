@@ -48,3 +48,9 @@ flutter_app/.packages
 
 # Node
 node_modules/
+.agents
+.archify
+.claude
+.kilo
+.kombai
+.pytest_cache
